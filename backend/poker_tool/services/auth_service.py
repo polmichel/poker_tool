@@ -72,6 +72,10 @@ class AuthService:
             return None
         return self.database.get_user_by_id(user_id)
     
+    def get_user_by_id(self, user_id: int) -> Optional[User]:
+        """Get a user by ID."""
+        return self.database.get_user_by_id(user_id)
+    
     def create_access_token(self, user_id: int) -> str:
         """Create an access token for a user."""
         return self.auth.create_access_token(user_id)

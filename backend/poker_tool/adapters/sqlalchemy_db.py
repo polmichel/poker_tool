@@ -11,12 +11,17 @@ from ..domain.user import User
 from ..domain.scenario import Scenario, ScenarioType
 
 
+# Create SQLAlchemy instance at module level
+_db = SQLAlchemy()
+
+
 class SQLAlchemyDatabase(DatabasePort):
     """SQLAlchemy implementation of DatabasePort."""
     
     def __init__(self, app: Any = None):
         """Initialize the database adapter."""
-        self.db = SQLAlchemy()
+        global _db
+        self.db = _db
         if app:
             self.init_app(app)
     
@@ -35,18 +40,18 @@ class SQLAlchemyDatabase(DatabasePort):
         self.db.drop_all()
     
     # User Model (SQLAlchemy)
-    class _UserModel(self.db.Model):
+    class _UserModel(_db.Model):
         __tablename__ = 'user'
         
-        id = self.db.Column(self.db.Integer, primary_key=True)
-        username = self.db.Column(self.db.String(80), unique=True, nullable=False)
-        email = self.db.Column(self.db.String(120), unique=True, nullable=False)
-        password_hash = self.db.Column(self.db.String(128))
-        created_at = self.db.Column(self.db.DateTime, server_default=self.db.func.now())
-        updated_at = self.db.Column(
-            self.db.DateTime,
-            server_default=self.db.func.now(),
-            onupdate=self.db.func.now()
+        id = _db.Column(_db.Integer, primary_key=True)
+        username = _db.Column(_db.String(80), unique=True, nullable=False)
+        email = _db.Column(_db.String(120), unique=True, nullable=False)
+        password_hash = _db.Column(_db.String(128))
+        created_at = _db.Column(_db.DateTime, server_default=_db.func.now())
+        updated_at = _db.Column(
+            _db.DateTime,
+            server_default=_db.func.now(),
+            onupdate=_db.func.now()
         )
         
         def to_domain(self) -> User:
@@ -61,25 +66,25 @@ class SQLAlchemyDatabase(DatabasePort):
             )
     
     # Range Model (SQLAlchemy)
-    class _RangeModel(self.db.Model):
+    class _RangeModel(_db.Model):
         __tablename__ = 'poker_range'
         
-        id = self.db.Column(self.db.Integer, primary_key=True)
-        name = self.db.Column(self.db.String(120), nullable=False)
-        description = self.db.Column(self.db.Text)
-        range_type = self.db.Column(
-            self.db.Enum('preflop', 'postflop', 'push_fold', name='range_type_enum')
+        id = _db.Column(_db.Integer, primary_key=True)
+        name = _db.Column(_db.String(120), nullable=False)
+        description = _db.Column(_db.Text)
+        range_type = _db.Column(
+            _db.Enum('preflop', 'postflop', 'push_fold', name='range_type_enum')
         )
-        position = self.db.Column(
-            self.db.Enum('UTG', 'MP', 'CO', 'BTN', 'SB', 'BB', 'undefined', name='position_enum')
+        position = _db.Column(
+            _db.Enum('UTG', 'MP', 'CO', 'BTN', 'SB', 'BB', 'undefined', name='position_enum')
         )
-        hands = self.db.Column(self.db.JSON, default={})
-        user_id = self.db.Column(self.db.Integer, self.db.ForeignKey('user.id'), nullable=True)
-        created_at = self.db.Column(self.db.DateTime, server_default=self.db.func.now())
-        updated_at = self.db.Column(
-            self.db.DateTime,
-            server_default=self.db.func.now(),
-            onupdate=self.db.func.now()
+        hands = _db.Column(_db.JSON, default={})
+        user_id = _db.Column(_db.Integer, _db.ForeignKey('user.id'), nullable=True)
+        created_at = _db.Column(_db.DateTime, server_default=_db.func.now())
+        updated_at = _db.Column(
+            _db.DateTime,
+            server_default=_db.func.now(),
+            onupdate=_db.func.now()
         )
         
         def to_domain(self) -> Range:
@@ -104,28 +109,58 @@ class SQLAlchemyDatabase(DatabasePort):
                 updated_at=self.updated_at.isoformat() if self.updated_at else None,
             )
     
+    # Training Session Model (SQLAlchemy)
+    class _TrainingSessionModel(_db.Model):
+        __tablename__ = 'training_session'
+        
+        id = _db.Column(_db.Integer, primary_key=True)
+        user_id = _db.Column(_db.Integer, _db.ForeignKey('user.id'), nullable=True)
+        range_id = _db.Column(_db.Integer, _db.ForeignKey('poker_range.id'), nullable=True)
+        mode = _db.Column(_db.String(50), nullable=False)
+        score = _db.Column(_db.Float, default=0.0)
+        total_questions = _db.Column(_db.Integer, default=0)
+        correct_answers = _db.Column(_db.Integer, default=0)
+        time_spent = _db.Column(_db.Integer, default=0)
+        details = _db.Column(_db.JSON, default={})
+        created_at = _db.Column(_db.DateTime, server_default=_db.func.now())
+        
+        def to_dict(self) -> Dict[str, Any]:
+            """Convert to dictionary."""
+            return {
+                "id": self.id,
+                "user_id": self.user_id,
+                "range_id": self.range_id,
+                "mode": self.mode,
+                "score": self.score,
+                "total_questions": self.total_questions,
+                "correct_answers": self.correct_answers,
+                "time_spent": self.time_spent,
+                "details": self.details or {},
+                "created_at": self.created_at.isoformat() if self.created_at else None,
+            }
+    
     # Scenario Model (SQLAlchemy)
-    class _ScenarioModel(self.db.Model):
+    class _ScenarioModel(_db.Model):
         __tablename__ = 'scenario'
         
-        id = self.db.Column(self.db.Integer, primary_key=True)
-        name = self.db.Column(self.db.String(120), nullable=False)
-        description = self.db.Column(self.db.Text)
-        scenario_type = self.db.Column(
-            self.db.Enum('cash_game', 'tournament', 'push_fold', 'heads_up', name='scenario_type_enum')
+        id = _db.Column(_db.Integer, primary_key=True)
+        name = _db.Column(_db.String(120), nullable=False)
+        description = _db.Column(_db.Text)
+        scenario_type = _db.Column(
+            _db.Enum('cash_game', 'tournament', 'push_fold', 'heads_up', name='scenario_type_enum')
         )
-        stack_size = self.db.Column(self.db.Float)
-        position = self.db.Column(
-            self.db.Enum('UTG', 'MP', 'CO', 'BTN', 'SB', 'BB', 'undefined', name='position_enum')
+        stack_size = _db.Column(_db.Float)
+        position = _db.Column(
+            _db.Enum('UTG', 'MP', 'CO', 'BTN', 'SB', 'BB', 'undefined', name='position_enum')
         )
-        action = self.db.Column(self.db.String(120))
-        range_id = self.db.Column(self.db.Integer, self.db.ForeignKey('poker_range.id'), nullable=True)
-        user_id = self.db.Column(self.db.Integer, self.db.ForeignKey('user.id'), nullable=True)
-        created_at = self.db.Column(self.db.DateTime, server_default=self.db.func.now())
-        updated_at = self.db.Column(
-            self.db.DateTime,
-            server_default=self.db.func.now(),
-            onupdate=self.db.func.now()
+        action = _db.Column(_db.String(120))
+        range_id = _db.Column(_db.Integer, _db.ForeignKey('poker_range.id'), nullable=True)
+        user_id = _db.Column(_db.Integer, _db.ForeignKey('user.id'), nullable=True)
+        created_at = _db.Column(_db.DateTime, server_default=_db.func.now())
+        updated_at = _db.Column(
+            _db.DateTime,
+            server_default=_db.func.now(),
+            onupdate=_db.func.now()
         )
         
         def to_domain(self) -> Scenario:
@@ -234,6 +269,74 @@ class SQLAlchemyDatabase(DatabasePort):
     def delete_range(self, range_id: int) -> bool:
         """Delete a range."""
         model = self._RangeModel.query.get(range_id)
+        if not model:
+            return False
+        self.db.session.delete(model)
+        self.db.session.commit()
+        return True
+    
+    # Training Session operations
+    def save_training_session(self, session_data: Dict) -> Dict:
+        """Save a training session to the database."""
+        model = self._TrainingSessionModel(
+            id=session_data.get('id'),
+            user_id=session_data.get('user_id'),
+            range_id=session_data.get('range_id'),
+            mode=session_data.get('mode', ''),
+            score=session_data.get('score', 0.0),
+            total_questions=session_data.get('total_questions', 0),
+            correct_answers=session_data.get('correct_answers', 0),
+            time_spent=session_data.get('time_spent', 0),
+            details=session_data.get('details', {}),
+        )
+        self.db.session.add(model)
+        self.db.session.commit()
+        return model.to_dict()
+    
+    def get_training_session_by_id(self, session_id: int) -> Optional[Dict]:
+        """Get a training session by ID."""
+        model = self._TrainingSessionModel.query.get(session_id)
+        return model.to_dict() if model else None
+    
+    def get_all_training_sessions(self) -> List[Dict]:
+        """Get all training sessions."""
+        models = self._TrainingSessionModel.query.all()
+        return [model.to_dict() for model in models]
+    
+    def get_training_sessions_by_user(self, user_id: int) -> List[Dict]:
+        """Get all training sessions for a specific user."""
+        models = self._TrainingSessionModel.query.filter_by(user_id=user_id).all()
+        return [model.to_dict() for model in models]
+    
+    def update_training_session(self, session_id: int, data: Dict) -> Optional[Dict]:
+        """Update a training session."""
+        model = self._TrainingSessionModel.query.get(session_id)
+        if not model:
+            return None
+        
+        if 'user_id' in data:
+            model.user_id = data['user_id']
+        if 'range_id' in data:
+            model.range_id = data['range_id']
+        if 'mode' in data:
+            model.mode = data['mode']
+        if 'score' in data:
+            model.score = data['score']
+        if 'total_questions' in data:
+            model.total_questions = data['total_questions']
+        if 'correct_answers' in data:
+            model.correct_answers = data['correct_answers']
+        if 'time_spent' in data:
+            model.time_spent = data['time_spent']
+        if 'details' in data:
+            model.details = data['details']
+        
+        self.db.session.commit()
+        return model.to_dict()
+    
+    def delete_training_session(self, session_id: int) -> bool:
+        """Delete a training session."""
+        model = self._TrainingSessionModel.query.get(session_id)
         if not model:
             return False
         self.db.session.delete(model)

@@ -84,6 +84,37 @@ class DatabasePort(ABC):
         """Delete a range."""
         pass
     
+    # Training Session operations
+    @abstractmethod
+    def save_training_session(self, session_data: Dict) -> Dict:
+        """Save a training session to the database."""
+        pass
+    
+    @abstractmethod
+    def get_training_session_by_id(self, session_id: int) -> Optional[Dict]:
+        """Get a training session by ID."""
+        pass
+    
+    @abstractmethod
+    def get_all_training_sessions(self) -> List[Dict]:
+        """Get all training sessions."""
+        pass
+    
+    @abstractmethod
+    def get_training_sessions_by_user(self, user_id: int) -> List[Dict]:
+        """Get all training sessions for a specific user."""
+        pass
+    
+    @abstractmethod
+    def update_training_session(self, session_id: int, data: Dict) -> Optional[Dict]:
+        """Update a training session."""
+        pass
+    
+    @abstractmethod
+    def delete_training_session(self, session_id: int) -> bool:
+        """Delete a training session."""
+        pass
+    
     # Scenario operations
     @abstractmethod
     def save_scenario(self, scenario: Scenario) -> Scenario:
