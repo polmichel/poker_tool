@@ -35,12 +35,15 @@ jobs:
       env:
         CI: false
 
-    - name: Start test server
+    - name: Start test server in background
       working-directory: frontend
       run: |
-        node tests/e2e/test-server.js &
-        sleep 5
-        echo "Test server started on port 3000"
+        node tests/e2e/test-server.js > /tmp/test-server.log 2>&1 &
+        echo "Test server PID: $!"
+        sleep 10
+        # Verify server is running
+        curl -s http://localhost:3000/api/ranges || exit 1
+        echo "Test server is running on port 3000"
       env:
         PORT: 3000
 
@@ -65,4 +68,12 @@ jobs:
       with:
         name: test-results
         path: frontend/test-results/
+        retention-days: 30
+
+    - name: Upload server logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-logs
+        path: /tmp/test-server.log
         retention-days: 30
