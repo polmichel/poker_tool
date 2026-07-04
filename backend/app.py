@@ -3,8 +3,8 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta
-from .database import db, init_db, User, RangeModel, ScenarioModel, TrainingSession, Stat
-from .routes import api_bp
+from database import db, init_db, User, RangeModel, ScenarioModel, TrainingSession, Stat
+from routes import api_bp
 import os
 
 

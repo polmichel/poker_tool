@@ -1,11 +1,10 @@
+from datetime import datetime
+
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
-from .models.hand import ActionType
-from .models.range import RangeType, Position
-from .models.scenario import ScenarioType
-import os
 
+from models.range import RangeType, Position
+from models.scenario import ScenarioType
 
 # Initialisation de SQLAlchemy
 db = SQLAlchemy()
@@ -187,9 +186,7 @@ def reset_db(app):
 def backup_db(app, backup_path: str):
     """Sauvegarde la base de données dans un fichier JSON."""
     import json
-    from .models.range import Range
-    from .models.scenario import Scenario
-    
+
     with app.app_context():
         ranges = RangeModel.query.all()
         scenarios = ScenarioModel.query.all()
