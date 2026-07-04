@@ -29,27 +29,9 @@ jobs:
       working-directory: frontend
       run: npx playwright install --with-deps
 
-    - name: Build frontend application
+    - name: Run CI basic tests
       working-directory: frontend
-      run: npm run build
-      env:
-        CI: false
-
-    - name: Start test server in background
-      working-directory: frontend
-      run: |
-        node tests/e2e/test-server.js > /tmp/test-server.log 2>&1 &
-        echo "Test server PID: $!"
-        sleep 10
-        # Verify server is running
-        curl -s http://localhost:3000/api/ranges || exit 1
-        echo "Test server is running on port 3000"
-      env:
-        PORT: 3000
-
-    - name: Run CI smoke tests
-      working-directory: frontend
-      run: npx playwright test tests/e2e/specs/ci-smoke.spec.ts
+      run: npx playwright test tests/e2e/specs/ci-basic.spec.ts
       env:
         BASE_URL: http://localhost:3000
         CI: true
@@ -68,12 +50,4 @@ jobs:
       with:
         name: test-results
         path: frontend/test-results/
-        retention-days: 30
-
-    - name: Upload server logs
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: server-logs
-        path: /tmp/test-server.log
         retention-days: 30
