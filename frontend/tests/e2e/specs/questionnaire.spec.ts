@@ -34,7 +34,7 @@ test.describe('Questionnaire sur une range', () => {
   });
 
   test('Accéder à la page de training', async ({ page }) => {
-    // Vérifier que le titre de la page contient "Poker" (pas "entraînement")
+    // Vérifier que le titre de la page contient "Poker"
     const title = await page.title();
     expect(title.toLowerCase()).toContain('poker');
     
@@ -60,7 +60,7 @@ test.describe('Questionnaire sur une range', () => {
     // Sélectionner la première range
     await rangeChips.first().click();
     
-    // Vérifier que la range est sélectionnée (devrait avoir la classe MuiChip-filled)
+    // Vérifier que la range est sélectionnée
     const selectedChip = page.locator('.MuiChip-filled');
     const selectedCount = await selectedChip.count();
     expect(selectedCount).toBeGreaterThan(0);
@@ -80,16 +80,13 @@ test.describe('Questionnaire sur une range', () => {
       await modeButton.click();
       
       // 3. Cliquer sur "Démarrer" ou "Démarrer l'entraînement"
-      const startButton = page.locator('button:has-text(/Démarrer/)');
+      // NOTE: Utiliser un sélecteur simple sans regex
+      const startButton = page.locator('button:has-text("Démarrer")');
       await startButton.waitFor({ state: 'visible', timeout: 5000 });
       await startButton.click();
       
       // 4. Attendre que le questionnaire démarre
-      // On devrait voir :
-      // - Un indicateur de question (ex: "Question 1/10")
-      // - Une question affichée
-      // - Des boutons de réponse
-      
+      // Utiliser un sélecteur simple pour la question
       const questionIndicator = page.locator('text=/Question \d+\/\d+/');
       await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
       
@@ -113,7 +110,7 @@ test.describe('Questionnaire sur une range', () => {
     await firstModeButton.click();
     
     // 3. Démarrer le questionnaire
-    const startButton = page.locator('button:has-text(/Démarrer/)');
+    const startButton = page.locator('button:has-text("Démarrer")');
     await startButton.click();
     
     // 4. Attendre la première question
@@ -121,14 +118,9 @@ test.describe('Questionnaire sur une range', () => {
     await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
     
     // 5. Trouver et cliquer sur une réponse
-    // Les réponses pourraient être :
-    // - Des boutons avec des actions (open, call, raise, etc.)
-    // - Des chips Material-UI
-    // - Des cartes cliquables
-    
-    // Essayer plusieurs approches
     const answerButtons = page.locator('button').filter({
-      hasNotText: ['Démarrer', 'Paramètres', 'Terminer', 'Précédent', 'Suivant', 'Remplir', 'Deviner', 'Compléter']
+      hasNotText: ['Démarrer', 'Paramètres', 'Terminer', 'Précédent', 'Suivant', 
+                   'Remplir une range', 'Deviner une range', 'Compléter une range']
     });
     
     const answerCount = await answerButtons.count();
@@ -143,7 +135,7 @@ test.describe('Questionnaire sur une range', () => {
       
       // Vérifier soit la question suivante, soit les résultats
       const nextQuestion = page.locator('text=/Question 2\/\d+/');
-      const resultsDialog = page.locator('text=/Résultats|Results/');
+      const resultsDialog = page.locator('text="Résultats de la Session"');
       
       const nextQuestionCount = await nextQuestion.count();
       const resultsCount = await resultsDialog.count();
@@ -181,7 +173,7 @@ test.describe('Questionnaire sur une range', () => {
     await firstModeButton.click();
     
     // 3. Démarrer le questionnaire
-    const startButton = page.locator('button:has-text(/Démarrer/)');
+    const startButton = page.locator('button:has-text("Démarrer")');
     await startButton.click();
     
     // 4. Attendre la première question
@@ -189,12 +181,12 @@ test.describe('Questionnaire sur une range', () => {
     await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
     
     // 5. Terminer la session (bouton Terminer ou Stop)
-    const endButton = page.locator('button[aria-label*="Terminer" i], button:has-text(/Terminer|Stop|End/)');
+    const endButton = page.locator('button:has-text("Terminer")');
     await endButton.waitFor({ state: 'visible', timeout: 5000 });
     await endButton.click();
     
     // 6. Vérifier que le dialogue des résultats s'affiche
-    const resultsDialog = page.locator('text=/Résultats|Results/');
+    const resultsDialog = page.locator('text="Résultats de la Session"');
     await resultsDialog.waitFor({ state: 'visible', timeout: 5000 });
     
     // 7. Vérifier qu'un score est affiché
