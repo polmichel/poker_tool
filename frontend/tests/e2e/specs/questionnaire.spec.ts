@@ -3,15 +3,24 @@
  * 
  * Scénario 2 : Lancer un questionnaire dans les 3 modes
  * - Sélectionner une range existante
- * - Lancer un questionnaire dans chaque mode (fill, guess, complete)
+ * - Lancer un questionnaire dans chaque mode
  * - Vérifier que le questionnaire se lance correctement
  * - Vérifier que les résultats sont enregistrés
+ * 
+ * NOTE: D'après le code, les modes sont affichés avec leurs labels en français:
+ * - fill → "Remplir une range"
+ * - guess → "Deviner une range"
+ * - complete → "Compléter une range"
  */
 
 import { test, expect } from '@playwright/test';
 
-// Les modes de questionnaire disponibles dans ton application
-const QUESTIONNAIRE_MODES = ['fill', 'guess', 'complete'] as const;
+// Les modes de questionnaire avec leurs labels en français
+const QUESTIONNAIRE_MODES = [
+  { value: 'fill', label: 'Remplir une range' },
+  { value: 'guess', label: 'Deviner une range' },
+  { value: 'complete', label: 'Compléter une range' },
+] as const;
 
 test.describe('Questionnaire sur une range', () => {
   
@@ -25,20 +34,21 @@ test.describe('Questionnaire sur une range', () => {
   });
 
   test('Accéder à la page de training', async ({ page }) => {
-    // Vérifier que le titre de la page contient "Entraînement" ou "Training"
+    // Vérifier que le titre de la page contient "Poker" (pas "entraînement")
     const title = await page.title();
-    expect(title.toLowerCase()).toContain('entraînement');
+    expect(title.toLowerCase()).toContain('poker');
     
     // Vérifier qu'il y a du contenu sur la page
     const bodyText = await page.locator('body').textContent();
     expect(bodyText).not.toBe('');
     expect(bodyText?.length).toBeGreaterThan(100);
+    
+    // Vérifier que le sélecteur de mode est visible
+    const modeSelector = page.locator('.MuiToggleButtonGroup-root');
+    await expect(modeSelector).toBeVisible();
   });
 
   test('Sélectionner une range pour le questionnaire', async ({ page }) => {
-    // D'après l'Étape 2, on sait qu'il y a des ranges disponibles
-    // Le sélecteur de range utilise probablement des Chips Material-UI
-    
     // Attendre que les chips de ranges soient visibles
     const rangeChips = page.locator('.MuiChip-root');
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
@@ -50,8 +60,7 @@ test.describe('Questionnaire sur une range', () => {
     // Sélectionner la première range
     await rangeChips.first().click();
     
-    // Vérifier que la range est sélectionnée (devrait avoir un style différent)
-    // Dans Material-UI, une Chip sélectionnée a souvent la classe MuiChip-filled
+    // Vérifier que la range est sélectionnée (devrait avoir la classe MuiChip-filled)
     const selectedChip = page.locator('.MuiChip-filled');
     const selectedCount = await selectedChip.count();
     expect(selectedCount).toBeGreaterThan(0);
@@ -59,43 +68,19 @@ test.describe('Questionnaire sur une range', () => {
 
   // Test pour chaque mode de questionnaire
   QUESTIONNAIRE_MODES.forEach((mode) => {
-    test(`Lancer un questionnaire en mode ${mode}`, async ({ page }) => {
+    test(`Lancer un questionnaire en mode ${mode.value}`, async ({ page }) => {
       // 1. Sélectionner une range (la première disponible)
       const rangeChips = page.locator('.MuiChip-root');
       await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
       await rangeChips.first().click();
       
-      // 2. Sélectionner le mode de questionnaire
-      // D'après ton code, il y a un TrainingModeSelector
-      // Les modes sont probablement affichés comme des boutons ou des chips
-      
-      // Essayons plusieurs approches :
-      const modeButtonByText = page.locator(`button:has-text("${mode}")`);
-      const modeButtonByDataMode = page.locator(`button[data-mode="${mode}"]`);
-      const modeChip = page.locator(`.MuiChip-root:has-text("${mode}")`);
-      
-      let modeSelector;
-      
-      if (await modeButtonByText.count() > 0) {
-        modeSelector = modeButtonByText;
-      } else if (await modeButtonByDataMode.count() > 0) {
-        modeSelector = modeButtonByDataMode;
-      } else if (await modeChip.count() > 0) {
-        modeSelector = modeChip;
-      } else {
-        // Afficher tous les boutons/chips pour débogage
-        const allButtons = page.locator('button, .MuiChip-root');
-        const allCount = await allButtons.count();
-        console.log(`Found ${allCount} buttons/chips total`);
-        
-        throw new Error(`Could not find mode selector for ${mode}. Check console logs.`);
-      }
-      
-      await modeSelector.waitFor({ state: 'visible', timeout: 5000 });
-      await modeSelector.click();
+      // 2. Sélectionner le mode de questionnaire (utiliser le label en français)
+      const modeButton = page.locator(`button:has-text("${mode.label}")`);
+      await modeButton.waitFor({ state: 'visible', timeout: 5000 });
+      await modeButton.click();
       
       // 3. Cliquer sur "Démarrer" ou "Démarrer l'entraînement"
-      const startButton = page.locator('button:has-text(/Démarrer|Start/)');
+      const startButton = page.locator('button:has-text(/Démarrer/)');
       await startButton.waitFor({ state: 'visible', timeout: 5000 });
       await startButton.click();
       
@@ -112,7 +97,7 @@ test.describe('Questionnaire sur une range', () => {
       const url = page.url();
       expect(url).toContain('/training');
       
-      console.log(`Questionnaire en mode ${mode} démarré avec succès`);
+      console.log(`Questionnaire en mode ${mode.value} (${mode.label}) démarré avec succès`);
     });
   });
 
@@ -123,12 +108,12 @@ test.describe('Questionnaire sur une range', () => {
     await rangeChips.first().click();
     
     // 2. Sélectionner le premier mode
-    const modeButton = page.locator('button:has-text("fill")');
-    await modeButton.waitFor({ state: 'visible', timeout: 5000 });
-    await modeButton.click();
+    const firstModeButton = page.locator('.MuiToggleButton-root').first();
+    await firstModeButton.waitFor({ state: 'visible', timeout: 5000 });
+    await firstModeButton.click();
     
     // 3. Démarrer le questionnaire
-    const startButton = page.locator('button:has-text(/Démarrer|Start/)');
+    const startButton = page.locator('button:has-text(/Démarrer/)');
     await startButton.click();
     
     // 4. Attendre la première question
@@ -141,8 +126,9 @@ test.describe('Questionnaire sur une range', () => {
     // - Des chips Material-UI
     // - Des cartes cliquables
     
+    // Essayer plusieurs approches
     const answerButtons = page.locator('button').filter({
-      hasNotText: ['Démarrer', 'Paramètres', 'Terminer', 'Précédent', 'Suivant']
+      hasNotText: ['Démarrer', 'Paramètres', 'Terminer', 'Précédent', 'Suivant', 'Remplir', 'Deviner', 'Compléter']
     });
     
     const answerCount = await answerButtons.count();
@@ -190,12 +176,12 @@ test.describe('Questionnaire sur une range', () => {
     await rangeChips.first().click();
     
     // 2. Sélectionner le premier mode
-    const modeButton = page.locator('button:has-text("fill")');
-    await modeButton.waitFor({ state: 'visible', timeout: 5000 });
-    await modeButton.click();
+    const firstModeButton = page.locator('.MuiToggleButton-root').first();
+    await firstModeButton.waitFor({ state: 'visible', timeout: 5000 });
+    await firstModeButton.click();
     
     // 3. Démarrer le questionnaire
-    const startButton = page.locator('button:has-text(/Démarrer|Start/)');
+    const startButton = page.locator('button:has-text(/Démarrer/)');
     await startButton.click();
     
     // 4. Attendre la première question
