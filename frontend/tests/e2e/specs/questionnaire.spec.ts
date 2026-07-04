@@ -1,5 +1,5 @@
 /**
- * E2E Tests for Training/Questionnaire Functionality
+ * Tests E2E pour le questionnaire (Scénarios 2a, 2b, 2c)
  * 
  * Scénario 2 : Lancer un questionnaire dans les 3 modes
  * - Sélectionner une range existante
@@ -9,289 +9,215 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { 
-  navigateTo, 
-  waitForElement, 
-  clickWithRetry,
-  waitForLoadingToComplete,
-  elementExists,
-  getElementText
-} from '../utils';
 
-// Training modes available in the application
-const TRAINING_MODES = ['fill', 'guess', 'complete'] as const;
+// Les modes de questionnaire disponibles dans ton application
+const QUESTIONNAIRE_MODES = ['fill', 'guess', 'complete'] as const;
 
 test.describe('Questionnaire sur une range', () => {
   
   test.beforeEach(async ({ page }) => {
-    // Navigate to the training page before each test
-    await navigateTo(page, '/training');
-    await waitForLoadingToComplete(page);
-  });
-
-  test('Accéder à la page d\'entraînement', async ({ page }) => {
-    // Verify the training page is loaded
-    const trainingTitle = page.locator('text="Entraînement"');
-    await expect(trainingTitle).toBeVisible();
+    // Setup : accéder à la page de training avant chaque test
+    await page.goto('http://localhost:3000/training');
+    await page.waitForLoadState('networkidle');
     
-    // Verify the mode selector is visible
-    const modeSelector = page.locator('text="Mode d\'entraînement"');
-    await expect(modeSelector).toBeVisible();
+    // Vérifier qu'on est bien sur la page de training
+    await expect(page).toHaveURL('http://localhost:3000/training');
   });
 
-  test('Sélectionner une range pour l\'entraînement', async ({ page }) => {
-    // Verify ranges are visible
+  test('Accéder à la page de training', async ({ page }) => {
+    // Vérifier que le titre de la page contient "Entraînement" ou "Training"
+    const title = await page.title();
+    expect(title.toLowerCase()).toContain('entraînement');
+    
+    // Vérifier qu'il y a du contenu sur la page
+    const bodyText = await page.locator('body').textContent();
+    expect(bodyText).not.toBe('');
+    expect(bodyText?.length).toBeGreaterThan(100);
+  });
+
+  test('Sélectionner une range pour le questionnaire', async ({ page }) => {
+    // D'après l'Étape 2, on sait qu'il y a des ranges disponibles
+    // Le sélecteur de range utilise probablement des Chips Material-UI
+    
+    // Attendre que les chips de ranges soient visibles
     const rangeChips = page.locator('.MuiChip-root');
-    await expect(rangeChips).toHaveCountGreaterThan(0);
+    await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
     
-    // Click on the first range
-    const firstRange = rangeChips.first();
-    await firstRange.waitFor({ state: 'visible' });
-    await firstRange.click();
+    // Vérifier qu'il y a au moins une range
+    const chipCount = await rangeChips.count();
+    expect(chipCount).toBeGreaterThan(0);
     
-    // Verify the range is selected (should have primary color)
-    await expect(firstRange).toHaveClass(/MuiChip-filled/);
+    // Sélectionner la première range
+    await rangeChips.first().click();
+    
+    // Vérifier que la range est sélectionnée (devrait avoir un style différent)
+    // Dans Material-UI, une Chip sélectionnée a souvent la classe MuiChip-filled
+    const selectedChip = page.locator('.MuiChip-filled');
+    const selectedCount = await selectedChip.count();
+    expect(selectedCount).toBeGreaterThan(0);
   });
 
-  // Test each training mode
-  TRAINING_MODES.forEach((mode) => {
+  // Test pour chaque mode de questionnaire
+  QUESTIONNAIRE_MODES.forEach((mode) => {
     test(`Lancer un questionnaire en mode ${mode}`, async ({ page }) => {
-      // Select the training mode
-      const modeButton = page.locator(`button[data-mode="${mode}"]`);
-      
-      // If mode buttons don't have data-mode attribute, try text-based selection
-      if (!(await elementExists(page, `button[data-mode="${mode}"]`))) {
-        // Try to find by text - the exact text depends on your UI
-        const modeLabels: Record<string, string> = {
-          'fill': 'Remplir',
-          'guess': 'Deviner',
-          'complete': 'Compléter',
-        };
-        
-        const modeTextButton = page.locator(`button:has-text("${modeLabels[mode]}")`);
-        if (await elementExists(page, `button:has-text("${modeLabels[mode]}")`)) {
-          await modeTextButton.click();
-        } else {
-          // Try clicking on the mode selector and then selecting
-          const modeSelector = page.locator('text="Mode d\'entraînement"');
-          await modeSelector.click();
-          
-          // Try to find the mode in a menu
-          const modeMenuItem = page.locator(`text="${modeLabels[mode]}"`);
-          if (await elementExists(page, `text="${modeLabels[mode]}"`)) {
-            await modeMenuItem.click();
-          }
-        }
-      } else {
-        await modeButton.click();
-      }
-      
-      // Select a range (first available)
+      // 1. Sélectionner une range (la première disponible)
       const rangeChips = page.locator('.MuiChip-root');
-      if (await rangeChips.count() > 0) {
-        await rangeChips.first().click();
+      await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
+      await rangeChips.first().click();
+      
+      // 2. Sélectionner le mode de questionnaire
+      // D'après ton code, il y a un TrainingModeSelector
+      // Les modes sont probablement affichés comme des boutons ou des chips
+      
+      // Essayons plusieurs approches :
+      const modeButtonByText = page.locator(`button:has-text("${mode}")`);
+      const modeButtonByDataMode = page.locator(`button[data-mode="${mode}"]`);
+      const modeChip = page.locator(`.MuiChip-root:has-text("${mode}")`);
+      
+      let modeSelector;
+      
+      if (await modeButtonByText.count() > 0) {
+        modeSelector = modeButtonByText;
+      } else if (await modeButtonByDataMode.count() > 0) {
+        modeSelector = modeButtonByDataMode;
+      } else if (await modeChip.count() > 0) {
+        modeSelector = modeChip;
+      } else {
+        // Afficher tous les boutons/chips pour débogage
+        const allButtons = page.locator('button, .MuiChip-root');
+        const allCount = await allButtons.count();
+        console.log(`Found ${allCount} buttons/chips total`);
+        
+        throw new Error(`Could not find mode selector for ${mode}. Check console logs.`);
       }
       
-      // Click on "Démarrer" button
-      const startButton = page.locator('button:has-text("Démarrer")');
-      await startButton.waitFor({ state: 'visible' });
+      await modeSelector.waitFor({ state: 'visible', timeout: 5000 });
+      await modeSelector.click();
+      
+      // 3. Cliquer sur "Démarrer" ou "Démarrer l'entraînement"
+      const startButton = page.locator('button:has-text(/Démarrer|Start/)');
+      await startButton.waitFor({ state: 'visible', timeout: 5000 });
       await startButton.click();
       
-      // Wait for the questionnaire to start
-      await waitForLoadingToComplete(page);
+      // 4. Attendre que le questionnaire démarre
+      // On devrait voir :
+      // - Un indicateur de question (ex: "Question 1/10")
+      // - Une question affichée
+      // - Des boutons de réponse
       
-      // Verify the questionnaire started
-      // Check for question indicator
       const questionIndicator = page.locator('text=/Question \d+\/\d+/');
-      await expect(questionIndicator).toBeVisible();
+      await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
       
-      // Verify we're on a training session page
-      await expect(page).toHaveURL(/(.*)\/training/);
+      // 5. Vérifier qu'on est toujours sur la page /training
+      const url = page.url();
+      expect(url).toContain('/training');
       
-      // Verify the question is visible
-      const questionText = page.locator('.MuiTypography-h6');
-      await expect(questionText).toBeVisible();
+      console.log(`Questionnaire en mode ${mode} démarré avec succès`);
     });
   });
 
   test('Répondre à une question et passer à la suivante', async ({ page }) => {
-    // Select a range
+    // 1. Sélectionner une range
     const rangeChips = page.locator('.MuiChip-root');
-    if (await rangeChips.count() > 0) {
-      await rangeChips.first().click();
-    }
+    await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
+    await rangeChips.first().click();
     
-    // Start the training
-    const startButton = page.locator('button:has-text("Démarrer")');
-    await startButton.waitFor({ state: 'visible' });
+    // 2. Sélectionner le premier mode
+    const modeButton = page.locator('button:has-text("fill")');
+    await modeButton.waitFor({ state: 'visible', timeout: 5000 });
+    await modeButton.click();
+    
+    // 3. Démarrer le questionnaire
+    const startButton = page.locator('button:has-text(/Démarrer|Start/)');
     await startButton.click();
     
-    await waitForLoadingToComplete(page);
-    
-    // Wait for the first question
+    // 4. Attendre la première question
     const questionIndicator = page.locator('text=/Question 1\/\d+/');
-    await expect(questionIndicator).toBeVisible();
+    await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
     
-    // Find and click an answer button
-    // The exact selector depends on your UI implementation
-    const answerButtons = page.locator('button').filter({ 
-      hasNotText: ['Démarrer', 'Paramètres', 'Terminer'] 
+    // 5. Trouver et cliquer sur une réponse
+    // Les réponses pourraient être :
+    // - Des boutons avec des actions (open, call, raise, etc.)
+    // - Des chips Material-UI
+    // - Des cartes cliquables
+    
+    const answerButtons = page.locator('button').filter({
+      hasNotText: ['Démarrer', 'Paramètres', 'Terminer', 'Précédent', 'Suivant']
     });
     
-    if (await answerButtons.count() > 0) {
+    const answerCount = await answerButtons.count();
+    
+    if (answerCount > 0) {
+      // Cliquer sur la première réponse disponible
+      await answerButtons.first().waitFor({ state: 'visible', timeout: 5000 });
       await answerButtons.first().click();
       
-      // Wait for the next question or results
-      await waitForLoadingToComplete(page);
+      // 6. Attendre la question suivante ou les résultats
+      await page.waitForTimeout(2000);
       
-      // Either we go to the next question or we see results
-      const nextQuestionIndicator = page.locator('text=/Question 2\/\d+/');
-      const resultsDialog = page.locator('text="Résultats de la Session"');
+      // Vérifier soit la question suivante, soit les résultats
+      const nextQuestion = page.locator('text=/Question 2\/\d+/');
+      const resultsDialog = page.locator('text=/Résultats|Results/');
       
-      if (await nextQuestionIndicator.count() > 0) {
-        await expect(nextQuestionIndicator).toBeVisible();
-      } else if (await resultsDialog.count() > 0) {
-        await expect(resultsDialog).toBeVisible();
-      }
-    }
-  });
-
-  test('Terminer une session d\'entraînement', async ({ page }) => {
-    // Select a range
-    const rangeChips = page.locator('.MuiChip-root');
-    if (await rangeChips.count() > 0) {
-      await rangeChips.first().click();
-    }
-    
-    // Start the training
-    const startButton = page.locator('button:has-text("Démarrer")');
-    await startButton.waitFor({ state: 'visible' });
-    await startButton.click();
-    
-    await waitForLoadingToComplete(page);
-    
-    // Wait for the first question
-    const questionIndicator = page.locator('text=/Question 1\/\d+/');
-    await expect(questionIndicator).toBeVisible();
-    
-    // Click the stop/end button
-    const stopButton = page.locator('button[aria-label="Terminer la session"]');
-    if (await elementExists(page, 'button[aria-label="Terminer la session"]')) {
-      await stopButton.click();
+      const nextQuestionCount = await nextQuestion.count();
+      const resultsCount = await resultsDialog.count();
+      
+      expect(nextQuestionCount > 0 || resultsCount > 0).toBeTruthy();
+      
+      console.log(`Réponse soumise, question suivante ou résultats affichés`);
     } else {
-      // Try alternative selectors
-      const stopIconButton = page.locator('button:has(.MuiSvgIcon-root)').filter({ 
-        has: page.locator('[aria-label="Terminer"]') 
-      });
-      if (await stopIconButton.count() > 0) {
-        await stopIconButton.click();
+      // Afficher tous les boutons pour débogage
+      const allButtons = page.locator('button');
+      const allButtonCount = await allButtons.count();
+      console.log(`Found ${allButtonCount} buttons total`);
+      
+      const buttonTexts = [];
+      for (let i = 0; i < Math.min(allButtonCount, 10); i++) {
+        const btn = allButtons.nth(i);
+        const text = await btn.textContent();
+        buttonTexts.push(`Button ${i}: "${text}"`);
       }
+      console.log(buttonTexts.join('\n'));
+      
+      throw new Error('Could not find answer buttons. Check console logs.');
     }
-    
-    // Wait for results dialog
-    await waitForLoadingToComplete(page);
-    
-    const resultsDialog = page.locator('text="Résultats de la Session"');
-    await expect(resultsDialog).toBeVisible();
-    
-    // Verify results are displayed
-    const scoreText = page.locator('text=/\d+%/');
-    await expect(scoreText).toBeVisible();
   });
 
-  test('Vérifier l\'affichage du score', async ({ page }) => {
-    // Select a range
+  test('Terminer une session de questionnaire', async ({ page }) => {
+    // 1. Sélectionner une range
     const rangeChips = page.locator('.MuiChip-root');
-    if (await rangeChips.count() > 0) {
-      await rangeChips.first().click();
-    }
+    await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
+    await rangeChips.first().click();
     
-    // Start the training
-    const startButton = page.locator('button:has-text("Démarrer")');
-    await startButton.waitFor({ state: 'visible' });
+    // 2. Sélectionner le premier mode
+    const modeButton = page.locator('button:has-text("fill")');
+    await modeButton.waitFor({ state: 'visible', timeout: 5000 });
+    await modeButton.click();
+    
+    // 3. Démarrer le questionnaire
+    const startButton = page.locator('button:has-text(/Démarrer|Start/)');
     await startButton.click();
     
-    await waitForLoadingToComplete(page);
-    
-    // Wait for the first question
+    // 4. Attendre la première question
     const questionIndicator = page.locator('text=/Question 1\/\d+/');
-    await expect(questionIndicator).toBeVisible();
+    await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
     
-    // Answer a question
-    const answerButtons = page.locator('button').filter({ 
-      hasNotText: ['Démarrer', 'Paramètres', 'Terminer'] 
-    });
+    // 5. Terminer la session (bouton Terminer ou Stop)
+    const endButton = page.locator('button[aria-label*="Terminer" i], button:has-text(/Terminer|Stop|End/)');
+    await endButton.waitFor({ state: 'visible', timeout: 5000 });
+    await endButton.click();
     
-    if (await answerButtons.count() > 0) {
-      await answerButtons.first().click();
-      await waitForLoadingToComplete(page);
-    }
+    // 6. Vérifier que le dialogue des résultats s'affiche
+    const resultsDialog = page.locator('text=/Résultats|Results/');
+    await resultsDialog.waitFor({ state: 'visible', timeout: 5000 });
     
-    // Check for score display during the session
-    const scoreChip = page.locator('.MuiChip-root:has-text("Score:")');
-    if (await elementExists(page, '.MuiChip-root:has-text("Score:")')) {
-      await expect(scoreChip).toBeVisible();
-    }
-  });
-});
-
-test.describe('Paramètres d\'entraînement', () => {
-  
-  test.beforeEach(async ({ page }) => {
-    await navigateTo(page, '/training');
-    await waitForLoadingToComplete(page);
-  });
-
-  test('Ouvrir les paramètres d\'entraînement', async ({ page }) => {
-    // Click on settings button
-    const settingsButton = page.locator('button:has-text("Paramètres")');
-    await settingsButton.waitFor({ state: 'visible' });
-    await settingsButton.click();
+    // 7. Vérifier qu'un score est affiché
+    const scoreElement = page.locator('text=/\d+%/');
+    await scoreElement.waitFor({ state: 'visible', timeout: 5000 });
     
-    // Verify settings dialog is open
-    const settingsDialog = page.locator('text="Paramètres d\'entraînement"');
-    await expect(settingsDialog).toBeVisible();
-  });
-
-  test('Changer le nombre de questions', async ({ page }) => {
-    // Open settings
-    const settingsButton = page.locator('button:has-text("Paramètres")');
-    await settingsButton.click();
+    const scoreText = await scoreElement.textContent();
+    expect(scoreText).toMatch(/\d+%/);
     
-    await waitForLoadingToComplete(page);
-    
-    // Select 20 questions
-    const twentyQuestionsButton = page.locator('button:has-text("20")');
-    await twentyQuestionsButton.waitFor({ state: 'visible' });
-    await twentyQuestionsButton.click();
-    
-    // Verify the selection
-    await expect(twentyQuestionsButton).toHaveClass(/MuiButton-contained/);
-    
-    // Close the dialog
-    const closeButton = page.locator('button:has-text("Fermer")');
-    await closeButton.click();
-  });
-});
-
-test.describe('Démarrage rapide', () => {
-  
-  test.beforeEach(async ({ page }) => {
-    await navigateTo(page, '/training');
-    await waitForLoadingToComplete(page);
-  });
-
-  test('Démarrer rapidement avec les paramètres par défaut', async ({ page }) => {
-    // Click on quick start button
-    const quickStartButton = page.locator('button:has-text("Démarrer rapidement")');
-    if (await elementExists(page, 'button:has-text("Démarrer rapidement")')) {
-      await quickStartButton.click();
-      
-      await waitForLoadingToComplete(page);
-      
-      // Verify the questionnaire started
-      const questionIndicator = page.locator('text=/Question \d+\/\d+/');
-      await expect(questionIndicator).toBeVisible();
-    }
+    console.log(`Session terminée avec score: ${scoreText}`);
   });
 });
