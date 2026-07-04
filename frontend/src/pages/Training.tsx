@@ -106,10 +106,10 @@ const Training: React.FC = () => {
   const handleAnswer = useCallback(async (answer: string) => {
     if (!currentSession) return;
 
-    const result = await nextQuestion(currentSession.id, answer);
-    if (result) {
-      if (result.next_question) {
-        setCurrentQuestion(result.next_question);
+    if (currentSession.id) {
+      await nextQuestion(currentSession.id, answer);
+      // La question suivante est déjà gérée par le hook via setCurrentQuestion
+      if (currentQuestion) {
         setQuestionNumber(prev => prev + 1);
       } else {
         // Fin de la session
@@ -123,7 +123,7 @@ const Training: React.FC = () => {
   const handleEndSession = useCallback(async () => {
     if (!currentSession) return;
 
-    await endSession(currentSession.id);
+    if (currentSession.id) await endSession(currentSession.id);
     setIsSessionActive(false);
     setOpenResultsDialog(true);
   }, [currentSession, endSession, setIsSessionActive]);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Paper, Tooltip, MenuItem, Menu, IconButton } from '@mui/material';
+import { Box, Paper, Tooltip, MenuItem, Menu } from '@mui/material';
 import { RangeGridCell, ActionType, RANKS } from '../types';
 import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
 import { getActionLabel } from '../utils/helpers';
@@ -52,7 +52,7 @@ const RangeGrid: React.FC<RangeGridProps> = ({
     currentAction: ActionType
   ) => {
     if (onCellClick) {
-      onCellClick(hand, currentAction);
+      onCellClick(hand, action);
     }
     handleCloseContextMenu();
   }, [onCellClick, handleCloseContextMenu]);
@@ -74,6 +74,12 @@ const RangeGrid: React.FC<RangeGridProps> = ({
   const getColLabel = (colIndex: number): string => {
     return RANKS[colIndex];
   };
+
+  // Position pour le menu contextuel
+  const menuPosition = contextMenu ? {
+    top: contextMenu.mouseY,
+    left: contextMenu.mouseX,
+  } : undefined;
 
   return (
     <Box sx={{ position: 'relative', display: 'inline-block' }}>
@@ -172,10 +178,7 @@ const RangeGrid: React.FC<RangeGridProps> = ({
           open={!!contextMenu}
           onClose={handleCloseContextMenu}
           anchorReference="anchorPosition"
-          anchorPosition={
-            top: contextMenu.mouseY,
-            left: contextMenu.mouseX,
-          }
+          anchorPosition={menuPosition}
           PaperProps={{
             style: {
               maxHeight: 300,

@@ -25,15 +25,15 @@ import {
   ContentCopy as ContentCopyIcon,
   Visibility as VisibilityIcon,
 } from '@mui/icons-material';
-import { Range, RangeType, Position } from '../types';
-import { RANGE_TYPES, POSITIONS, ACTION_LABELS } from '../utils/constants';
+import { Range, RangeType, Position, ActionType } from '../types';
+import { RANGE_TYPES, POSITIONS, ACTION_LABELS, ACTION_COLORS } from '../utils/constants';
 import { getActionLabel } from '../utils/helpers';
 
 interface RangeListProps {
   ranges: Range[];
   onSelectRange: (range: Range) => void;
-  onEditRange: (range: Range) => void;
-  onDeleteRange: (rangeId: number) => void;
+  onEditRange?: (range: Range) => void;
+  onDeleteRange?: (rangeId: number) => void;
   onDuplicateRange?: (range: Range) => void;
   selectedRangeId?: number | null;
 }
@@ -65,14 +65,14 @@ const RangeList: React.FC<RangeListProps> = ({
 
   const handleEdit = useCallback(() => {
     if (selectedRangeForMenu) {
-      onEditRange(selectedRangeForMenu);
+      onEditRange && onEditRange(selectedRangeForMenu);
       handleMenuClose();
     }
   }, [selectedRangeForMenu, onEditRange, handleMenuClose]);
 
   const handleDelete = useCallback(() => {
     if (selectedRangeForMenu) {
-      onDeleteRange(selectedRangeForMenu.id!);
+      onDeleteRange && selectedRangeForMenu.id && onDeleteRange(selectedRangeForMenu.id);
       handleMenuClose();
     }
   }, [selectedRangeForMenu, onDeleteRange, handleMenuClose]);

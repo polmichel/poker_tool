@@ -327,7 +327,7 @@ const Stats: React.FC = () => {
                     Historique des Sessions
                   </Typography>
                   <IconButton onClick={loadHistoryData}>
-                    <RechartsTooltip title="Rafraîchir" />
+                    <RechartsTooltip />
                   </IconButton>
                 </Box>
 
@@ -388,7 +388,7 @@ const Stats: React.FC = () => {
                     Classement
                   </Typography>
                   <IconButton onClick={loadLeaderboardData}>
-                    <RechartsTooltip title="Rafraîchir" />
+                    <RechartsTooltip />
                   </IconButton>
                 </Box>
 

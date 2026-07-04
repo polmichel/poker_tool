@@ -113,7 +113,7 @@ const RangeEditor: React.FC = () => {
     if (!range || !id) return;
     
     const hands = gridToHands(grid);
-    const updatedRange = await updateRange(range.id, { hands });
+    const updatedRange = range.id ? await updateRange(range.id, { hands }) : null;
     
     if (updatedRange) {
       setRange(updatedRange);
@@ -129,7 +129,7 @@ const RangeEditor: React.FC = () => {
     if (!range || !id) return;
     
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer la range "${range.name}" ?`)) {
-      await deleteRange(range.id);
+      if (range.id) await deleteRange(range.id);
       navigate('/ranges');
     }
   }, [range, id, deleteRange, navigate]);
