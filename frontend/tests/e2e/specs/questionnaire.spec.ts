@@ -7,10 +7,9 @@
  * - Vérifier que le questionnaire se lance correctement
  * - Vérifier que les résultats sont enregistrés
  * 
- * NOTE: D'après le code, les modes sont affichés avec leurs labels en français:
- * - fill → "Remplir une range"
- * - guess → "Deviner une range"
- * - complete → "Compléter une range"
+ * NOTE: D'après les logs, il y a 2 boutons "Démarrer" :
+ * - "Démarrer rapidement" (bouton vert)
+ * - "Démarrer l'entraînement" (bouton bleu, large) ← C'est celui qu'on veut
  */
 
 import { test, expect } from '@playwright/test';
@@ -79,14 +78,12 @@ test.describe('Questionnaire sur une range', () => {
       await modeButton.waitFor({ state: 'visible', timeout: 5000 });
       await modeButton.click();
       
-      // 3. Cliquer sur "Démarrer" ou "Démarrer l'entraînement"
-      // NOTE: Utiliser un sélecteur simple sans regex
-      const startButton = page.locator('button:has-text("Démarrer")');
+      // 3. Cliquer sur "Démarrer l'entraînement" (le bouton bleu, pas "Démarrer rapidement")
+      const startButton = page.locator('button:has-text("Démarrer l\'entraînement")');
       await startButton.waitFor({ state: 'visible', timeout: 5000 });
       await startButton.click();
       
       // 4. Attendre que le questionnaire démarre
-      // Utiliser un sélecteur simple pour la question
       const questionIndicator = page.locator('text=/Question \d+\/\d+/');
       await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
       
@@ -110,7 +107,7 @@ test.describe('Questionnaire sur une range', () => {
     await firstModeButton.click();
     
     // 3. Démarrer le questionnaire
-    const startButton = page.locator('button:has-text("Démarrer")');
+    const startButton = page.locator('button:has-text("Démarrer l\'entraînement")');
     await startButton.click();
     
     // 4. Attendre la première question
@@ -119,7 +116,7 @@ test.describe('Questionnaire sur une range', () => {
     
     // 5. Trouver et cliquer sur une réponse
     const answerButtons = page.locator('button').filter({
-      hasNotText: ['Démarrer', 'Paramètres', 'Terminer', 'Précédent', 'Suivant', 
+      hasNotText: ['Démarrer rapidement', 'Démarrer l\'entraînement', 'Paramètres', 'Terminer', 'Précédent', 'Suivant', 
                    'Remplir une range', 'Deviner une range', 'Compléter une range']
     });
     
@@ -173,14 +170,14 @@ test.describe('Questionnaire sur une range', () => {
     await firstModeButton.click();
     
     // 3. Démarrer le questionnaire
-    const startButton = page.locator('button:has-text("Démarrer")');
+    const startButton = page.locator('button:has-text("Démarrer l\'entraînement")');
     await startButton.click();
     
     // 4. Attendre la première question
     const questionIndicator = page.locator('text=/Question 1\/\d+/');
     await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
     
-    // 5. Terminer la session (bouton Terminer ou Stop)
+    // 5. Terminer la session (bouton Terminer)
     const endButton = page.locator('button:has-text("Terminer")');
     await endButton.waitFor({ state: 'visible', timeout: 5000 });
     await endButton.click();
