@@ -47,6 +47,7 @@ test.describe('Étape 1: Accès à la page d\'accueil', () => {
     
     // Pour l'instant, on vérifie juste qu'il y a des liens
     const links = page.locator('a');
-    await expect(links).toHaveCountGreaterThan(0);
+    const linkCount = await links.count();
+    expect(linkCount).toBeGreaterThan(0);
   });
 });
