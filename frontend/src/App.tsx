@@ -33,7 +33,7 @@ import {
   Logout as LogoutIcon,
   Person as PersonIcon,
 } from '@mui/icons-material';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './hooks';
 import {
   Home,
@@ -337,8 +337,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const App: React.FC = () => {
   return (
     <ThemeProvider theme={darkTheme}>
-      <Router>
-        <MainLayout>
+      <MainLayout>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/ranges" element={<Ranges />} />
@@ -351,7 +350,6 @@ const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </MainLayout>
-      </Router>
     </ThemeProvider>
   );
 };
