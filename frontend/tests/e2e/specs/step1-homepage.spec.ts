@@ -6,7 +6,7 @@
  * 
  * À exécuter localement avec:
  *   npm run start (dans un terminal)
- *   npm run test:e2e:headed tests/e2e/specs/step1-homepage.spec.ts (dans un autre terminal)
+ *   npx playwright test --headed tests/e2e/specs/step1-homepage.spec.ts (dans un autre terminal)
  */
 
 import { test, expect } from '@playwright/test';
@@ -14,16 +14,16 @@ import { test, expect } from '@playwright/test';
 test.describe('Étape 1: Accès à la page d\'accueil', () => {
   
   test('La page d\'accueil se charge correctement', async ({ page }) => {
-    // 1. Accéder à la page d'accueil
-    await page.goto('/');
+    // 1. Accéder à la page d'accueil avec l'URL complète
+    await page.goto('http://localhost:3000/');
     
     // 2. Attendre que la page soit complètement chargée
     await page.waitForLoadState('networkidle');
     
     // 3. Vérifier que l'URL est correcte
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('http://localhost:3000/');
     
-    // 4. Vérifier que le titre de la page contient "Poker Tool"
+    // 4. Vérifier que le titre de la page contient "Poker"
     // NOTE: À adapter selon le titre réel de ton application
     const title = await page.title();
     expect(title).toContain('Poker');
@@ -35,7 +35,7 @@ test.describe('Étape 1: Accès à la page d\'accueil', () => {
   });
   
   test('Le menu de navigation est visible', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('http://localhost:3000/');
     await page.waitForLoadState('networkidle');
     
     // NOTE: Ces sélecteurs doivent être adaptés à ton implémentation
