@@ -7,9 +7,8 @@
  * - Vérifier que le questionnaire se lance correctement
  * - Vérifier que les résultats sont enregistrés
  * 
- * NOTE: D'après les logs, il y a 2 boutons "Démarrer" :
- * - "Démarrer rapidement" (bouton vert)
- * - "Démarrer l'entraînement" (bouton bleu, large) ← C'est celui qu'on veut
+ * NOTE: D'après le code, le format des questions est "Question X sur Y"
+ * (pas "Question X/Y")
  */
 
 import { test, expect } from '@playwright/test';
@@ -84,7 +83,8 @@ test.describe('Questionnaire sur une range', () => {
       await startButton.click();
       
       // 4. Attendre que le questionnaire démarre
-      const questionIndicator = page.locator('text=/Question \d+\/\d+/');
+      // NOTE: Le format est "Question X sur Y" (pas "Question X/Y")
+      const questionIndicator = page.locator('text=/Question \d+ sur \d+/');
       await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
       
       // 5. Vérifier qu'on est toujours sur la page /training
@@ -110,14 +110,14 @@ test.describe('Questionnaire sur une range', () => {
     const startButton = page.locator('button:has-text("Démarrer l\'entraînement")');
     await startButton.click();
     
-    // 4. Attendre la première question
-    const questionIndicator = page.locator('text=/Question 1\/\d+/');
+    // 4. Attendre la première question (format: "Question 1 sur 10")
+    const questionIndicator = page.locator('text=/Question 1 sur \d+/');
     await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
     
     // 5. Trouver et cliquer sur une réponse
     const answerButtons = page.locator('button').filter({
       hasNotText: ['Démarrer rapidement', 'Démarrer l\'entraînement', 'Paramètres', 'Terminer', 'Précédent', 'Suivant', 
-                   'Remplir une range', 'Deviner une range', 'Compléter une range']
+                   'Remplir une range', 'Deviner une range', 'Compléter une range', 'Besoin d\'un indice ?']
     });
     
     const answerCount = await answerButtons.count();
@@ -131,7 +131,7 @@ test.describe('Questionnaire sur une range', () => {
       await page.waitForTimeout(2000);
       
       // Vérifier soit la question suivante, soit les résultats
-      const nextQuestion = page.locator('text=/Question 2\/\d+/');
+      const nextQuestion = page.locator('text=/Question 2 sur \d+/');
       const resultsDialog = page.locator('text="Résultats de la Session"');
       
       const nextQuestionCount = await nextQuestion.count();
@@ -147,7 +147,7 @@ test.describe('Questionnaire sur une range', () => {
       console.log(`Found ${allButtonCount} buttons total`);
       
       const buttonTexts = [];
-      for (let i = 0; i < Math.min(allButtonCount, 10); i++) {
+      for (let i = 0; i < Math.min(allButtonCount, 15); i++) {
         const btn = allButtons.nth(i);
         const text = await btn.textContent();
         buttonTexts.push(`Button ${i}: "${text}"`);
@@ -173,8 +173,8 @@ test.describe('Questionnaire sur une range', () => {
     const startButton = page.locator('button:has-text("Démarrer l\'entraînement")');
     await startButton.click();
     
-    // 4. Attendre la première question
-    const questionIndicator = page.locator('text=/Question 1\/\d+/');
+    // 4. Attendre la première question (format: "Question 1 sur 10")
+    const questionIndicator = page.locator('text=/Question 1 sur \d+/');
     await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
     
     // 5. Terminer la session (bouton Terminer)
