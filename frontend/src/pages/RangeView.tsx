@@ -19,8 +19,9 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import { RangeGrid, RangeStats } from '../components';
 import { useRanges } from '../hooks';
-import { Range } from '../types';
+import { Range, ActionType } from '../types';
 import { generateRangeGrid } from '../utils/helpers';
+import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
 
 const RangeView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -121,9 +122,18 @@ const RangeView: React.FC = () => {
 
   // Compter le nombre de mains par action
   const countHandsByAction = () => {
-    const counts: Record<string, number> = {};
+    const counts: Record<ActionType, number> = {
+      open: 0,
+      call: 0,
+      raise: 0,
+      all_in: 0,
+      fold: 0,
+      check: 0,
+      bet: 0,
+      undefined: 0,
+    };
     for (const action of Object.values(range.hands)) {
-      counts[action] = (counts[action] || 0) + 1;
+      counts[action as ActionType] = (counts[action as ActionType] || 0) + 1;
     }
     return counts;
   };
@@ -214,12 +224,11 @@ const RangeView: React.FC = () => {
           {Object.entries(actionCounts).map(([action, count]) => (
             <Chip
               key={action}
-              label={`${count}`}
+              label={`${ACTION_LABELS[action as ActionType] || action}: ${count}`}
               size="small"
               sx={{
-                backgroundColor: action === 'undefined' ? 'grey.500' : 'transparent',
-                color: action === 'undefined' ? 'white' : 'inherit',
-                borderColor: action === 'undefined' ? 'grey.500' : 'inherit',
+                backgroundColor: ACTION_COLORS[action as ActionType] || 'grey.500',
+                color: (action === 'open' || action === 'raise' || action === 'all_in' || action === 'bet') ? 'white' : 'black',
               }}
             />
           ))}
