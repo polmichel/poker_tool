@@ -185,14 +185,26 @@ class TrainingSession:
             # Get hands from range
             range_hand_strings = list(range_hands.keys())
 
+            if len(range_hand_strings) == 0:
+                # No hands in range, cannot generate questions
+                return
+
             if len(range_hand_strings) >= self._total_questions:
                 selected_hands = random.sample(range_hand_strings, self._total_questions)
             else:
                 # Mix with random hands
                 remaining = self._total_questions - len(range_hand_strings)
-                other_hands = [h.to_string for h in all_hands if h.to_string not in range_hand_strings]
-                extra = random.sample(other_hands, min(remaining, len(other_hands)))
-                selected_hands = range_hand_strings + extra
+                other_hands = [str(h) for h in all_hands if str(h) not in range_hand_strings]
+                
+                # If there are not enough other hands, use some from range again
+                if len(other_hands) < remaining:
+                    # Use remaining range hands to fill up
+                    extra_range = random.choices(range_hand_strings, k=remaining - len(other_hands))
+                    extra = random.sample(other_hands, len(other_hands)) if other_hands else []
+                    selected_hands = range_hand_strings + extra + extra_range
+                else:
+                    extra = random.sample(other_hands, remaining)
+                    selected_hands = range_hand_strings + extra
 
             for hand_str in selected_hands:
                 action = range_hands.get(hand_str)

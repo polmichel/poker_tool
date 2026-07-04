@@ -18,7 +18,7 @@ export function generateRangeGrid(rangeHands: Record<string, ActionType>): Range
         handStr = `${RANKS[i]}${RANKS[j]}`;   // Pair
       }
       
-      const action = rangeHands[handStr] || 'undefined';
+      const action = rangeHands[handStr] || 'fold';
       row.push({
         hand: handStr,
         action,
@@ -37,9 +37,7 @@ export function gridToHands(grid: RangeGridCell[][]): Record<string, ActionType>
   
   for (const row of grid) {
     for (const cell of row) {
-      if (cell.action !== 'undefined') {
-        hands[cell.hand] = cell.action;
-      }
+      hands[cell.hand] = cell.action;
     }
   }
   
