@@ -1,0 +1,57 @@
+# Ignorer les fichiers générés par l'OS
+.DS_Store
+Thumbs.db
+
+# Ignorer les fichiers de l'environnement virtuel Python
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+
+# Ignorer les fichiers de la base de données SQLite
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
+# Ignorer les fichiers de dépendances Python
+backend/*.egg-info/
+
+# Ignorer les fichiers générés par npm
+frontend/node_modules/
+frontend/.cache/
+frontend/.parcel-cache/
+
+# Ignorer les fichiers de build React
+frontend/build/
+frontend/dist/
+
+# Ignorer les fichiers de configuration locale
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Ignorer les fichiers de logs
+*.log
+logs/
+
+# Ignorer les fichiers de backup
+*.bak
+*.backup
+backups/
+
+# Ignorer les fichiers IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Ignorer les fichiers de test
+coverage/
+.nyc_output/
+
+# Ignorer les fichiers temporaires
+*.tmp
+*.temp
