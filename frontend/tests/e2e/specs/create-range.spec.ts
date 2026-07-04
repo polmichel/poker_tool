@@ -65,26 +65,33 @@ test.describe('Création d\'une range', () => {
     }
     
     // 6. Sélectionner le type de range si le champ existe
-    const rangeTypeSelect = page.locator('.MuiSelect-select');
+    // NOTE: D'après les erreurs, les options sont en français ("Préflop" pas "preflop")
+    const rangeTypeSelect = page.locator('.MuiSelect-select').first();
     const typeCount = await rangeTypeSelect.count();
     if (typeCount > 0) {
-      await rangeTypeSelect.first().waitFor({ state: 'visible' });
-      await rangeTypeSelect.first().click();
+      await rangeTypeSelect.waitFor({ state: 'visible' });
+      await rangeTypeSelect.click();
       
-      // Sélectionner "preflop" dans le menu déroulant
-      const preflopOption = page.locator('text="preflop"');
+      // Attendre que le menu déroulant s'ouvre
+      await page.waitForTimeout(500);
+      
+      // Sélectionner "Préflop" (en français)
+      const preflopOption = page.locator('text="Préflop"');
       await preflopOption.waitFor({ state: 'visible', timeout: 2000 });
       await preflopOption.click();
     }
     
     // 7. Sélectionner la position si le champ existe
-    const positionSelect = page.locator('.MuiSelect-select');
+    const positionSelect = page.locator('.MuiSelect-select').nth(1);
     const posCount = await positionSelect.count();
-    if (posCount > 1) {
-      await positionSelect.nth(1).waitFor({ state: 'visible' });
-      await positionSelect.nth(1).click();
+    if (posCount > 0) {
+      await positionSelect.waitFor({ state: 'visible' });
+      await positionSelect.click();
       
-      // Sélectionner "BTN" dans le menu déroulant
+      // Attendre que le menu déroulant s'ouvre
+      await page.waitForTimeout(500);
+      
+      // Sélectionner "BTN"
       const btnOption = page.locator('text="BTN"');
       await btnOption.waitFor({ state: 'visible', timeout: 2000 });
       await btnOption.click();
@@ -104,7 +111,46 @@ test.describe('Création d\'une range', () => {
     await nameInput.fill('Range E2E Sauvegarde');
     
     // 2. Trouver et cliquer sur le bouton Sauvegarder
-    const saveButton = page.locator('button:has-text("Sauvegarder")');
+    // NOTE: D'après les erreurs, le bouton pourrait avoir un autre texte
+    // Essayons plusieurs variantes :
+    
+    const saveButtonVariants = [
+      'button:has-text("Sauvegarder")',
+      'button:has-text("Enregistrer")',
+      'button:has-text("Save")',
+      'button[type="submit"]',
+      '.MuiButton-contained:has-text(/Sauvegarder|Enregistrer|Save/)',
+      'button:has(.MuiSvgIcon-root)' // Bouton avec icône
+    ];
+    
+    let saveButton = null;
+    for (const variant of saveButtonVariants) {
+      const btn = page.locator(variant);
+      const count = await btn.count();
+      if (count > 0) {
+        saveButton = btn;
+        console.log(`Found save button with selector: ${variant}`);
+        break;
+      }
+    }
+    
+    if (!saveButton) {
+      // Afficher tous les boutons dans le dialogue pour débogage
+      const allButtons = dialog.locator('button');
+      const buttonCount = await allButtons.count();
+      console.log(`Found ${buttonCount} buttons in dialog`);
+      
+      const buttonTexts = [];
+      for (let i = 0; i < Math.min(buttonCount, 10); i++) {
+        const btn = allButtons.nth(i);
+        const text = await btn.textContent();
+        buttonTexts.push(`Button ${i}: "${text}"`);
+      }
+      console.log(buttonTexts.join('\n'));
+      
+      throw new Error('Could not find save button. Check console logs for available buttons.');
+    }
+    
     await saveButton.waitFor({ state: 'visible', timeout: 5000 });
     await saveButton.click();
     
@@ -112,11 +158,12 @@ test.describe('Création d\'une range', () => {
     await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
     
     // 4. Vérifier qu'on est soit sur /ranges, soit sur /ranges/X/edit
-    // (L'application redirige vers /ranges/X/edit après sauvegarde)
     const url = page.url();
     expect(url).toMatch(/http:\/\/localhost:3000\/ranges(\/\d+\/(edit|view))?$/);
+    
+    console.log(`After save, URL is: ${url}`);
   });
-
+  
   test('Vérifier que la range apparaît dans la liste', async ({ page }) => {
     // 1. Créer une range avec un nom unique
     const uniqueRangeName = 'Range E2E Liste ' + Date.now();
@@ -132,7 +179,27 @@ test.describe('Création d\'une range', () => {
     await nameInput.fill(uniqueRangeName);
     
     // Sauvegarder
-    const saveButton = page.locator('button:has-text("Sauvegarder")');
+    const saveButtonVariants = [
+      'button:has-text("Sauvegarder")',
+      'button:has-text("Enregistrer")',
+      'button[type="submit"]',
+      '.MuiButton-contained:has-text(/Sauvegarder|Enregistrer/)'
+    ];
+    
+    let saveButton = null;
+    for (const variant of saveButtonVariants) {
+      const btn = page.locator(variant);
+      const count = await btn.count();
+      if (count > 0) {
+        saveButton = btn;
+        break;
+      }
+    }
+    
+    if (!saveButton) {
+      throw new Error('Could not find save button in verification test');
+    }
+    
     await saveButton.waitFor({ state: 'visible', timeout: 5000 });
     await saveButton.click();
     
