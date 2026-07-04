@@ -70,7 +70,7 @@ const RangeEditor: React.FC = () => {
       for (let j = 0; j < newGrid[i].length; j++) {
         if (newGrid[i][j].hand === hand) {
           // Passer à l'action suivante
-          const actions: ActionType[] = ['undefined', 'open', 'call', 'raise', 'all_in', 'fold', 'check', 'bet'];
+          const actions: ActionType[] = ['fold', 'open', 'call', 'raise', 'all_in', 'check', 'undefined'];
           const currentIndex = actions.indexOf(currentAction);
           const nextIndex = (currentIndex + 1) % actions.length;
           newGrid[i][j].action = actions[nextIndex];
