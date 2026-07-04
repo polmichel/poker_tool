@@ -3,6 +3,7 @@
 Thumbs.db
 
 # Ignorer les fichiers de l'environnement virtuel Python
+backend/.venv/
 backend/venv/
 backend/__pycache__/
 backend/*.pyc
@@ -13,9 +14,13 @@ backend/*.pyd
 backend/*.db
 backend/*.sqlite
 backend/*.sqlite3
+backend/instance/
 
 # Ignorer les fichiers de dépendances Python
 backend/*.egg-info/
+
+# Ignorer les fichiers générés par uv
+backend/uv.lock
 
 # Ignorer les fichiers générés par npm
 frontend/node_modules/
@@ -55,3 +60,7 @@ coverage/
 # Ignorer les fichiers temporaires
 *.tmp
 *.temp
+
+# Ignorer les fichiers Python cache
+**/__pycache__/
+**/*.py[cod]
