@@ -29,9 +29,24 @@ jobs:
       working-directory: frontend
       run: npx playwright install --with-deps
 
-    - name: Run Playwright tests
+    - name: Build frontend application
       working-directory: frontend
-      run: npx playwright test
+      run: npm run build
+      env:
+        CI: false
+
+    - name: Start test server
+      working-directory: frontend
+      run: |
+        node tests/e2e/test-server.js &
+        sleep 5
+        echo "Test server started on port 3000"
+      env:
+        PORT: 3000
+
+    - name: Run CI smoke tests
+      working-directory: frontend
+      run: npx playwright test tests/e2e/specs/ci-smoke.spec.ts
       env:
         BASE_URL: http://localhost:3000
         CI: true

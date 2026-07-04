@@ -11,6 +11,9 @@ import dotenv from 'dotenv';
 const envPath = path.resolve(__dirname, '../../.env.test');
 dotenv.config({ path: envPath });
 
+// Determine if we're running in CI
+const isCI = !!process.env.CI;
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -19,11 +22,11 @@ export default defineConfig({
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
+  forbidOnly: isCI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  retries: isCI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers: isCI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { outputFolder: '../../playwright-report' }],
@@ -41,7 +44,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     
     /* Record video when a test fails */
-    video: 'retain-on-failure',
+    video: isCI ? 'off' : 'retain-on-failure',
     
     /* Timeout for each test */
     timeout: 60000,
@@ -65,34 +68,22 @@ export default defineConfig({
       use: { ...devices['Desktop Firefox'] },
     },
 
-    {
+    // Only test WebKit in non-CI environments to save resources
+    ...(isCI ? [] : [{
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-    },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
+    }]),
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
+  /* 
+   * In CI: Don't use webServer (we start it manually in the workflow)
+   * In local dev: Run the React dev server
+   */
+  webServer: isCI ? undefined : {
     command: 'npm run start',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000, // 2 minutes for server to start
+    reuseExistingServer: true,
+    timeout: 120000, // 2 minutes for dev server to start
   },
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
