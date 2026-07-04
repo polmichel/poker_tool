@@ -15,6 +15,11 @@ export function useTraining() {
   const [score, setScore] = useState<number>(0);
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
   const [timeSpent, setTimeSpent] = useState<number>(0);
+  const [progress, setProgress] = useState<{
+    current: number;
+    total: number;
+    correct: number;
+  }>({ current: 0, total: 0, correct: 0 });
 
   // Charger toutes les sessions d'entraînement
   const fetchSessions = useCallback(async () => {
@@ -39,8 +44,14 @@ export function useTraining() {
     
     try {
       const response = await axios.get(`${API_BASE_URL}/training/sessions/${id}`);
-      setCurrentSession(response.data);
-      return response.data;
+      const sessionData = response.data;
+      setCurrentSession(sessionData.session);
+      setCurrentQuestion(sessionData.current_question);
+      setProgress(sessionData.progress);
+      setScore(sessionData.progress?.score || 0);
+      setTimeSpent(sessionData.session?.time_spent || 0);
+      setIsSessionActive(sessionData.progress?.current < sessionData.progress?.total);
+      return sessionData;
     } catch (err) {
       setError(`Erreur lors du chargement de la session ${id}`);
       console.error(`Error fetching session ${id}:`, err);
@@ -54,7 +65,8 @@ export function useTraining() {
   const createSession = useCallback(async (
     mode: TrainingMode,
     rangeId: number,
-    userId?: number
+    userId?: number,
+    totalQuestions: number = 10
   ) => {
     setLoading(true);
     setError(null);
@@ -64,34 +76,23 @@ export function useTraining() {
         mode,
         range_id: rangeId,
         user_id: userId,
+        total_questions: totalQuestions,
       });
-      setCurrentSession(response.data);
-      return response.data;
+      
+      const sessionData = response.data;
+      
+      // Set session and first question
+      setCurrentSession(sessionData.session);
+      setCurrentQuestion(sessionData.first_question);
+      setProgress(sessionData.progress);
+      setScore(sessionData.progress?.score || 0);
+      setTimeSpent(0);
+      setIsSessionActive(true);
+      
+      return sessionData;
     } catch (err) {
       setError('Erreur lors de la création de la session d\'entraînement');
       console.error('Error creating training session:', err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Démarrer une session d'entraînement
-  const startSession = useCallback(async (sessionId: number) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await axios.post(`${API_BASE_URL}/training/sessions/${sessionId}/start`);
-      setCurrentSession(response.data.session);
-      setCurrentQuestion(response.data.first_question);
-      setIsSessionActive(true);
-      setScore(0);
-      setTimeSpent(0);
-      return response.data;
-    } catch (err) {
-      setError(`Erreur lors du démarrage de la session ${sessionId}`);
-      console.error(`Error starting session ${sessionId}:`, err);
       return null;
     } finally {
       setLoading(false);
@@ -109,19 +110,48 @@ export function useTraining() {
         { answer }
       );
       
-      setCurrentSession(response.data.session);
-      setCurrentQuestion(response.data.next_question);
-      setScore(response.data.session.score);
-      setTimeSpent(response.data.session.time_spent);
+      const result = response.data;
       
-      if (!response.data.next_question) {
+      // Update state based on response
+      if (result.session_complete) {
+        // Session is complete
         setIsSessionActive(false);
+        setCurrentQuestion(null);
+        setProgress({
+          current: result.progress?.current || progress.total,
+          total: result.progress?.total || progress.total,
+          correct: result.progress?.correct || progress.correct,
+        });
+        setScore(result.progress?.score || score);
+        
+        return {
+          isCorrect: result.is_correct,
+          correctAnswer: result.correct_answer,
+          sessionComplete: true,
+          finalScore: result.progress?.score,
+          finalResults: {
+            correct: result.progress?.correct,
+            total: result.progress?.total,
+          },
+        };
+      } else {
+        // There's a next question
+        setCurrentQuestion(result.next_question);
+        setProgress({
+          current: result.progress?.current || 0,
+          total: result.progress?.total || 0,
+          correct: result.progress?.correct || 0,
+        });
+        setScore(result.progress?.score || 0);
+        setTimeSpent(result.progress?.time_spent || 0);
+        
+        return {
+          isCorrect: result.is_correct,
+          correctAnswer: result.correct_answer,
+          sessionComplete: false,
+          nextQuestion: result.next_question,
+        };
       }
-      
-      return {
-        isCorrect: response.data.is_correct,
-        correctAnswer: response.data.correct_answer,
-      };
     } catch (err) {
       setError(`Erreur lors de la soumission de la réponse`);
       console.error('Error submitting answer:', err);
@@ -129,7 +159,7 @@ export function useTraining() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [progress, score]);
 
   // Terminer une session d'entraînement
   const endSession = useCallback(async (sessionId: number) => {
@@ -138,8 +168,9 @@ export function useTraining() {
     
     try {
       const response = await axios.post(`${API_BASE_URL}/training/sessions/${sessionId}/end`);
-      setCurrentSession(response.data.session);
       setIsSessionActive(false);
+      setCurrentSession(response.data.session);
+      setCurrentQuestion(null);
       fetchSessions();
       return response.data;
     } catch (err) {
@@ -151,42 +182,31 @@ export function useTraining() {
     }
   }, [fetchSessions]);
 
-  // Obtenir les résultats d'une session
-  const getSessionResults = useCallback(async (sessionId: number) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await axios.get(`${API_BASE_URL}/training/sessions/${sessionId}/results`);
-      return response.data;
-    } catch (err) {
-      setError(`Erreur lors du chargement des résultats de la session ${sessionId}`);
-      console.error(`Error fetching results for session ${sessionId}:`, err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   // Démarrer rapidement une session (avec paramètres par défaut)
   const quickStart = useCallback(async (mode: TrainingMode, rangeId: number, userId?: number) => {
     setLoading(true);
     setError(null);
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/training/quick-start`, {
+      // First create the session
+      const createResponse = await axios.post(`${API_BASE_URL}/training/sessions`, {
         mode,
         range_id: rangeId,
         user_id: userId,
+        total_questions: 10,
       });
       
-      setCurrentSession(response.data.session);
-      setCurrentQuestion(response.data.first_question);
-      setIsSessionActive(true);
+      const sessionData = createResponse.data;
+      
+      // Set session and first question
+      setCurrentSession(sessionData.session);
+      setCurrentQuestion(sessionData.first_question);
+      setProgress(sessionData.progress);
       setScore(0);
       setTimeSpent(0);
+      setIsSessionActive(true);
       
-      return response.data;
+      return sessionData;
     } catch (err) {
       setError('Erreur lors du démarrage rapide');
       console.error('Error quick starting:', err);
@@ -220,6 +240,7 @@ export function useTraining() {
     setIsSessionActive(false);
     setScore(0);
     setTimeSpent(0);
+    setProgress({ current: 0, total: 0, correct: 0 });
     setError(null);
   }, []);
 
@@ -237,16 +258,15 @@ export function useTraining() {
     score,
     isSessionActive,
     timeSpent,
+    progress,
     setCurrentSession,
     setCurrentQuestion,
     setIsSessionActive,
     fetchSessions,
     fetchSession,
     createSession,
-    startSession,
     nextQuestion,
     endSession,
-    getSessionResults,
     quickStart,
     fetchTrainingModes,
     resetTrainingState,

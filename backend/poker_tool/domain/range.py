@@ -126,7 +126,12 @@ class Range:
             row = []
             for j, rank2 in enumerate(RANKS):
                 if i <= j:
-                    hand_str = f"{rank1}{rank2}s" if i == j else f"{rank1}{rank2}s"
+                    # Pairs (AA, KK, etc.) - no suit suffix
+                    if i == j:
+                        hand_str = f"{rank1}{rank2}"
+                    # Suited hands (AKs, AQs, etc.)
+                    else:
+                        hand_str = f"{rank1}{rank2}s"
                     action = self.hands.get(hand_str, ActionType.UNDEFINED)
                     row.append({
                         "hand": hand_str,
@@ -134,7 +139,14 @@ class Range:
                         "color": self._get_color(action),
                     })
                 else:
-                    row.append({"hand": "", "action": ActionType.UNDEFINED, "color": ""})
+                    # Offsuit hands (AKo, AQo, etc.) - below the diagonal
+                    hand_str = f"{rank2}{rank1}o"
+                    action = self.hands.get(hand_str, ActionType.UNDEFINED)
+                    row.append({
+                        "hand": hand_str,
+                        "action": action,
+                        "color": self._get_color(action),
+                    })
             grid.append(row)
         return grid
     
