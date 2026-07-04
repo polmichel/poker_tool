@@ -50,30 +50,91 @@ class TrainingService:
         mode: str = "fill",
     ) -> TrainingSession:
         """Create a new training session."""
-        session = TrainingSession(
-            user_id=user_id,
-            range_id=range_id,
-            mode=mode,
-            score=0.0,
-            total_questions=0,
-            correct_answers=0,
-            time_spent=0,
-            details={},
-            created_at=datetime.utcnow().isoformat(),
+        session_data = {
+            "user_id": user_id,
+            "range_id": range_id,
+            "mode": mode,
+            "score": 0.0,
+            "total_questions": 0,
+            "correct_answers": 0,
+            "time_spent": 0,
+            "details": {},
+            "created_at": datetime.utcnow().isoformat(),
+        }
+        
+        # Save to database
+        saved_session = self.database.save_training_session(session_data)
+        
+        # Convert back to TrainingSession object
+        return TrainingSession(
+            id=saved_session.get("id"),
+            user_id=saved_session.get("user_id"),
+            range_id=saved_session.get("range_id"),
+            mode=saved_session.get("mode", ""),
+            score=saved_session.get("score", 0.0),
+            total_questions=saved_session.get("total_questions", 0),
+            correct_answers=saved_session.get("correct_answers", 0),
+            time_spent=saved_session.get("time_spent", 0),
+            details=saved_session.get("details", {}),
+            created_at=saved_session.get("created_at"),
         )
-        # In a real implementation, we would save to DB
-        # For now, we return the session object
-        return session
     
     def get_session_by_id(self, session_id: int) -> Optional[TrainingSession]:
         """Get a training session by ID."""
-        # Placeholder - in real implementation, fetch from DB
-        return None
+        session_data = self.database.get_training_session_by_id(session_id)
+        if not session_data:
+            return None
+        
+        return TrainingSession(
+            id=session_data.get("id"),
+            user_id=session_data.get("user_id"),
+            range_id=session_data.get("range_id"),
+            mode=session_data.get("mode", ""),
+            score=session_data.get("score", 0.0),
+            total_questions=session_data.get("total_questions", 0),
+            correct_answers=session_data.get("correct_answers", 0),
+            time_spent=session_data.get("time_spent", 0),
+            details=session_data.get("details", {}),
+            created_at=session_data.get("created_at"),
+        )
     
     def get_all_sessions(self) -> List[TrainingSession]:
         """Get all training sessions."""
-        # Placeholder - in real implementation, fetch from DB
-        return []
+        sessions_data = self.database.get_all_training_sessions()
+        return [
+            TrainingSession(
+                id=s.get("id"),
+                user_id=s.get("user_id"),
+                range_id=s.get("range_id"),
+                mode=s.get("mode", ""),
+                score=s.get("score", 0.0),
+                total_questions=s.get("total_questions", 0),
+                correct_answers=s.get("correct_answers", 0),
+                time_spent=s.get("time_spent", 0),
+                details=s.get("details", {}),
+                created_at=s.get("created_at"),
+            )
+            for s in sessions_data
+        ]
+    
+    def get_sessions_by_user(self, user_id: int) -> List[TrainingSession]:
+        """Get all training sessions for a specific user."""
+        sessions_data = self.database.get_training_sessions_by_user(user_id)
+        return [
+            TrainingSession(
+                id=s.get("id"),
+                user_id=s.get("user_id"),
+                range_id=s.get("range_id"),
+                mode=s.get("mode", ""),
+                score=s.get("score", 0.0),
+                total_questions=s.get("total_questions", 0),
+                correct_answers=s.get("correct_answers", 0),
+                time_spent=s.get("time_spent", 0),
+                details=s.get("details", {}),
+                created_at=s.get("created_at"),
+            )
+            for s in sessions_data
+        ]
     
     def next_question(
         self,
@@ -84,14 +145,23 @@ class TrainingService:
         Process the next question in a training session.
         Returns: { is_correct: bool, correct_answer: str, next_question: dict | None }
         """
-        # Placeholder implementation
+        # Get the session
+        session = self.get_session_by_id(session_id)
+        if not session:
+            return {"error": "Session not found"}
+        
+        # Get the range for this session
+        range_obj = None
+        if session.range_id:
+            range_obj = self.database.get_range_by_id(session.range_id)
+        
+        # For now, return a mock response
         # In a real implementation, this would:
         # 1. Get the current session
         # 2. Check the answer
         # 3. Get the next question
         # 4. Update session stats
         
-        # For now, return a mock response
         return {
             "is_correct": True,
             "correct_answer": "open",
@@ -100,17 +170,53 @@ class TrainingService:
     
     def end_session(self, session_id: int) -> Optional[TrainingSession]:
         """End a training session."""
-        # Placeholder - in real implementation, update DB
-        return None
+        # Get the session
+        session = self.get_session_by_id(session_id)
+        if not session:
+            return None
+        
+        # Update session in database
+        session_data = {
+            "id": session.id,
+            "user_id": session.user_id,
+            "range_id": session.range_id,
+            "mode": session.mode,
+            "score": session.score,
+            "total_questions": session.total_questions,
+            "correct_answers": session.correct_answers,
+            "time_spent": session.time_spent,
+            "details": session.details,
+            "created_at": session.created_at,
+        }
+        
+        updated_session = self.database.update_training_session(session_id, session_data)
+        if not updated_session:
+            return None
+        
+        return TrainingSession(
+            id=updated_session.get("id"),
+            user_id=updated_session.get("user_id"),
+            range_id=updated_session.get("range_id"),
+            mode=updated_session.get("mode", ""),
+            score=updated_session.get("score", 0.0),
+            total_questions=updated_session.get("total_questions", 0),
+            correct_answers=updated_session.get("correct_answers", 0),
+            time_spent=updated_session.get("time_spent", 0),
+            details=updated_session.get("details", {}),
+            created_at=updated_session.get("created_at"),
+        )
     
     def get_session_results(self, session_id: int) -> Dict[str, Any]:
         """Get results for a training session."""
-        # Placeholder
+        session = self.get_session_by_id(session_id)
+        if not session:
+            return {"error": "Session not found"}
+        
         return {
-            "score": 0,
-            "total_questions": 0,
-            "correct_answers": 0,
-            "time_spent": 0,
+            "score": session.score,
+            "total_questions": session.total_questions,
+            "correct_answers": session.correct_answers,
+            "time_spent": session.time_spent,
         }
     
     def generate_questions(
