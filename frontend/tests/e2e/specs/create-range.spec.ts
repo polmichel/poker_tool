@@ -71,14 +71,34 @@ test.describe('Création d\'une range', () => {
       await rangeTypeSelect.waitFor({ state: 'visible' });
       await rangeTypeSelect.click();
       
-      // Attendre que le menu déroulant s'ouvre
-      await page.waitForTimeout(500);
+      // Attendre que le menu déroulant s'ouvre et afficher toutes les options
+      await page.waitForTimeout(1000);
       
-      // Sélectionner "Préflop" - cibler spécifiquement l'option du menu
-      // Utiliser role="option" pour éviter le strict mode violation
-      const preflopOption = page.locator('[role="option"][aria-selected="false"]:has-text("Préflop")');
-      await preflopOption.waitFor({ state: 'visible', timeout: 2000 });
-      await preflopOption.click();
+      // Afficher toutes les options disponibles pour débogage
+      const allOptions = page.locator('[role="option"]');
+      const optionCount = await allOptions.count();
+      console.log(`Found ${optionCount} options in type select`);
+      
+      for (let i = 0; i < Math.min(optionCount, 5); i++) {
+        const option = allOptions.nth(i);
+        const text = await option.textContent();
+        const selected = await option.getAttribute('aria-selected');
+        console.log(`Option ${i}: "${text}" (aria-selected: ${selected})`);
+      }
+      
+      // Sélectionner "Préflop" - essayer plusieurs approches
+      const preflopOption1 = page.locator('[role="option"]:has-text("Préflop")');
+      const preflopOption2 = page.locator('text="Préflop"');
+      
+      if (await preflopOption1.count() > 0) {
+        await preflopOption1.first().waitFor({ state: 'visible', timeout: 3000 });
+        await preflopOption1.first().click();
+      } else if (await preflopOption2.count() > 0) {
+        await preflopOption2.first().waitFor({ state: 'visible', timeout: 3000 });
+        await preflopOption2.first().click();
+      } else {
+        throw new Error('Could not find "Préflop" option. Check console logs for available options.');
+      }
     }
     
     // 7. Sélectionner la position si le champ existe
@@ -89,12 +109,32 @@ test.describe('Création d\'une range', () => {
       await positionSelect.click();
       
       // Attendre que le menu déroulant s'ouvre
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(1000);
       
-      // Sélectionner "BTN" - cibler spécifiquement l'option du menu
-      const btnOption = page.locator('[role="option"][aria-selected="false"]:has-text("BTN")');
-      await btnOption.waitFor({ state: 'visible', timeout: 2000 });
-      await btnOption.click();
+      // Afficher toutes les options disponibles pour débogage
+      const allOptions = page.locator('[role="option"]');
+      const optionCount = await allOptions.count();
+      console.log(`Found ${optionCount} options in position select`);
+      
+      for (let i = 0; i < Math.min(optionCount, 10); i++) {
+        const option = allOptions.nth(i);
+        const text = await option.textContent();
+        console.log(`Position Option ${i}: "${text}"`);
+      }
+      
+      // Sélectionner "BTN"
+      const btnOption1 = page.locator('[role="option"]:has-text("BTN")');
+      const btnOption2 = page.locator('text="BTN"');
+      
+      if (await btnOption1.count() > 0) {
+        await btnOption1.first().waitFor({ state: 'visible', timeout: 3000 });
+        await btnOption1.first().click();
+      } else if (await btnOption2.count() > 0) {
+        await btnOption2.first().waitFor({ state: 'visible', timeout: 3000 });
+        await btnOption2.first().click();
+      } else {
+        throw new Error('Could not find "BTN" option. Check console logs for available options.');
+      }
     }
   });
 
