@@ -29,6 +29,13 @@ export function useTraining() {
     try {
       const response = await axios.get(`${API_BASE_URL}/training/sessions`);
       setSessions(response.data);
+      // Réinitialiser l'état de la session courante lors du chargement des sessions
+      setCurrentSession(null);
+      setCurrentQuestion(null);
+      setIsSessionActive(false);
+      setScore(0);
+      setTimeSpent(0);
+      setProgress({ current: 0, total: 0, correct: 0 });
     } catch (err) {
       setError('Erreur lors du chargement des sessions d\'entraînement');
       console.error('Error fetching training sessions:', err);
