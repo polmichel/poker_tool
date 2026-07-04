@@ -159,7 +159,7 @@ const RangeGrid: React.FC<RangeGridProps> = ({
             <Box key={rowIndex} sx={{ display: 'flex' }}>
               {row.map((cell) => {
                 // Déterminer la couleur du texte en fonction de la couleur de fond
-                const bgColor = cell.color || ACTION_COLORS.undefined;
+                const bgColor = cell.color || ACTION_COLORS['undefined'];
                 const textColor = getTextColor(bgColor);
                 
                 return (

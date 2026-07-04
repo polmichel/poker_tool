@@ -23,6 +23,7 @@ import { RangeGrid, RangeStats } from '../components';
 import { useRanges } from '../hooks';
 import { Range, ActionType } from '../types';
 import { generateRangeGrid, gridToHands } from '../utils/helpers';
+import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
 
 const RangeEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -73,10 +74,10 @@ const RangeEditor: React.FC = () => {
           const actions: ActionType[] = ['undefined', 'open', 'call', 'raise', 'all_in', 'fold', 'check', 'bet'];
           const currentIndex = actions.indexOf(currentAction);
           const nextIndex = (currentIndex + 1) % actions.length;
-          newGrid[i][j].action = actions[nextIndex];
-          newGrid[i][j].color = newGrid[i][j].action === 'undefined' 
-            ? '#FFFFFF' 
-            : newGrid[i][j].color;
+          const newAction = actions[nextIndex];
+          newGrid[i][j].action = newAction;
+          // ✅ FIX: Mettre à jour la couleur avec ACTION_COLORS
+          newGrid[i][j].color = ACTION_COLORS[newAction] || '#FFFFFF';
           found = true;
           break;
         }
@@ -257,12 +258,11 @@ const RangeEditor: React.FC = () => {
         {Object.entries(actionCounts).map(([action, count]) => (
           <Chip
             key={action}
-            label={`${count}`}
+            label={`${ACTION_LABELS[action] || action}: ${count}`}
             size="small"
             sx={{
-              backgroundColor: action === 'undefined' ? 'grey.500' : 'transparent',
-              color: action === 'undefined' ? 'white' : 'inherit',
-              borderColor: action === 'undefined' ? 'grey.500' : 'inherit',
+              backgroundColor: ACTION_COLORS[action as ActionType] || 'grey.500',
+              color: (action === 'open' || action === 'raise' || action === 'all_in' || action === 'bet') ? 'white' : 'black',
             }}
           />
         ))}
