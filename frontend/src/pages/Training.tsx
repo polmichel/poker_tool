@@ -25,7 +25,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { TrainingModeSelector, TrainingQuestion } from '../components';
 import { useTraining, useRanges } from '../hooks';
-import { TrainingMode, Range } from '../types';
+import { TrainingMode, Range, TrainingQuestion as TrainingQuestionType } from '../types';
 
 const Training: React.FC = () => {
   const navigate = useNavigate();
@@ -38,11 +38,11 @@ const Training: React.FC = () => {
     score,
     isSessionActive,
     timeSpent,
+    progress,
     setCurrentSession,
     setCurrentQuestion,
     setIsSessionActive,
     createSession,
-    startSession,
     nextQuestion,
     endSession,
     quickStart,
@@ -56,7 +56,6 @@ const Training: React.FC = () => {
   const [selectedRange, setSelectedRange] = useState<Range | null>(null);
   const [openSettingsDialog, setOpenSettingsDialog] = useState<boolean>(false);
   const [openResultsDialog, setOpenResultsDialog] = useState<boolean>(false);
-  const [questionNumber, setQuestionNumber] = useState<number>(1);
   const [totalQuestions, setTotalQuestions] = useState<number>(10);
 
   // Charger les données au montage
@@ -72,17 +71,11 @@ const Training: React.FC = () => {
       return;
     }
 
-    const session = await createSession(selectedMode, selectedRange.id!);
+    const session = await createSession(selectedMode, selectedRange.id!, undefined, totalQuestions);
     if (session) {
-      const result = await startSession(session.id);
-      if (result) {
-        setCurrentSession(result.session);
-        setCurrentQuestion(result.first_question);
-        setIsSessionActive(true);
-        setQuestionNumber(1);
-      }
+      setIsSessionActive(true);
     }
-  }, [selectedMode, selectedRange, createSession, startSession, setCurrentSession, setCurrentQuestion, setIsSessionActive]);
+  }, [selectedMode, selectedRange, createSession, setIsSessionActive, totalQuestions]);
 
   // Démarrer rapidement avec des paramètres par défaut
   const handleQuickStart = useCallback(async () => {
@@ -92,38 +85,33 @@ const Training: React.FC = () => {
     }
 
     // Utiliser la première range disponible
-    const result = await quickStart(selectedMode, ranges[0].id!);
+    const result = await quickStart(selectedMode, ranges[0].id!, undefined);
     if (result) {
-      setCurrentSession(result.session);
-      setCurrentQuestion(result.first_question);
-      setIsSessionActive(true);
       setSelectedRange(ranges[0]);
-      setQuestionNumber(1);
+      setIsSessionActive(true);
     }
-  }, [selectedMode, ranges, quickStart, setCurrentSession, setCurrentQuestion, setIsSessionActive]);
+  }, [selectedMode, ranges, quickStart, setIsSessionActive]);
 
   // Soumettre une réponse
   const handleAnswer = useCallback(async (answer: string) => {
-    if (!currentSession) return;
+    if (!currentSession || !currentSession.id) return;
 
-    if (currentSession.id) {
-      await nextQuestion(currentSession.id, answer);
-      // La question suivante est déjà gérée par le hook via setCurrentQuestion
-      if (currentQuestion) {
-        setQuestionNumber(prev => prev + 1);
-      } else {
-        // Fin de la session
+    const result = await nextQuestion(currentSession.id, answer);
+    
+    if (result) {
+      // Si la session est terminée
+      if (result.sessionComplete) {
         setIsSessionActive(false);
         setOpenResultsDialog(true);
       }
     }
-  }, [currentSession, nextQuestion, setCurrentQuestion, setIsSessionActive]);
+  }, [currentSession, nextQuestion, setIsSessionActive]);
 
   // Terminer la session
   const handleEndSession = useCallback(async () => {
-    if (!currentSession) return;
+    if (!currentSession || !currentSession.id) return;
 
-    if (currentSession.id) await endSession(currentSession.id);
+    await endSession(currentSession.id);
     setIsSessionActive(false);
     setOpenResultsDialog(true);
   }, [currentSession, endSession, setIsSessionActive]);
@@ -131,7 +119,6 @@ const Training: React.FC = () => {
   // Réinitialiser la session
   const handleResetSession = useCallback(() => {
     resetTrainingState();
-    setQuestionNumber(1);
   }, [resetTrainingState]);
 
   // Ouvrir les paramètres
@@ -148,7 +135,6 @@ const Training: React.FC = () => {
   const handleCloseResults = useCallback(() => {
     setOpenResultsDialog(false);
     resetTrainingState();
-    setQuestionNumber(1);
   }, [resetTrainingState]);
 
   // Changer le mode d'entraînement
@@ -160,6 +146,9 @@ const Training: React.FC = () => {
   const handleRangeSelect = useCallback((range: Range) => {
     setSelectedRange(range);
   }, []);
+
+  // Calculer le numéro de la question actuelle
+  const questionNumber = progress?.current ? progress.current + 1 : 1;
 
   return (
     <Box sx={{ p: 3 }}>
@@ -273,7 +262,7 @@ const Training: React.FC = () => {
       )}
 
       {/* Zone de démarrage */}
-      {!isSessionActive && !currentSession && (
+      {!isSessionActive && !currentQuestion && (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <Typography variant="h6" gutterBottom>
             Prêt à vous entraîner ?
@@ -339,9 +328,15 @@ const Training: React.FC = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-around', mb: 2 }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">
+                  Bonnes réponses
+                </Typography>
+                <Typography variant="h6">{progress?.correct || 0}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" color="text.secondary">
                   Questions
                 </Typography>
-                <Typography variant="h6">{questionNumber - 1}</Typography>
+                <Typography variant="h6">{progress?.total || totalQuestions}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">

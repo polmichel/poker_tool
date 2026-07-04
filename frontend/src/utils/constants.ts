@@ -9,7 +9,7 @@ export const ACTION_COLORS = {
   fold: '#9E9E9E',     // Gris
   check: '#FFEB3B',    // Jaune
   bet: '#9C27B0',      // Violet
-  undefined: '#FFFFFF', // Blanc (ou transparent)
+  undefined: '#607D8B', // Gris-bleu (visible sur fond clair et foncé)
 };
 
 // Noms des actions en français
@@ -64,7 +64,7 @@ export const HAND_GRID = [
   ['AA', 'AKs', 'AQs', 'AJs', 'ATs', 'A9s', 'A8s', 'A7s', 'A6s', 'A5s', 'A4s', 'A3s', 'A2s'],
   ['KAo', 'KK', 'KQs', 'KJs', 'KTs', 'K9s', 'K8s', 'K7s', 'K6s', 'K5s', 'K4s', 'K3s', 'K2s'],
   ['QAo', 'QKo', 'QQ', 'QJs', 'QTs', 'Q9s', 'Q8s', 'Q7s', 'Q6s', 'Q5s', 'Q4s', 'Q3s', 'Q2s'],
-  ['JAo', 'JKo', 'JQo', 'JJ', 'JTs', 'J9s', 'J8s', 'J7s', 'J6s', 'J5s', 'J4s', 'J3s', 'J2s'],
+  ['JAo', 'JKo', 'JQo', 'JJo', 'JTs', 'J9s', 'J8s', 'J7s', 'J6s', 'J5s', 'J4s', 'J3s', 'J2s'],
   ['TAo', 'TKo', 'TQo', 'TJo', 'TT', 'T9s', 'T8s', 'T7s', 'T6s', 'T5s', 'T4s', 'T3s', 'T2s'],
   ['9Ao', '9Ko', '9Qo', '9Jo', '9To', '99', '98s', '97s', '96s', '95s', '94s', '93s', '92s'],
   ['8Ao', '8Ko', '8Qo', '8Jo', '8To', '89o', '88', '87s', '86s', '85s', '84s', '83s', '82s'],

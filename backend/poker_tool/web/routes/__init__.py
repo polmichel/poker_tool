@@ -1,6 +1,6 @@
 """
 Flask Routes (Elegant Objects principles).
-Registers all routes with injected services.
+Registers all routes with the Flask app and injected services.
 """
 from flask import Flask, Blueprint, jsonify, request
 from werkzeug.exceptions import BadRequest, NotFound
@@ -440,9 +440,9 @@ def register_routes(
     def get_training_modes():
         """Get available training modes."""
         modes = [
-            {"id": "fill", "name": "Remplir une range", "description": "Comple9ter une grille de range"},
-            {"id": "guess", "name": "Deviner une range", "description": "De9terminer si des mains font partie d'une range"},
-            {"id": "complete", "name": "Comple9ter une range", "description": "Comple9ter une range partiellement remplie"},
+            {"id": "fill", "name": "Remplir une range", "description": "Completer une grille de range"},
+            {"id": "guess", "name": "Deviner une range", "description": "Determiner si des mains font partie d'une range"},
+            {"id": "complete", "name": "Completer une range", "description": "Completer une range partiellement remplie"},
         ]
         return jsonify(modes)
     
@@ -475,11 +475,22 @@ def register_routes(
             if current_user:
                 user_id = current_user.id
         
+        # Get total_questions from data, default to 10
+        total_questions = data.get("total_questions", 10)
+        
         session = training_service.create_session(
             user_id=user_id,
             range_id=data["range_id"],
             mode=data["mode"],
+            total_questions=total_questions,
         )
+        
+        # Get the first question from session details
+        first_question = None
+        if session.details and "questions" in session.details:
+            questions = session.details["questions"]
+            if questions and len(questions) > 0:
+                first_question = questions[0]
         
         return jsonify({
             "session": {
@@ -487,9 +498,54 @@ def register_routes(
                 "user_id": session.user_id,
                 "range_id": session.range_id,
                 "mode": session.mode,
+                "total_questions": session.total_questions,
+                "current_question_index": 0,
             },
-            "first_question": None,  # Will be implemented later
+            "first_question": first_question,
+            "progress": {
+                "current": 0,
+                "total": session.total_questions,
+                "correct": 0,
+                "score": 0.0,
+            }
         }), 201
+    
+    @api_bp.route("/training/sessions/<int:session_id>", methods=["GET"])
+    def get_training_session(session_id: int):
+        """Get a specific training session with current question."""
+        session = training_service.get_session_by_id(session_id)
+        if not session:
+            raise NotFound(f"Training session with ID {session_id} not found")
+        
+        # Get current question
+        current_question = None
+        current_index = 0
+        if session.details:
+            questions = session.details.get("questions", [])
+            current_index = session.details.get("current_question_index", 0)
+            if questions and current_index < len(questions):
+                current_question = questions[current_index]
+        
+        return jsonify({
+            "session": {
+                "id": session.id,
+                "user_id": session.user_id,
+                "range_id": session.range_id,
+                "mode": session.mode,
+                "score": session.score,
+                "total_questions": session.total_questions,
+                "correct_answers": session.correct_answers,
+                "time_spent": session.time_spent,
+                "current_question_index": current_index,
+            },
+            "current_question": current_question,
+            "progress": {
+                "current": current_index,
+                "total": session.total_questions,
+                "correct": session.correct_answers,
+                "score": session.score,
+            }
+        })
     
     @api_bp.route("/training/sessions/<int:session_id>/next", methods=["POST"])
     def next_training_question(session_id: int):
@@ -499,6 +555,15 @@ def register_routes(
             return jsonify({"error": "Missing answer field"}), 400
         
         result = training_service.next_question(session_id, data["answer"])
+        
+        # If session is complete, return special response
+        if result.get("session_complete"):
+            return jsonify({
+                **result,
+                "message": "Session complete!",
+                "next_question": None,
+            })
+        
         return jsonify(result)
     
     @api_bp.route("/training/sessions/<int:session_id>/end", methods=["POST"])
@@ -507,7 +572,16 @@ def register_routes(
         session = training_service.end_session(session_id)
         if not session:
             raise NotFound(f"Training session with ID {session_id} not found")
-        return jsonify({"message": "Training session ended successfully"})
+        return jsonify({
+            "message": "Training session ended successfully",
+            "session": {
+                "id": session.id,
+                "score": session.score,
+                "total_questions": session.total_questions,
+                "correct_answers": session.correct_answers,
+                "time_spent": session.time_spent,
+            }
+        })
     
     # Register the blueprint
     app.register_blueprint(api_bp)

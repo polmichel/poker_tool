@@ -4,12 +4,39 @@ Orchestrates training session use cases using injected dependencies.
 """
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+import random
 from ..domain.range import Range
+from ..domain.hand import RANKS, generate_all_hands
 from ..ports.database import DatabasePort
 
 
+class TrainingQuestion:
+    """Represents a training question."""
+    
+    def __init__(
+        self,
+        hand: str,
+        question: str,
+        correct_answer: str,
+        question_type: str = "fill",
+    ):
+        self.hand = hand
+        self.question = question
+        self.correct_answer = correct_answer
+        self.question_type = question_type
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "hand": self.hand,
+            "question": self.question,
+            "correct_answer": self.correct_answer,
+            "type": self.question_type,
+        }
+
+
 class TrainingSession:
-    """Domain object for training sessions (simplified for now)."""
+    """Domain object for training sessions."""
     
     def __init__(
         self,
@@ -48,17 +75,28 @@ class TrainingService:
         user_id: int,
         range_id: int,
         mode: str = "fill",
+        total_questions: int = 10,
     ) -> TrainingSession:
         """Create a new training session."""
+        # Get the range to generate questions
+        range_obj = self.database.get_range_by_id(range_id)
+        
+        # Generate initial questions
+        questions = self._generate_questions(mode, range_obj, total_questions)
+        
         session_data = {
             "user_id": user_id,
             "range_id": range_id,
             "mode": mode,
             "score": 0.0,
-            "total_questions": 0,
+            "total_questions": total_questions,
             "correct_answers": 0,
             "time_spent": 0,
-            "details": {},
+            "details": {
+                "questions": [q.to_dict() for q in questions],
+                "current_question_index": 0,
+                "start_time": datetime.utcnow().isoformat(),
+            },
             "created_at": datetime.utcnow().isoformat(),
         }
         
@@ -143,7 +181,14 @@ class TrainingService:
     ) -> Dict[str, Any]:
         """
         Process the next question in a training session.
-        Returns: { is_correct: bool, correct_answer: str, next_question: dict | None }
+        Returns: {
+            is_correct: bool,
+            correct_answer: str,
+            current_question: dict,
+            next_question: dict | None,
+            session_complete: bool,
+            progress: { current: int, total: int, correct: int, score: float }
+        }
         """
         # Get the session
         session = self.get_session_by_id(session_id)
@@ -155,17 +200,109 @@ class TrainingService:
         if session.range_id:
             range_obj = self.database.get_range_by_id(session.range_id)
         
-        # For now, return a mock response
-        # In a real implementation, this would:
-        # 1. Get the current session
-        # 2. Check the answer
-        # 3. Get the next question
-        # 4. Update session stats
+        # Get session details
+        details = session.details or {}
+        questions = details.get("questions", [])
+        current_index = details.get("current_question_index", 0)
+        start_time = details.get("start_time")
+        
+        # Check if session is complete
+        if current_index >= len(questions) or current_index >= session.total_questions:
+            return {
+                "error": "Session already complete",
+                "session_complete": True,
+                "progress": {
+                    "current": session.total_questions,
+                    "total": session.total_questions,
+                    "correct": session.correct_answers,
+                    "score": session.score,
+                }
+            }
+        
+        # Get current question
+        current_question = questions[current_index] if current_index < len(questions) else None
+        
+        # Check the answer
+        is_correct = False
+        correct_answer = ""
+        
+        if current_question:
+            # The correct answer is stored in the question
+            correct_answer = current_question.get("correct_answer", "")
+            is_correct = (answer.lower() == correct_answer.lower())
+            
+            # Update session stats
+            new_correct = session.correct_answers + (1 if is_correct else 0)
+            new_total = session.total_questions
+            
+            # Calculate score (percentage)
+            new_score = (new_correct / max(new_total, 1)) * 100
+            
+            # Calculate time spent
+            time_spent = session.time_spent
+            if start_time:
+                try:
+                    start_dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
+                    time_spent = int((datetime.utcnow() - start_dt).total_seconds())
+                except:
+                    time_spent = session.time_spent
+            
+            # Prepare next question
+            next_index = current_index + 1
+            next_question = None
+            session_complete = False
+            
+            if next_index < len(questions) and next_index < session.total_questions:
+                next_question = questions[next_index]
+            else:
+                session_complete = True
+            
+            # Update session in database
+            updated_details = {
+                "questions": questions,
+                "current_question_index": next_index,
+                "start_time": start_time,
+                "last_answer": answer,
+                "last_correct": is_correct,
+            }
+            
+            updated_session_data = {
+                "id": session.id,
+                "user_id": session.user_id,
+                "range_id": session.range_id,
+                "mode": session.mode,
+                "score": round(new_score, 2),
+                "total_questions": new_total,
+                "correct_answers": new_correct,
+                "time_spent": time_spent,
+                "details": updated_details,
+                "created_at": session.created_at,
+            }
+            
+            self.database.update_training_session(session_id, updated_session_data)
+            
+            return {
+                "is_correct": is_correct,
+                "correct_answer": correct_answer,
+                "current_question": current_question,
+                "next_question": next_question,
+                "session_complete": session_complete,
+                "progress": {
+                    "current": next_index,
+                    "total": session.total_questions,
+                    "correct": new_correct,
+                    "score": round(new_score, 2),
+                }
+            }
         
         return {
-            "is_correct": True,
-            "correct_answer": "open",
-            "next_question": None,
+            "error": "No current question found",
+            "session_complete": False,
+            "progress": {
+                "current": current_index,
+                "total": session.total_questions,
+                "correct": session.correct_answers,
+            }
         }
     
     def end_session(self, session_id: int) -> Optional[TrainingSession]:
@@ -176,6 +313,9 @@ class TrainingService:
             return None
         
         # Update session in database
+        details = session.details or {}
+        details["ended_at"] = datetime.utcnow().isoformat()
+        
         session_data = {
             "id": session.id,
             "user_id": session.user_id,
@@ -185,7 +325,7 @@ class TrainingService:
             "total_questions": session.total_questions,
             "correct_answers": session.correct_answers,
             "time_spent": session.time_spent,
-            "details": session.details,
+            "details": details,
             "created_at": session.created_at,
         }
         
@@ -219,27 +359,67 @@ class TrainingService:
             "time_spent": session.time_spent,
         }
     
-    def generate_questions(
+    def _generate_questions(
         self,
         mode: str,
-        range_obj: Range,
+        range_obj: Optional[Range],
         num_questions: int = 10,
-    ) -> List[Dict[str, Any]]:
+    ) -> List[TrainingQuestion]:
         """Generate questions for a training session."""
-        from ..domain.hand import generate_all_hands
-        import random
-        
         questions = []
-        all_hands = generate_all_hands()
         
-        if mode == "fill":
+        if not range_obj:
+            # If no range, generate questions with random actions
+            all_hands = generate_all_hands()
             selected_hands = random.sample(all_hands, min(num_questions, len(all_hands)))
+            
             for hand in selected_hands:
-                questions.append({
-                    "type": "fill",
-                    "hand": hand.to_string,
-                    "question": f"Quelle action pour {hand.to_string} ?",
-                    "correct_answer": "open",  # Simplified
-                })
+                # Random action for demo purposes
+                actions = ['open', 'call', 'raise', 'fold', 'all_in']
+                correct_action = random.choice(actions)
+                
+                questions.append(TrainingQuestion(
+                    hand=hand.to_string,
+                    question=f"Quelle action pour {hand.to_string} ?",
+                    correct_answer=correct_action,
+                    question_type=mode,
+                ))
+        else:
+            # Use the range's hands to generate questions
+            # Get all hands from the range
+            range_hands = range_obj.hands
+            
+            # Generate a mix of hands from the range and random hands
+            all_possible_hands = generate_all_hands()
+            
+            # Select hands that are in the range
+            range_hand_strings = [hand_str for hand_str in range_hands.keys()]
+            
+            # If we have enough hands in the range, use them
+            if len(range_hand_strings) >= num_questions:
+                selected_hand_strings = random.sample(range_hand_strings, num_questions)
+            else:
+                # Mix range hands with random hands
+                remaining = num_questions - len(range_hand_strings)
+                other_hands = [h.to_string for h in all_possible_hands 
+                             if h.to_string not in range_hand_strings]
+                extra_hands = random.sample(other_hands, min(remaining, len(other_hands)))
+                selected_hand_strings = range_hand_strings + extra_hands
+            
+            for hand_str in selected_hand_strings:
+                # Get the action from the range, or use 'fold' if not in range
+                action = range_hands.get(hand_str)
+                if action:
+                    correct_answer = action.name.lower()
+                else:
+                    # For hands not in range, the correct answer is 'fold'
+                    correct_answer = 'fold'
+                
+                questions.append(TrainingQuestion(
+                    hand=hand_str,
+                    question=f"Quelle action pour {hand_str} ?",
+                    correct_answer=correct_answer,
+                    question_type=mode,
+                ))
         
         return questions
