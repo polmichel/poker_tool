@@ -71,6 +71,12 @@ const Training: React.FC = () => {
       return;
     }
 
+    // Vérifier que la range a au moins une main
+    if (!selectedRange.hands || Object.keys(selectedRange.hands).length === 0) {
+      alert('La range sélectionnée ne contient aucune main. Veuillez ajouter des mains à votre range avant de démarrer l\'entraînement.');
+      return;
+    }
+
     const session = await createSession(selectedMode, selectedRange.id!, undefined, totalQuestions);
     if (session) {
       setIsSessionActive(true);
@@ -184,6 +190,13 @@ const Training: React.FC = () => {
         </Box>
       </Box>
 
+      {/* Affichage des erreurs */}
+      {error && (
+        <Paper sx={{ p: 2, mb: 2, backgroundColor: 'error.main', color: 'error.contrastText' }}>
+          <Typography variant="body1">{error}</Typography>
+        </Paper>
+      )}
+
       {/* Sélection du mode */}
       <TrainingModeSelector
         selectedMode={selectedMode}
@@ -259,6 +272,25 @@ const Training: React.FC = () => {
             timeLeft={undefined}
           />
         </Box>
+      )}
+
+      {/* Message d'erreur si la session est active mais qu'il n'y a pas de question */}
+      {isSessionActive && !currentQuestion && (
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h6" color="error" gutterBottom>
+            Aucune question disponible
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            La range sélectionnée ne contient pas assez de mains pour générer des questions.
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={handleResetSession}
+            color="inherit"
+          >
+            Retour
+          </Button>
+        </Paper>
       )}
 
       {/* Zone de démarrage */}

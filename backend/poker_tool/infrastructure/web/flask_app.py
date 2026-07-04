@@ -198,6 +198,10 @@ class FlaskApp:
             if not range_obj:
                 raise NotFound(f"Range {data['range_id']} not found")
 
+            # Check if range has hands
+            if not range_obj.hands or len(range_obj.hands) == 0:
+                raise BadRequest(f"Range {data['range_id']} has no hands. Please add hands to your range before starting a training session.")
+
             # Get user
             user_id = data.get("user_id")
             if not user_id:
