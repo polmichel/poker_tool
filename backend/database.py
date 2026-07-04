@@ -3,11 +3,13 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from models.range import RangeType, Position
-from models.scenario import ScenarioType
-
 # Initialisation de SQLAlchemy
 db = SQLAlchemy()
+
+
+# Importer les enums depuis les models
+from models.range import RangeType, Position
+from models.scenario import ScenarioType
 
 
 # Modèles SQLAlchemy
@@ -150,29 +152,6 @@ def init_db(app):
     db.init_app(app)
     with app.app_context():
         db.create_all()
-        # Créer les énumérations si elles n'existent pas
-        _create_enums(app)
-
-
-def _create_enums(app):
-    """Crée les types énumérés pour la base de données."""
-    from flask_sqlalchemy import get_engine
-    engine = get_engine(app)
-    
-    # Vérifier si les énumérations existent déjà
-    inspector = db.inspect(engine)
-    if "range_type_enum" not in [enum["name"] for enum in inspector.get_enums()]:
-        with engine.connect() as conn:
-            conn.execute(db.text("""
-                CREATE TYPE range_type_enum AS ENUM ('preflop', 'postflop', 'push_fold');
-            """))
-            conn.execute(db.text("""
-                CREATE TYPE position_enum AS ENUM ('UTG', 'MP', 'CO', 'BTN', 'SB', 'BB', 'undefined');
-            """))
-            conn.execute(db.text("""
-                CREATE TYPE scenario_type_enum AS ENUM ('cash_game', 'tournament', 'push_fold', 'heads_up');
-            """))
-            conn.commit()
 
 
 def reset_db(app):
@@ -180,7 +159,6 @@ def reset_db(app):
     with app.app_context():
         db.drop_all()
         db.create_all()
-        _create_enums(app)
 
 
 def backup_db(app, backup_path: str):

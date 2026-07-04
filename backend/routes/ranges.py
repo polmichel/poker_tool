@@ -1,9 +1,16 @@
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.exceptions import BadRequest, NotFound
-from ..database import db, RangeModel, ScenarioModel, User
-from ..models.range import Range, RangeType, Position
-from ..models.hand import Hand, ActionType, RANKS, generate_all_hands
-from ..models.scenario import Scenario, ScenarioType
+import os
+import sys
+
+# Ajouter le dossier backend au path pour les imports
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, backend_dir)
+
+from database import db, RangeModel, ScenarioModel, User
+from models.range import Range, RangeType, Position
+from models.hand import Hand, ActionType, RANKS, generate_all_hands
+from models.scenario import Scenario, ScenarioType
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 import json
 from datetime import datetime

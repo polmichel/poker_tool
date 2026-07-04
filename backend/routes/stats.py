@@ -1,7 +1,14 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.exceptions import BadRequest, NotFound
-from ..database import db, RangeModel, TrainingSession, User, Stat
-from ..models.range import Range, RangeType, Position
+import os
+import sys
+
+# Ajouter le dossier backend au path pour les imports
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, backend_dir)
+
+from database import db, RangeModel, TrainingSession, User, Stat
+from models.range import Range, RangeType, Position
 from datetime import datetime, timedelta
 import json
 
@@ -260,7 +267,7 @@ def export_stats():
 def backup_all_data():
     """Sauvegarde toutes les données (ranges, sessions, utilisateurs)."""
     import os
-    from ..database import backup_db
+    from database import backup_db
     from flask import current_app
     
     # Créer un dossier de backup s'il n'existe pas

@@ -1,4 +1,10 @@
 from flask import Blueprint
+import os
+import sys
+
+# Ajouter le dossier backend au path pour les imports
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, backend_dir)
 
 # Importer les routes pour les enregistrer
 from . import ranges, training, stats
