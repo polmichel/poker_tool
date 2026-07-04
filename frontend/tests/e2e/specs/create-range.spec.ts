@@ -65,7 +65,6 @@ test.describe('Création d\'une range', () => {
     }
     
     // 6. Sélectionner le type de range si le champ existe
-    // NOTE: D'après les erreurs, les options sont en français ("Préflop" pas "preflop")
     const rangeTypeSelect = page.locator('.MuiSelect-select').first();
     const typeCount = await rangeTypeSelect.count();
     if (typeCount > 0) {
@@ -75,8 +74,9 @@ test.describe('Création d\'une range', () => {
       // Attendre que le menu déroulant s'ouvre
       await page.waitForTimeout(500);
       
-      // Sélectionner "Préflop" (en français)
-      const preflopOption = page.locator('text="Préflop"');
+      // Sélectionner "Préflop" - cibler spécifiquement l'option du menu
+      // Utiliser role="option" pour éviter le strict mode violation
+      const preflopOption = page.locator('[role="option"][aria-selected="false"]:has-text("Préflop")');
       await preflopOption.waitFor({ state: 'visible', timeout: 2000 });
       await preflopOption.click();
     }
@@ -91,8 +91,8 @@ test.describe('Création d\'une range', () => {
       // Attendre que le menu déroulant s'ouvre
       await page.waitForTimeout(500);
       
-      // Sélectionner "BTN"
-      const btnOption = page.locator('text="BTN"');
+      // Sélectionner "BTN" - cibler spécifiquement l'option du menu
+      const btnOption = page.locator('[role="option"][aria-selected="false"]:has-text("BTN")');
       await btnOption.waitFor({ state: 'visible', timeout: 2000 });
       await btnOption.click();
     }
@@ -111,16 +111,11 @@ test.describe('Création d\'une range', () => {
     await nameInput.fill('Range E2E Sauvegarde');
     
     // 2. Trouver et cliquer sur le bouton Sauvegarder
-    // NOTE: D'après les erreurs, le bouton pourrait avoir un autre texte
-    // Essayons plusieurs variantes :
-    
     const saveButtonVariants = [
       'button:has-text("Sauvegarder")',
       'button:has-text("Enregistrer")',
-      'button:has-text("Save")',
       'button[type="submit"]',
-      '.MuiButton-contained:has-text(/Sauvegarder|Enregistrer|Save/)',
-      'button:has(.MuiSvgIcon-root)' // Bouton avec icône
+      '.MuiButton-contained:has-text(/Sauvegarder|Enregistrer/)'
     ];
     
     let saveButton = null;
@@ -135,20 +130,7 @@ test.describe('Création d\'une range', () => {
     }
     
     if (!saveButton) {
-      // Afficher tous les boutons dans le dialogue pour débogage
-      const allButtons = dialog.locator('button');
-      const buttonCount = await allButtons.count();
-      console.log(`Found ${buttonCount} buttons in dialog`);
-      
-      const buttonTexts = [];
-      for (let i = 0; i < Math.min(buttonCount, 10); i++) {
-        const btn = allButtons.nth(i);
-        const text = await btn.textContent();
-        buttonTexts.push(`Button ${i}: "${text}"`);
-      }
-      console.log(buttonTexts.join('\n'));
-      
-      throw new Error('Could not find save button. Check console logs for available buttons.');
+      throw new Error('Could not find save button. Check console logs.');
     }
     
     await saveButton.waitFor({ state: 'visible', timeout: 5000 });
