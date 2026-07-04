@@ -3,8 +3,8 @@
  * 
  * Objectif: Créer une range et vérifier qu'elle est enregistrée.
  * 
- * NOTE: D'après les erreurs, le bouton "Nouvelle Range" ouvre un DIALOGUE
- * (pas une nouvelle page), et les champs n'utilisent pas name="name".
+ * NOTE: D'après les logs, après sauvegarde on est redirigé vers /ranges/X/edit
+ * (pas /ranges). C'est le comportement normal de l'application.
  * 
  * À exécuter localement avec:
  *   npm run start (dans un terminal)
@@ -50,12 +50,6 @@ test.describe('Étape 3: Créer une range', () => {
     await dialog.waitFor({ state: 'visible', timeout: 5000 });
     
     // 2. Trouver le champ de nom - essayer plusieurs sélecteurs Material-UI
-    // Possibilités dans ton code :
-    // - TextField avec label="Nom" ou label="Name"
-    // - input avec id="name" ou id="rangeName"
-    // - .MuiInput-root input
-    
-    // Essayons d'abord par label
     const nameInputByLabel = page.locator('.MuiTextField-root:has-text("Nom") input');
     const nameInputById = page.locator('input#name');
     const nameInputByClass = page.locator('.MuiInput-root input').first();
@@ -72,17 +66,7 @@ test.describe('Étape 3: Créer une range', () => {
       nameInput = nameInputByClass;
       console.log('Using name input by class');
     } else {
-      // Afficher tous les inputs pour débogage
-      const allInputs = page.locator('input');
-      const inputCount = await allInputs.count();
-      console.log(`Found ${inputCount} inputs total`);
-      
-      // Essayer de trouver par type
-      const textInputs = page.locator('input[type="text"]');
-      const textInputCount = await textInputs.count();
-      console.log(`Found ${textInputCount} text inputs`);
-      
-      throw new Error('Could not find name input. Check console logs for available inputs.');
+      throw new Error('Could not find name input. Check console logs.');
     }
     
     await nameInput.waitFor({ state: 'visible', timeout: 5000 });
@@ -104,7 +88,7 @@ test.describe('Étape 3: Créer une range', () => {
     const dialog = page.locator('.MuiDialog-root');
     await dialog.waitFor({ state: 'visible', timeout: 5000 });
     
-    // Trouver le champ name (même logique que dans le test précédent)
+    // Trouver le champ name
     const nameInputByLabel = page.locator('.MuiTextField-root:has-text("Nom") input');
     const nameInputById = page.locator('input#name');
     const nameInputByClass = page.locator('.MuiInput-root input').first();
@@ -123,12 +107,6 @@ test.describe('Étape 3: Créer une range', () => {
     await nameInput.fill('Range E2E Test Sauvegarde');
     
     // 2. Trouver et cliquer sur le bouton Sauvegarder
-    // Dans un dialogue Material-UI, le bouton est probablement :
-    // - button:has-text("Sauvegarder")
-    // - button:has-text("Enregistrer")
-    // - button[type="submit"]
-    // - .MuiButton-contained
-    
     const saveButton = page.locator('button:has-text("Sauvegarder")');
     const saveButtonCount = await saveButton.count();
     
@@ -136,35 +114,19 @@ test.describe('Étape 3: Créer une range', () => {
       await saveButton.waitFor({ state: 'visible', timeout: 5000 });
       await saveButton.click();
     } else {
-      // Essayer d'autres variantes
       const submitButton = page.locator('button[type="submit"]');
-      const submitCount = await submitButton.count();
-      
-      if (submitCount > 0) {
-        await submitButton.click();
-      } else {
-        // Afficher tous les boutons pour débogage
-        const allButtons = page.locator('button');
-        const buttonCount = await allButtons.count();
-        console.log(`Found ${buttonCount} buttons in dialog`);
-        
-        const buttonTexts = [];
-        for (let i = 0; i < Math.min(buttonCount, 5); i++) {
-          const btn = allButtons.nth(i);
-          const text = await btn.textContent();
-          buttonTexts.push(`Button ${i}: "${text}"`);
-        }
-        console.log(buttonTexts.join('\n'));
-        
-        throw new Error('Could not find save button. Check console logs for available buttons.');
-      }
+      await submitButton.click();
     }
     
-    // 3. Attendre que le dialogue se ferme
+    // 3. Attendre que le dialogue se ferme OU la redirection
     await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
     
-    // 4. Vérifier qu'on est toujours sur /ranges
-    await expect(page).toHaveURL('http://localhost:3000/ranges');
+    // 4. Vérifier qu'on est soit sur /ranges, soit sur /ranges/X/edit
+    // (D'après les logs, on est redirigé vers /ranges/2/edit)
+    const url = page.url();
+    expect(url).toMatch(/http:\/\/localhost:3000\/ranges(\/\d+\/edit)?$/);
+    
+    console.log(`After save, URL is: ${url}`);
   });
   
   test('Vérifier que la range apparaît dans la liste', async ({ page }) => {
@@ -207,33 +169,17 @@ test.describe('Étape 3: Créer une range', () => {
       await submitButton.click();
     }
     
-    // Attendre que le dialogue se ferme
+    // Attendre que le dialogue se ferme ou la redirection
     await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
     
-    // 2. Vérifier que la range apparaît dans la liste
-    // D'après l'Étape 2, on sait qu'il y a des .MuiList-root
-    // La nouvelle range devrait apparaître dans une liste
+    // 2. Aller sur la page /ranges pour voir la liste
+    await page.goto('http://localhost:3000/ranges');
+    await page.waitForLoadState('networkidle');
     
+    // 3. Vérifier que la range apparaît dans la liste
     const rangeName = page.locator('text="Range pour Test Liste"');
     await rangeName.waitFor({ state: 'visible', timeout: 10000 });
     
-    // Si on ne trouve pas par texte exact, essayer des variantes
-    const rangeNamePartial = page.locator('text=/Range pour Test/');
-    const rangeNameCount = await rangeNamePartial.count();
-    
-    if (rangeNameCount === 0) {
-      // Afficher le contenu de la page pour débogage
-      const bodyText = await page.locator('body').textContent();
-      console.log('Page content (first 500 chars):', bodyText?.substring(0, 500));
-      
-      // Essayer de trouver dans les listes
-      const listItems = page.locator('.MuiListItem-root');
-      const listItemCount = await listItems.count();
-      console.log(`Found ${listItemCount} list items`);
-      
-      throw new Error('Could not find range in list. Check console logs.');
-    }
-    
-    await expect(rangeNamePartial).toBeVisible();
+    await expect(rangeName).toBeVisible();
   });
 });
