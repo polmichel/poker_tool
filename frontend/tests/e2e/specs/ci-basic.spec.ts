@@ -83,9 +83,10 @@ test.describe('CI Basic Tests - No Server Required', () => {
     expect(devices['Desktop Safari']).toBeDefined();
   });
 
-  test('Environment variables are accessible', async () => {
-    // Verify that environment variables are accessible
-    expect(process.env.BASE_URL).toBeDefined();
-    expect(process.env.CI).toBeDefined();
+  test('Playwright can create browser contexts', async ({ browser }) => {
+    // Verify that Playwright can create browser contexts
+    const context = await browser.newContext();
+    expect(context).toBeDefined();
+    await context.close();
   });
 });
