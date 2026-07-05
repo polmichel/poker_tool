@@ -63,24 +63,6 @@ test.describe('Questionnaire sur une range', () => {
     // Afficher le nom de la range sélectionnée pour débogage
     const selectedRangeName = await rangeChips.first().textContent();
     console.log(`Range sélectionnée: "${selectedRangeName}"`);
-    
-    // Vérifier les mains de la range via l'API
-    try {
-      const response = await page.request.get('http://localhost:3000/api/ranges');
-      if (response.ok()) {
-        const ranges = await response.json();
-        const selectedRange = ranges.find((r: any) => r.name === selectedRangeName);
-        if (selectedRange) {
-          const handsCount = Object.keys(selectedRange.hands || {}).length;
-          console.log(`Mains dans la range: ${handsCount}`);
-          if (handsCount === 0) {
-            console.log('WARNING: La range sélectionnée n\'a pas de mains !');
-          }
-        }
-      }
-    } catch (error) {
-      console.log('Could not fetch ranges:', error);
-    }
   });
 
   // Test pour chaque mode de questionnaire
@@ -89,36 +71,7 @@ test.describe('Questionnaire sur une range', () => {
       // 1. Sélectionner une range (la première disponible)
       const rangeChips = page.locator('.MuiChip-root');
       await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
-      
-      // Vérifier les mains de la première range
-      let hasHands = false;
-      try {
-        const response = await page.request.get('http://localhost:3000/api/ranges');
-        if (response.ok()) {
-          const ranges = await response.json();
-          const firstRange = ranges[0];
-          hasHands = firstRange && Object.keys(firstRange.hands || {}).length > 0;
-          console.log(`Première range: "${firstRange.name}" a ${Object.keys(firstRange.hands || {}).length} mains`);
-        }
-      } catch (error) {
-        console.log('Could not check hands:', error);
-      }
-      
-      // Si la première range n'a pas de mains, en sélectionner une autre ou en créer une
-      if (!hasHands) {
-        console.log('La première range n\'a pas de mains, on essaie la deuxième...');
-        const chipCount = await rangeChips.count();
-        if (chipCount > 1) {
-          await rangeChips.nth(1).click();
-        } else {
-          console.log('Une seule range disponible et elle n\'a pas de mains. Il faut en créer une.');
-          // Pour l'instant, on skip ce test
-          test.skip();
-          return;
-        }
-      } else {
-        await rangeChips.first().click();
-      }
+      await rangeChips.first().click();
       
       const selectedRangeName = await rangeChips.first().textContent();
       console.log(`Range sélectionnée: "${selectedRangeName}"`);
@@ -138,11 +91,15 @@ test.describe('Questionnaire sur une range', () => {
       await startButton.waitFor({ state: 'visible', timeout: 5000 });
       
       console.log(`Avant clic, URL: ${page.url()}`);
+      console.log(`Avant clic, body contient: ${(await page.locator('body').textContent()).substring(0, 200)}...`);
+      
       await startButton.click();
       
-      // Attendre un peu pour voir si quelque chose change
-      await page.waitForTimeout(2000);
+      // Attendre un peu et vérifier TOUT ce qui a changé
+      await page.waitForTimeout(3000);
+      
       console.log(`Après clic, URL: ${page.url()}`);
+      console.log(`Après clic, body contient: ${(await page.locator('body').textContent()).substring(0, 200)}...`);
       
       // Vérifier s'il y a une alerte ou un snackbar
       const alert = page.locator('.MuiAlert-root, .MuiSnackbar-root');
@@ -152,13 +109,40 @@ test.describe('Questionnaire sur une range', () => {
         console.log(`ALERTE/SNACKBAR: ${alertText}`);
       }
       
+      // Vérifier si le bouton a changé (devient disabled ?)
+      const startButtonAfter = page.locator('button:has-text("Démarrer l\'entraînement")');
+      const isDisabled = await startButtonAfter.getAttribute('disabled');
+      console.log(`Bouton Démarrer disabled: ${isDisabled}`);
+      
+      // Vérifier si un nouveau bouton est apparu (ex: "Terminer")
+      const endButton = page.locator('button:has-text("Terminer")');
+      const endButtonCount = await endButton.count();
+      console.log(`Bouton Terminer visible: ${endButtonCount > 0}`);
+      
+      // Vérifier si la question est apparue (plusieurs formats possibles)
+      const questionFormats = [
+        'text=/Question \d+ sur \d+/',
+        'text=/Question \d+/',
+        'text=Question',
+        '.MuiTypography-h6',
+        '.MuiPaper-root'
+      ];
+      
+      for (const format of questionFormats) {
+        const q = page.locator(format);
+        const count = await q.count();
+        if (count > 0) {
+          const text = await q.textContent();
+          console.log(`Question trouvée avec ${format}: "${text}"`);
+        }
+      }
+      
       // Vérifier si isSessionActive est vrai (en regardant le DOM)
       const sessionActiveIndicator = page.locator('text=/Question|Résultats/');
       const sessionActiveCount = await sessionActiveIndicator.count();
       console.log(`Indicateurs de session active: ${sessionActiveCount}`);
       
-      // 4. Attendre que le questionnaire démarre
-      // NOTE: Le format est "Question X sur Y" (d'après TrainingQuestion.tsx)
+      // 4. Attendre que le questionnaire démarre (plusieurs formats possibles)
       const questionIndicator = page.locator('text=/Question \d+ sur \d+/');
       await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
       
@@ -171,28 +155,10 @@ test.describe('Questionnaire sur une range', () => {
   });
 
   test('Répondre à une question et passer à la suivante', async ({ page }) => {
-    // 1. Sélectionner une range avec des mains
+    // 1. Sélectionner une range
     const rangeChips = page.locator('.MuiChip-root');
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
-    
-    // Trouver une range avec des mains
-    let rangeIndex = 0;
-    try {
-      const response = await page.request.get('http://localhost:3000/api/ranges');
-      if (response.ok()) {
-        const ranges = await response.json();
-        for (let i = 0; i < ranges.length; i++) {
-          if (Object.keys(ranges[i].hands || {}).length > 0) {
-            rangeIndex = i;
-            break;
-          }
-        }
-      }
-    } catch (error) {
-      console.log('Could not find range with hands:', error);
-    }
-    
-    await rangeChips.nth(rangeIndex).click();
+    await rangeChips.first().click();
     
     // 2. Sélectionner le premier mode
     const firstModeButton = page.locator('.MuiToggleButton-root').first();
@@ -252,28 +218,10 @@ test.describe('Questionnaire sur une range', () => {
   });
 
   test('Terminer une session de questionnaire', async ({ page }) => {
-    // 1. Sélectionner une range avec des mains
+    // 1. Sélectionner une range
     const rangeChips = page.locator('.MuiChip-root');
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
-    
-    // Trouver une range avec des mains
-    let rangeIndex = 0;
-    try {
-      const response = await page.request.get('http://localhost:3000/api/ranges');
-      if (response.ok()) {
-        const ranges = await response.json();
-        for (let i = 0; i < ranges.length; i++) {
-          if (Object.keys(ranges[i].hands || {}).length > 0) {
-            rangeIndex = i;
-            break;
-          }
-        }
-      }
-    } catch (error) {
-      console.log('Could not find range with hands:', error);
-    }
-    
-    await rangeChips.nth(rangeIndex).click();
+    await rangeChips.first().click();
     
     // 2. Sélectionner le premier mode
     const firstModeButton = page.locator('.MuiToggleButton-root').first();
