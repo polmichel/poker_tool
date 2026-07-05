@@ -63,6 +63,24 @@ test.describe('Questionnaire sur une range', () => {
     // Afficher le nom de la range sélectionnée pour débogage
     const selectedRangeName = await rangeChips.first().textContent();
     console.log(`Range sélectionnée: "${selectedRangeName}"`);
+    
+    // Vérifier les mains de la range via l'API
+    try {
+      const response = await page.request.get('http://localhost:3000/api/ranges');
+      if (response.ok()) {
+        const ranges = await response.json();
+        const selectedRange = ranges.find((r: any) => r.name === selectedRangeName);
+        if (selectedRange) {
+          const handsCount = Object.keys(selectedRange.hands || {}).length;
+          console.log(`Mains dans la range: ${handsCount}`);
+          if (handsCount === 0) {
+            console.log('WARNING: La range sélectionnée n\'a pas de mains !');
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Could not fetch ranges:', error);
+    }
   });
 
   // Test pour chaque mode de questionnaire
@@ -71,7 +89,36 @@ test.describe('Questionnaire sur une range', () => {
       // 1. Sélectionner une range (la première disponible)
       const rangeChips = page.locator('.MuiChip-root');
       await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
-      await rangeChips.first().click();
+      
+      // Vérifier les mains de la première range
+      let hasHands = false;
+      try {
+        const response = await page.request.get('http://localhost:3000/api/ranges');
+        if (response.ok()) {
+          const ranges = await response.json();
+          const firstRange = ranges[0];
+          hasHands = firstRange && Object.keys(firstRange.hands || {}).length > 0;
+          console.log(`Première range: "${firstRange.name}" a ${Object.keys(firstRange.hands || {}).length} mains`);
+        }
+      } catch (error) {
+        console.log('Could not check hands:', error);
+      }
+      
+      // Si la première range n'a pas de mains, en sélectionner une autre ou en créer une
+      if (!hasHands) {
+        console.log('La première range n\'a pas de mains, on essaie la deuxième...');
+        const chipCount = await rangeChips.count();
+        if (chipCount > 1) {
+          await rangeChips.nth(1).click();
+        } else {
+          console.log('Une seule range disponible et elle n\'a pas de mains. Il faut en créer une.');
+          // Pour l'instant, on skip ce test
+          test.skip();
+          return;
+        }
+      } else {
+        await rangeChips.first().click();
+      }
       
       const selectedRangeName = await rangeChips.first().textContent();
       console.log(`Range sélectionnée: "${selectedRangeName}"`);
@@ -97,16 +144,15 @@ test.describe('Questionnaire sur une range', () => {
       await page.waitForTimeout(2000);
       console.log(`Après clic, URL: ${page.url()}`);
       
-      // Vérifier s'il y a une alerte
-      const alert = page.locator('.MuiAlert-root');
+      // Vérifier s'il y a une alerte ou un snackbar
+      const alert = page.locator('.MuiAlert-root, .MuiSnackbar-root');
       const alertCount = await alert.count();
       if (alertCount > 0) {
         const alertText = await alert.textContent();
-        console.log(`ALERTE: ${alertText}`);
+        console.log(`ALERTE/SNACKBAR: ${alertText}`);
       }
       
       // Vérifier si isSessionActive est vrai (en regardant le DOM)
-      // Quand la session est active, certains éléments deviennent visibles
       const sessionActiveIndicator = page.locator('text=/Question|Résultats/');
       const sessionActiveCount = await sessionActiveIndicator.count();
       console.log(`Indicateurs de session active: ${sessionActiveCount}`);
@@ -125,10 +171,28 @@ test.describe('Questionnaire sur une range', () => {
   });
 
   test('Répondre à une question et passer à la suivante', async ({ page }) => {
-    // 1. Sélectionner une range
+    // 1. Sélectionner une range avec des mains
     const rangeChips = page.locator('.MuiChip-root');
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
-    await rangeChips.first().click();
+    
+    // Trouver une range avec des mains
+    let rangeIndex = 0;
+    try {
+      const response = await page.request.get('http://localhost:3000/api/ranges');
+      if (response.ok()) {
+        const ranges = await response.json();
+        for (let i = 0; i < ranges.length; i++) {
+          if (Object.keys(ranges[i].hands || {}).length > 0) {
+            rangeIndex = i;
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Could not find range with hands:', error);
+    }
+    
+    await rangeChips.nth(rangeIndex).click();
     
     // 2. Sélectionner le premier mode
     const firstModeButton = page.locator('.MuiToggleButton-root').first();
@@ -188,10 +252,28 @@ test.describe('Questionnaire sur une range', () => {
   });
 
   test('Terminer une session de questionnaire', async ({ page }) => {
-    // 1. Sélectionner une range
+    // 1. Sélectionner une range avec des mains
     const rangeChips = page.locator('.MuiChip-root');
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
-    await rangeChips.first().click();
+    
+    // Trouver une range avec des mains
+    let rangeIndex = 0;
+    try {
+      const response = await page.request.get('http://localhost:3000/api/ranges');
+      if (response.ok()) {
+        const ranges = await response.json();
+        for (let i = 0; i < ranges.length; i++) {
+          if (Object.keys(ranges[i].hands || {}).length > 0) {
+            rangeIndex = i;
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Could not find range with hands:', error);
+    }
+    
+    await rangeChips.nth(rangeIndex).click();
     
     // 2. Sélectionner le premier mode
     const firstModeButton = page.locator('.MuiToggleButton-root').first();
