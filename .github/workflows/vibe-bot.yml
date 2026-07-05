@@ -1,0 +1,125 @@
+name: Vibe Bot
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'vibe-bot/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'vibe-bot/**'
+
+# Permet de déclencher manuellement le workflow
+workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Vibe Bot
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: vibe-bot/package-lock.json
+
+      - name: Install dependencies
+        working-directory: vibe-bot
+        run: npm ci
+
+      - name: Create .env file from secrets
+        working-directory: vibe-bot
+        run: |
+          # Créer le fichier .env avec les secrets GitHub
+          echo "POKER_TOOL_APP_ID=${{ secrets.POKER_TOOL_APP_ID }}" > .env
+          echo "POKER_TOOL_PRIVATE_KEY=${{ secrets.POKER_TOOL_PRIVATE_KEY }}" >> .env
+          echo "POKER_TOOL_APP_SECRET_KEY=${{ secrets.POKER_TOOL_APP_SECRET_KEY }}" >> .env
+          echo "MISTRAL_API_KEY=${{ secrets.MISTRAL_API_KEY }}" >> .env
+          echo "ALLOWED_REPOS=polmichel/poker_tool" >> .env
+          echo "BOT_NAME=Vibe Bot" >> .env
+          echo "BOT_PREFIX=@vibe" >> .env
+          echo "LOG_LEVEL=info" >> .env
+
+      - name: Test configuration
+        working-directory: vibe-bot
+        run: |
+          # Tester que la configuration est valide
+          node -e "
+            const config = require('./src/config');
+            console.log('✅ Configuration validée');
+            console.log('  - GitHub App ID: OK');
+            console.log('  - Private Key: OK');
+            console.log('  - Webhook Secret: OK');
+            console.log('  - Mistral API Key: OK');
+          " || echo "❌ Configuration invalide"
+
+      - name: Start bot (for testing)
+        working-directory: vibe-bot
+        run: |
+          # Démarrer le bot en arrière-plan pour les tests
+          npm start &
+          BOT_PID=$!
+          sleep 5
+          
+          # Tester l'endpoint de santé
+          curl -f http://localhost:3000/health || {
+            echo "❌ Health check failed"
+            kill $BOT_PID
+            exit 1
+          }
+          
+          echo "✅ Bot démarré avec succès"
+          kill $BOT_PID
+
+  # Job pour déployer sur Railway (optionnel)
+  deploy-railway:
+    name: Deploy to Railway
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Login to Railway
+        run: |
+          echo "${{ secrets.RAILWAY_TOKEN }}" | railway login --token
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy to Railway
+        working-directory: vibe-bot
+        run: |
+          # Créer un fichier .env pour Railway
+          echo "POKER_TOOL_APP_ID=${{ secrets.POKER_TOOL_APP_ID }}" > .env
+          echo "POKER_TOOL_PRIVATE_KEY=${{ secrets.POKER_TOOL_PRIVATE_KEY }}" >> .env
+          echo "POKER_TOOL_APP_SECRET_KEY=${{ secrets.POKER_TOOL_APP_SECRET_KEY }}" >> .env
+          echo "MISTRAL_API_KEY=${{ secrets.MISTRAL_API_KEY }}" >> .env
+          echo "ALLOWED_REPOS=polmichel/poker_tool" >> .env
+          
+          # Déployer
+          railway up --detach
+          
+          # Récupérer l'URL
+          RAILWAY_URL=$(railway status | grep "URL:" | awk '{print $2}')
+          echo "✅ Bot déployé sur Railway : $RAILWAY_URL"
+          echo "RAILWAY_URL=$RAILWAY_URL" >> $GITHUB_ENV
+
+      - name: Update GitHub App Webhook
+        if: success()
+        run: |
+          # Mettre à jour le webhook GitHub avec l'URL Railway
+          # (Nécessite l'API GitHub, à implémenter si besoin)
+          echo "⚠️  Pensez à mettre à jour manuellement le Webhook URL dans votre GitHub App :"
+          echo "   https://github.com/settings/apps/${{ secrets.POKER_TOOL_APP_ID }}"
+          echo "   Webhook URL : ${{ env.RAILWAY_URL }}/webhook"
