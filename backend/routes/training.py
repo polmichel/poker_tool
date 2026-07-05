@@ -232,10 +232,16 @@ def _generate_questions(mode: str, range_obj: RangeModel, num_questions: int = 1
         non_range_hands = [h.to_string() for h in all_hands if h.to_string() not in range_hands]
         
         # Sélectionner des mains dans et hors de la range
-        selected_in_range = random.sample(range_hands, min(num_questions // 2, len(range_hands)))
-        selected_out_range = random.sample(non_range_hands, min(num_questions // 2, len(non_range_hands)))
+        # Si il n'y a pas de mains hors de la range, on prend toutes les questions dans la range
+        if len(non_range_hands) == 0:
+            # Toutes les mains sont dans la range, on prend uniquement des mains de la range
+            selected_hands = random.sample(range_hands, min(num_questions, len(range_hands)))
+        else:
+            selected_in_range = random.sample(range_hands, min(num_questions // 2, len(range_hands)))
+            selected_out_range = random.sample(non_range_hands, min(num_questions // 2, len(non_range_hands)))
+            selected_hands = selected_in_range + selected_out_range
         
-        for hand_str in selected_in_range + selected_out_range:
+        for hand_str in selected_hands:
             is_in_range = hand_str in range_instance.hands
             questions.append({
                 "type": "guess",
