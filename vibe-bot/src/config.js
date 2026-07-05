@@ -1,25 +1,31 @@
 /**
  * Configuration du bot Vibe pour GitHub
- * Charge les variables d'environnement et valide la configuration
+ * Charge les variables d'environnement et les secrets GitHub
  */
 
-require('dotenv').config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
+// Essayer de charger dotenv d'abord (pour le développement local)
+try {
+  require('dotenv').config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
+} catch (error) {
+  // Ignorer si dotenv n'est pas disponible (en production avec GitHub Secrets)
+}
 
 const config = {
   // ===========================================
   // GitHub App Configuration
   // ===========================================
   github: {
-    appId: process.env.GITHUB_APP_ID,
-    privateKey: process.env.GITHUB_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    webhookSecret: process.env.GITHUB_WEBHOOK_SECRET,
+    // Utilise les noms de secrets que tu as configurés
+    appId: process.env.POKER_TOOL_APP_ID || process.env.GITHUB_APP_ID,
+    privateKey: (process.env.POKER_TOOL_PRIVATE_KEY || process.env.GITHUB_PRIVATE_KEY)?.replace(/\\n/g, '\n'),
+    webhookSecret: process.env.POKER_TOOL_APP_SECRET_KEY || process.env.GITHUB_WEBHOOK_SECRET,
   },
 
   // ===========================================
   // Mistral AI Configuration
   // ===========================================
   mistral: {
-    apiKey: process.env.MISTRAL_API_KEY,
+    apiKey: process.env.MISTRAL_API_KEY || process.env.VIBE_MISTRAL_API_KEY,
     model: process.env.MISTRAL_MODEL || 'mistral-tiny',
     baseUrl: process.env.MISTRAL_BASE_URL || 'https://api.mistral.ai/v1',
     timeout: parseInt(process.env.MISTRAL_TIMEOUT) || 30000, // 30 secondes
@@ -39,7 +45,7 @@ const config = {
   bot: {
     name: process.env.BOT_NAME || 'Vibe Bot',
     prefix: process.env.BOT_PREFIX || '@vibe',
-    allowedRepos: process.env.ALLOWED_REPOS?.split(',').map(r => r.trim()) || [],
+    allowedRepos: process.env.ALLOWED_REPOS?.split(',').map(r => r.trim()) || ['polmichel/poker_tool'],
     allowedUsers: process.env.ALLOWED_USERS?.split(',').map(u => u.trim()) || [],
   },
 
@@ -56,28 +62,29 @@ const config = {
 // ===========================================
 
 const requiredConfig = [
-  { name: 'GITHUB_APP_ID', value: config.github.appId },
-  { name: 'GITHUB_PRIVATE_KEY', value: config.github.privateKey },
-  { name: 'GITHUB_WEBHOOK_SECRET', value: config.github.webhookSecret },
+  { name: 'POKER_TOOL_APP_ID ou GITHUB_APP_ID', value: config.github.appId },
+  { name: 'POKER_TOOL_PRIVATE_KEY ou GITHUB_PRIVATE_KEY', value: config.github.privateKey },
+  { name: 'POKER_TOOL_APP_SECRET_KEY ou GITHUB_WEBHOOK_SECRET', value: config.github.webhookSecret },
   { name: 'MISTRAL_API_KEY', value: config.mistral.apiKey },
 ];
 
-const missingConfig = requiredConfig.filter(({ value }) => !value || value === 'your_github_app_id_here' || value === 'your_webhook_secret_here' || value === 'your_mistral_api_key_here');
+const missingConfig = requiredConfig.filter(({ value }) => !value || value.includes('your_') || value.includes('here'));
 
 if (missingConfig.length > 0 && process.env.NODE_ENV !== 'test') {
   console.error('❌ Configuration manquante :');
   missingConfig.forEach(({ name }) => {
     console.error(`  - ${name}`);
   });
-  console.error('\nVeuillez configurer les variables d\'environnement dans le fichier .env');
-  console.error('Copiez le fichier .env.example et complétez-le avec vos valeurs.');
+  console.error('\nVeuillez configurer les secrets GitHub ou les variables d\'environnement.');
+  console.error('Secrets nécessaires : POKER_TOOL_APP_ID, POKER_TOOL_PRIVATE_KEY, POKER_TOOL_APP_SECRET_KEY, MISTRAL_API_KEY');
   process.exit(1);
 }
 
 // Validation du format de la clé privée
 if (config.github.privateKey && !config.github.privateKey.includes('BEGIN RSA PRIVATE KEY')) {
-  console.error('❌ La clé privée GitHub (GITHUB_PRIVATE_KEY) doit être au format PEM.');
+  console.error('❌ La clé privée GitHub doit être au format PEM.');
   console.error('Exemple : -----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----');
+  console.error('Assurez-vous que le secret POKER_TOOL_PRIVATE_KEY contient bien toute la clé, y compris les en-têtes.');
   process.exit(1);
 }
 
@@ -91,6 +98,16 @@ if (!validModels.includes(config.mistral.model)) {
 // Validation des dépôts autorisés
 if (config.bot.allowedRepos.length === 0) {
   console.warn('⚠️  Aucun dépôt autorisé configuré. Le bot répondra à tous les dépôts.');
+}
+
+// Afficher la configuration chargée (pour le débogage)
+if (process.env.NODE_ENV === 'development') {
+  console.log('✅ Configuration chargée :');
+  console.log(`  - GitHub App ID: ${config.github.appId ? '✓' : '✗'}`);
+  console.log(`  - GitHub Private Key: ${config.github.privateKey ? '✓' : '✗'}`);
+  console.log(`  - GitHub Webhook Secret: ${config.github.webhookSecret ? '✓' : '✗'}`);
+  console.log(`  - Mistral API Key: ${config.mistral.apiKey ? '✓' : '✗'}`);
+  console.log(`  - Dépôts autorisés: ${config.bot.allowedRepos.join(', ')}`);
 }
 
 module.exports = config;

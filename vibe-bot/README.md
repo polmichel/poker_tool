@@ -13,40 +13,11 @@ Ce bot écoute les événements de ton dépôt GitHub (commentaires sur les issu
 - **npm** ou **yarn**
 - **Une GitHub App** configurée (voir [Configuration GitHub](#github-app-configuration))
 - **Une clé API Mistral** (à récupérer sur [Mistral Console](https://console.mistral.ai/))
+- **Les secrets GitHub configurés** dans ton dépôt
 
 ---
 
-### Installation
-
-#### 1️⃣ Cloner le dépôt (si ce n'est pas déjà fait)
-```bash
-git clone https://github.com/polmichel/poker_tool.git
-cd poker_tool/vibe-bot
-```
-
-#### 2️⃣ Installer les dépendances
-```bash
-npm install
-```
-
-#### 3️⃣ Configurer les variables d'environnement
-Copie le fichier `.env.example` en `.env` et complète-le avec tes valeurs :
-```bash
-cp .env.example .env
-```
-
-Édite le fichier `.env` avec tes identifiants (voir [Configuration](#configuration)).
-
-#### 4️⃣ Démarrer le bot en développement
-```bash
-npm run dev
-```
-
-Le bot sera accessible à : **http://localhost:3000**
-
----
-
-## 📝 Configuration
+## 📋 Configuration
 
 ### GitHub App Configuration
 
@@ -70,48 +41,112 @@ Le bot sera accessible à : **http://localhost:3000**
    - ✅ `Issues`
 
 4. **Webhook** :
-   - **Webhook URL** : `https://ton-serveur.com/webhook` (à configurer après le déploiement)
-   - **Webhook Secret** : Génère une clé secrète (à copier dans `.env`)
+   - **Webhook URL** : *(À configurer après le déploiement, ex: `https://ton-serveur.com/webhook`)*
+   - **Webhook Secret** : Génère une clé secrète (à stocker dans `POKER_TOOL_APP_SECRET_KEY`)
 
 5. **Private Key** :
    - Télécharge la clé privée (format `.pem`) depuis la page de l'app
-   - Copie son contenu dans `GITHUB_PRIVATE_KEY` dans `.env`
+   - **Copie TOUT le contenu** (y compris `-----BEGIN RSA PRIVATE KEY-----` et `-----END RSA PRIVATE KEY-----`)
+   - Stocke-le dans le secret `POKER_TOOL_PRIVATE_KEY`
 
 6. **Installer l'app** sur ton dépôt `poker_tool`
 
 ---
 
-### Mistral AI Configuration
+### Secrets GitHub à Configurer
 
-1. **Obtenir une clé API** :
-   - Va sur [Mistral Console](https://console.mistral.ai/)
-   - Crée un compte si ce n'est pas déjà fait
-   - Récupère ta clé API dans **Settings → API Keys**
+Va dans **`https://github.com/polmichel/poker_tool/settings/secrets/actions`** et ajoute ces **4 secrets** :
 
-2. **Configurer dans `.env`** :
-   ```env
-   MISTRAL_API_KEY=ta_clé_api_mistral
-   MISTRAL_MODEL=mistral-tiny  # ou mistral-small, mistral-medium, etc.
-   ```
+| Nom du Secret | Valeur | Description |
+|---------------|--------|-------------|
+| `POKER_TOOL_APP_ID` | ID de ton app GitHub | Trouvé dans les paramètres de l'app |
+| `POKER_TOOL_PRIVATE_KEY` | Contenu du fichier `.pem` | **Copie TOUT le contenu** de la clé privée |
+| `POKER_TOOL_APP_SECRET_KEY` | Secret du webhook | Généré lors de la création du webhook |
+| `MISTRAL_API_KEY` | Ta clé API Mistral | Récupérée sur [Mistral Console](https://console.mistral.ai/) |
+
+⚠️ **Important pour `POKER_TOOL_PRIVATE_KEY`** :
+- Ouvre le fichier `.pem` téléchargé depuis GitHub
+- **Sélectionne et copie TOUT** (y compris les lignes `-----BEGIN RSA PRIVATE KEY-----` et `-----END RSA PRIVATE KEY-----`)
+- Colle-le **exactement** dans le secret (sans ajouter d'espaces ou de sauts de ligne supplémentaires)
 
 ---
 
-### Variables d'Environnement
+## 🚀 Déploiement
 
-| Variable | Description | Exemple | Obligatoire |
-|----------|-------------|---------|-------------|
-| `GITHUB_APP_ID` | ID de l'application GitHub | `123456` | ✅ |
-| `GITHUB_PRIVATE_KEY` | Clé privée de l'application (format PEM) | `-----BEGIN RSA PRIVATE KEY-----...` | ✅ |
-| `GITHUB_WEBHOOK_SECRET` | Secret du webhook GitHub | `webhook_secret_123` | ✅ |
-| `MISTRAL_API_KEY` | Clé API Mistral | `mistral_api_key_123` | ✅ |
-| `MISTRAL_MODEL` | Modèle Mistral à utiliser | `mistral-tiny` | ❌ |
-| `PORT` | Port du serveur | `3000` | ❌ |
-| `BASE_URL` | URL de base du serveur | `http://localhost:3000` | ❌ |
-| `BOT_NAME` | Nom du bot | `Vibe Bot` | ❌ |
-| `BOT_PREFIX` | Préfixe pour les commandes | `@vibe` | ❌ |
-| `ALLOWED_REPOS` | Dépôts autorisés (séparés par des virgules) | `polmichel/poker_tool` | ❌ |
-| `ALLOWED_USERS` | Utilisateurs autorisés (séparés par des virgules) | `polmichel` | ❌ |
-| `LOG_LEVEL` | Niveau de log (debug, info, warn, error) | `info` | ❌ |
+### Option 1 : Railway (Recommandé - Gratuit)
+
+1. **Créer un compte** sur [Railway](https://railway.app/)
+2. **Nouveau projet** → **Deploy from GitHub repo**
+3. Sélectionne `poker_tool` et la branche `main` (après avoir mergé la PR)
+4. **Configure les variables d'environnement** dans Railway :
+   ```
+   POKER_TOOL_APP_ID = [ton_app_id]
+   POKER_TOOL_PRIVATE_KEY = [contenu_du_fichier_pem]
+   POKER_TOOL_APP_SECRET_KEY = [ton_webhook_secret]
+   MISTRAL_API_KEY = [ta_clé_mistral]
+   ALLOWED_REPOS = polmichel/poker_tool
+   BOT_NAME = Vibe Bot
+   BOT_PREFIX = @vibe
+   PORT = 3000
+   ```
+5. **Déploie**
+6. **Récupère l'URL** (ex: `https://vibe-bot-production.up.railway.app`)
+7. **Mets à jour le Webhook URL** dans ta GitHub App :
+   - Va dans ta GitHub App → **Webhook** → **Edit**
+   - **Webhook URL** : `https://vibe-bot-production.up.railway.app/webhook`
+   - **Webhook Secret** : *(déjà configuré dans `POKER_TOOL_APP_SECRET_KEY`)*
+   - ✅ **Active** le webhook
+
+---
+
+### Option 2 : Render (Gratuit)
+
+1. **Créer un compte** sur [Render](https://render.com/)
+2. **Nouveau Web Service**
+3. **Connecter** ton dépôt GitHub
+4. **Configurer** :
+   - **Name** : `vibe-bot`
+   - **Region** : La plus proche de toi
+   - **Branch** : `main`
+   - **Root Directory** : `vibe-bot`
+   - **Build Command** : `npm install`
+   - **Start Command** : `npm start`
+5. **Ajoute les variables d'environnement** (mêmes que pour Railway)
+6. **Déploie**
+7. **Mets à jour le Webhook URL** dans ta GitHub App avec l'URL Render
+
+---
+
+### Option 3 : Tester Localement avec ngrok
+
+1. **Installe ngrok** :
+   ```bash
+   npm install -g ngrok
+   ```
+
+2. **Démarre le bot** :
+   ```bash
+   cd poker_tool/vibe-bot
+   npm install
+   npm run dev
+   ```
+
+3. **Expose le port 3000** :
+   ```bash
+   ngrok http 3000
+   ```
+   → Tu obtiendras une URL comme `https://abc123.ngrok.io`
+
+4. **Mets à jour le Webhook URL** dans ta GitHub App :
+   - **Webhook URL** : `https://abc123.ngrok.io/webhook`
+   - **Webhook Secret** : *(même valeur que `POKER_TOOL_APP_SECRET_KEY`)*
+
+5. **Teste le bot** :
+   - Va sur une issue/PR de ton dépôt
+   - Écris : `@vibe explain what is VPIP in poker`
+   - Le bot devrait répondre !
+
+⚠️ **Note** : ngrok donne une URL temporaire. Pour les tests locaux uniquement.
 
 ---
 
@@ -119,12 +154,12 @@ Le bot sera accessible à : **http://localhost:3000**
 
 | Commande | Description | Exemple |
 |----------|-------------|---------|
-| `@vibe fix this` | Analyse le code/problème et propose une correction | `@vibe fix this` |
-| `@vibe explain` | Explique un concept ou un code | `@vibe explain this function` |
-| `@vibe review` | Fait une revue de code complète | `@vibe review this PR` |
-| `@vibe suggest` | Propose des améliorations | `@vibe suggest optimizations` |
-| `@vibe docs` | Génère de la documentation | `@vibe docs for this class` |
-| `@vibe help` | Affiche l'aide | `@vibe help` |
+| `@vibe fix this` | 🔧 Analyse le code/problème et propose une correction | `@vibe fix this` |
+| `@vibe explain` | 📚 Explique un concept ou un code | `@vibe explain this function` |
+| `@vibe review` | 🔍 Fait une revue de code complète | `@vibe review this PR` |
+| `@vibe suggest` | 💡 Propose des améliorations | `@vibe suggest optimizations` |
+| `@vibe docs` | 📖 Génère de la documentation | `@vibe docs for this class` |
+| `@vibe help` | ❓ Affiche l'aide | `@vibe help` |
 
 ---
 
@@ -150,61 +185,21 @@ Le bot réagit aux événements suivants :
 
 ---
 
-## 🚀 Déploiement
+## 📦 Structure du Projet
 
-### Option 1 : Railway (Recommandé)
-
-1. **Créer un compte** sur [Railway](https://railway.app/)
-2. **Nouveau projet** → **Deploy from GitHub repo**
-3. **Sélectionner** `poker_tool/vibe-bot`
-4. **Configurer les variables d'environnement** dans Railway
-5. **Déployer**
-
-6. **Configurer le webhook GitHub** :
-   - Va dans ta GitHub App
-   - Mets à jour **Webhook URL** avec l'URL Railway (ex: `https://vibe-bot-production.up.railway.app/webhook`)
-
----
-
-### Option 2 : Render
-
-1. **Créer un compte** sur [Render](https://render.com/)
-2. **Nouveau Web Service**
-3. **Connecter** ton dépôt GitHub
-4. **Configurer** :
-   - **Name** : `vibe-bot`
-   - **Region** : La plus proche de toi
-   - **Branch** : `main`
-   - **Root Directory** : `vibe-bot`
-   - **Build Command** : `npm install`
-   - **Start Command** : `npm start`
-5. **Ajouter les variables d'environnement**
-6. **Déployer**
-
-7. **Configurer le webhook GitHub** avec l'URL Render
-
----
-
-### Option 3 : VPS avec ngrok (pour les tests)
-
-1. **Installer ngrok** :
-   ```bash
-   npm install -g ngrok
-   ```
-
-2. **Démarrer le bot** :
-   ```bash
-   npm run dev
-   ```
-
-3. **Exposer le port 3000** :
-   ```bash
-   ngrok http 3000
-   ```
-
-4. **Configurer le webhook GitHub** avec l'URL ngrok (ex: `https://abc123.ngrok.io/webhook`)
-
-⚠️ **Attention** : ngrok donne une URL temporaire. Pour les tests locaux uniquement.
+```
+poker_tool/
+└── vibe-bot/
+    ├── src/
+    │   ├── index.js          # 🚀 Serveur Express (webhooks GitHub)
+    │   ├── github.js         # 🔑 Client GitHub (auth + API)
+    │   ├── mistral.js        # 🤖 Client Mistral AI
+    │   └── config.js         # ⚙️ Configuration
+    ├── package.json          # 📦 Dépendances Node.js
+    ├── .env.example          # 🔐 Template de configuration
+    ├── .gitignore            # 🚫 Fichiers à ignorer
+    └── README.md             # 📖 Documentation
+```
 
 ---
 
@@ -301,28 +296,12 @@ Exemple : Un joueur avec un VPIP de 25% joue environ 1 main sur 4 préflop.
 
 ## 🛠️ Développement
 
-### Structure du Projet
-```
-vibe-bot/
-├── src/
-│   ├── index.js          # Serveur principal (Express)
-│   ├── github.js         # Client GitHub (authentification, webhooks)
-│   ├── mistral.js        # Client Mistral AI
-│   └── config.js         # Configuration du bot
-├── package.json
-├── .env.example
-├── .env                  # Variables d'environnement (ignoré par git)
-└── README.md
-```
-
 ### Scripts Disponibles
 
 | Commande | Description |
 |----------|-------------|
 | `npm start` | Démarre le bot en production |
 | `npm run dev` | Démarre le bot en développement (avec nodemon) |
-| `npm run build` | Compile le code TypeScript (si utilisé) |
-| `npm test` | Exécute les tests |
 
 ---
 
@@ -332,6 +311,7 @@ vibe-bot/
 
 1. **Vérifie les logs** :
    ```bash
+   cd vibe-bot
    npm run dev
    ```
    - Est-ce que le serveur démarre correctement ?
@@ -342,9 +322,9 @@ vibe-bot/
    - Le webhook est-il correctement configuré ?
    - Les permissions sont-elles suffisantes ?
 
-3. **Vérifie les variables d'environnement** :
+3. **Vérifie les secrets GitHub** :
    - Toutes les variables obligatoires sont-elles présentes ?
-   - La clé privée est-elle au bon format ?
+   - La clé privée est-elle au bon format (avec les en-têtes PEM) ?
 
 4. **Teste le webhook manuellement** :
    - Utilise [GitHub's webhook tester](https://github.com/settings/apps) pour envoyer un événement de test
