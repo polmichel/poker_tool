@@ -6,9 +6,6 @@
  * - Lancer un questionnaire dans chaque mode
  * - Vérifier que le questionnaire se lance correctement
  * - Vérifier que les résultats sont enregistrés
- * 
- * NOTE: Le questionnaire ne démarre que si la range a au moins une main.
- * On doit donc s'assurer qu'une range avec des mains existe.
  */
 
 import { test, expect } from '@playwright/test';
@@ -20,123 +17,10 @@ const QUESTIONNAIRE_MODES = [
   { value: 'complete', label: 'Compléter une range' },
 ] as const;
 
-// Fonction utilitaire pour créer une range avec des mains via l'API
-// On va utiliser l'API directement pour créer une range avec des mains
-async function ensureRangeWithHandsExists(page: any) {
-  // Vérifier si une range avec des mains existe déjà
-  await page.goto('http://localhost:3000/ranges');
-  await page.waitForLoadState('networkidle');
-  
-  const rangeChips = page.locator('.MuiChip-root');
-  const chipCount = await rangeChips.count();
-  
-  // Si des ranges existent, on suppose qu'au moins une a des mains
-  if (chipCount > 0) {
-    return;
-  }
-  
-  // Sinon, créer une range via l'API
-  // On va utiliser fetch pour créer une range directement
-  const rangeData = {
-    name: 'Range E2E avec Mains',
-    description: 'Créée automatiquement pour les tests E2E',
-    range_type: 'preflop',
-    position: 'BTN',
-    hands: {
-      'AA': 'raise',
-      'KK': 'raise',
-      'QQ': 'open',
-      'AKs': 'open',
-      'JJ': 'call'
-    }
-  };
-  
-  try {
-    const response = await page.request.post('http://localhost:3000/api/ranges', {
-      data: rangeData
-    });
-    
-    if (!response.ok()) {
-      console.log('Failed to create range via API, will try via UI');
-      // Si l'API échoue, essayer via l'UI
-      await createRangeViaUI(page);
-    }
-  } catch (error) {
-    console.log('API request failed, will try via UI:', error);
-    // Si l'API échoue, essayer via l'UI
-    await createRangeViaUI(page);
-  }
-}
-
-// Fonction utilitaire pour créer une range avec des mains via l'UI
-async function createRangeViaUI(page: any) {
-  console.log('Creating range via UI...');
-  
-  // Aller sur la page des ranges
-  await page.goto('http://localhost:3000/ranges');
-  await page.waitForLoadState('networkidle');
-  
-  // Cliquer sur "Nouvelle Range"
-  const newRangeButton = page.locator('button:has-text("Nouvelle Range")');
-  await newRangeButton.waitFor({ state: 'visible', timeout: 5000 });
-  await newRangeButton.click();
-  
-  // Attendre que le dialogue s'ouvre
-  const dialog = page.locator('.MuiDialog-root');
-  await dialog.waitFor({ state: 'visible', timeout: 5000 });
-  
-  // Remplir le nom
-  const nameInput = page.locator('.MuiTextField-root:has-text("Nom") input').first();
-  await nameInput.waitFor({ state: 'visible', timeout: 5000 });
-  await nameInput.fill('Range E2E avec Mains');
-  
-  // Ajouter des mains en cliquant sur la grille
-  // La grille contient des cellules avec des mains comme "AA", "KK", etc.
-  // On va cliquer sur quelques cellules pour ajouter des actions
-  
-  // Attendre que la grille soit visible
-  const gridCells = page.locator('.MuiPaper-root .MuiButtonBase-root');
-  await gridCells.first().waitFor({ state: 'visible', timeout: 5000 });
-  
-  // Cliquer sur les premières cellules pour ajouter des actions
-  // Chaque clic change l'action de la main
-  const cellCount = await gridCells.count();
-  if (cellCount > 0) {
-    // Cliquer sur la première cellule (AA)
-    await gridCells.nth(0).click();
-    await page.waitForTimeout(100);
-    
-    // Cliquer sur la deuxième cellule (AKs)
-    if (cellCount > 1) {
-      await gridCells.nth(1).click();
-      await page.waitForTimeout(100);
-    }
-    
-    // Cliquer sur la troisième cellule (KK)
-    if (cellCount > 2) {
-      await gridCells.nth(2).click();
-      await page.waitForTimeout(100);
-    }
-  }
-  
-  // Sauvegarder
-  const saveButton = page.locator('button[type="submit"]');
-  await saveButton.waitFor({ state: 'visible', timeout: 5000 });
-  await saveButton.click();
-  
-  // Attendre que le dialogue se ferme ou la redirection
-  await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-  
-  console.log('Range created via UI');
-}
-
 test.describe('Questionnaire sur une range', () => {
   
   test.beforeEach(async ({ page }) => {
-    // Setup : s'assurer qu'une range avec des mains existe
-    await ensureRangeWithHandsExists(page);
-    
-    // Accéder à la page de training
+    // Setup : accéder à la page de training avant chaque test
     await page.goto('http://localhost:3000/training');
     await page.waitForLoadState('networkidle');
     
@@ -175,6 +59,10 @@ test.describe('Questionnaire sur une range', () => {
     const selectedChip = page.locator('.MuiChip-filled');
     const selectedCount = await selectedChip.count();
     expect(selectedCount).toBeGreaterThan(0);
+    
+    // Afficher le nom de la range sélectionnée pour débogage
+    const selectedRangeName = await rangeChips.first().textContent();
+    console.log(`Range sélectionnée: "${selectedRangeName}"`);
   });
 
   // Test pour chaque mode de questionnaire
@@ -185,31 +73,43 @@ test.describe('Questionnaire sur une range', () => {
       await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
       await rangeChips.first().click();
       
+      const selectedRangeName = await rangeChips.first().textContent();
+      console.log(`Range sélectionnée: "${selectedRangeName}"`);
+      
       // 2. Sélectionner le mode de questionnaire (utiliser le label en français)
       const modeButton = page.locator(`button:has-text("${mode.label}")`);
       await modeButton.waitFor({ state: 'visible', timeout: 5000 });
       await modeButton.click();
       
+      // Vérifier que le mode est bien sélectionné
+      const selectedModeButton = page.locator('.MuiToggleButton-root.Mui-selected');
+      const selectedModeText = await selectedModeButton.textContent();
+      console.log(`Mode sélectionné: "${selectedModeText}"`);
+      
       // 3. Cliquer sur "Démarrer l'entraînement" (le bouton bleu, pas "Démarrer rapidement")
       const startButton = page.locator('button:has-text("Démarrer l\'entraînement")');
       await startButton.waitFor({ state: 'visible', timeout: 5000 });
       
-      // Afficher l'URL avant le clic pour débogage
-      console.log(`Before click, URL: ${page.url()}`);
-      
+      console.log(`Avant clic, URL: ${page.url()}`);
       await startButton.click();
       
-      // Afficher l'URL après le clic pour débogage
-      await page.waitForTimeout(1000);
-      console.log(`After click, URL: ${page.url()}`);
+      // Attendre un peu pour voir si quelque chose change
+      await page.waitForTimeout(2000);
+      console.log(`Après clic, URL: ${page.url()}`);
       
       // Vérifier s'il y a une alerte
       const alert = page.locator('.MuiAlert-root');
       const alertCount = await alert.count();
       if (alertCount > 0) {
         const alertText = await alert.textContent();
-        console.log(`Alert found: ${alertText}`);
+        console.log(`ALERTE: ${alertText}`);
       }
+      
+      // Vérifier si isSessionActive est vrai (en regardant le DOM)
+      // Quand la session est active, certains éléments deviennent visibles
+      const sessionActiveIndicator = page.locator('text=/Question|Résultats/');
+      const sessionActiveCount = await sessionActiveIndicator.count();
+      console.log(`Indicateurs de session active: ${sessionActiveCount}`);
       
       // 4. Attendre que le questionnaire démarre
       // NOTE: Le format est "Question X sur Y" (d'après TrainingQuestion.tsx)
