@@ -2,9 +2,9 @@
   "name": "vibe-bot",
   "version": "1.0.0",
   "description": "GitHub Bot powered by Mistral AI for the poker_tool repository",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "build": "tsc",
     "test": "jest"
