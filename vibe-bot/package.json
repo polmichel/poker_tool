@@ -1,0 +1,42 @@
+{
+  "name": "vibe-bot",
+  "version": "1.0.0",
+  "description": "GitHub Bot powered by Mistral AI for the poker_tool repository",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "nodemon src/index.js",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": [
+    "github",
+    "bot",
+    "mistral",
+    "ai",
+    "webhook"
+  ],
+  "author": "polmichel",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/app": "^14.0.0",
+    "@octokit/webhooks": "^12.0.0",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.5",
+    "@types/cors": "^2.8.17",
+    "nodemon": "^3.0.2",
+    "typescript": "^5.3.3",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
