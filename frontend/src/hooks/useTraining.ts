@@ -3,7 +3,7 @@ import axios from 'axios';
 import { TrainingSession, TrainingMode, TrainingQuestion, Range } from '../types';
 
 // URL de base pour l'API
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 // Hook personnalisé pour gérer l'entraînement
 export function useTraining() {

@@ -9,7 +9,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 describe('useTraining Hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.REACT_APP_API_URL = 'http://localhost:5000/api';
+    process.env.REACT_APP_API_URL = 'http://localhost:8000/api';
   });
 
   it('initializes with correct default values', () => {

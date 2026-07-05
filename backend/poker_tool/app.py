@@ -40,7 +40,7 @@ class PokerTool:
         self.app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         CORS(self.app, resources={r"/*": {"origins": "*"}})
 
-    def run(self, host: str = "0.0.0.0", port: int = 5000, debug: bool = True) -> None:
+    def run(self, host: str = "0.0.0.0", port: int = 8000, debug: bool = True) -> None:
         """Run the application."""
         with self.app.app_context():
             self.storage.db.create_all()

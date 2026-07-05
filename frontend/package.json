@@ -52,7 +52,7 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:5000",
+  "proxy": "http://localhost:8000",
   "devDependencies": {
     "@playwright/test": "^1.61.1",
     "dotenv": "^17.4.2",
