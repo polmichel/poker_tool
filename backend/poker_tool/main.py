@@ -1,9 +1,9 @@
 """
 Main entry point for Poker Tool backend.
 """
-from .app import PokerToolApp
+from .app import PokerTool
 
 
 if __name__ == "__main__":
-    app = PokerToolApp()
+    app = PokerTool()
     app.run(host="0.0.0.0", port=5000, debug=True)
