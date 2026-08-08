@@ -177,35 +177,18 @@ class TrainingSession:
         """Generate questions for this session."""
         from ..hand import RANKS, generate_all_hands
 
+        range_hands = self._range.hands
+        all_hands = generate_all_hands()
+        range_hand_strings = list(range_hands.keys())
+
         if self._mode == "fill":
-            # Generate questions based on range
-            range_hands = self._range.hands
-            all_hands = generate_all_hands()
-
-            # Get hands from range
-            range_hand_strings = list(range_hands.keys())
-
+            # Mode "Remplir une range" : l'utilisateur doit remplir une grille vide
+            # On sélectionne des mains aléatoires et on demande leur action
             if len(range_hand_strings) == 0:
                 # No hands in range, cannot generate questions
                 return
 
-            if len(range_hand_strings) >= self._total_questions:
-                selected_hands = random.sample(range_hand_strings, self._total_questions)
-            else:
-                # Mix with random hands
-                remaining = self._total_questions - len(range_hand_strings)
-                other_hands = [str(h) for h in all_hands if str(h) not in range_hand_strings]
-                
-                # If there are not enough other hands, use some from range again
-                if len(other_hands) < remaining:
-                    # Use remaining range hands to fill up
-                    extra_range = random.choices(range_hand_strings, k=remaining - len(other_hands))
-                    extra = random.sample(other_hands, len(other_hands)) if other_hands else []
-                    selected_hands = range_hand_strings + extra + extra_range
-                else:
-                    extra = random.sample(other_hands, remaining)
-                    selected_hands = range_hand_strings + extra
-
+            selected_hands = random.sample(range_hand_strings, min(self._total_questions, len(range_hand_strings)))
             for hand_str in selected_hands:
                 action = range_hands.get(hand_str)
                 correct_answer = str(action) if action else "fold"
@@ -214,5 +197,46 @@ class TrainingSession:
                         hand=hand_str,
                         question=f"Quelle action pour {hand_str} ?",
                         correct_answer=correct_answer,
+                    )
+                )
+
+        elif self._mode == "guess":
+            # Mode "Deviner une range" : l'utilisateur doit deviner si une main fait partie de la range
+            # On mélange des mains dans la range et des mains hors de la range
+            non_range_hands = [str(h) for h in all_hands if str(h) not in range_hand_strings]
+
+            # Si il n'y a pas de mains hors de la range, on prend toutes les questions dans la range
+            if len(non_range_hands) == 0:
+                # Toutes les mains sont dans la range, on prend uniquement des mains de la range
+                selected_hands = random.sample(range_hand_strings, min(self._total_questions, len(range_hand_strings)))
+            else:
+                selected_in_range = random.sample(range_hand_strings, min(self._total_questions // 2, len(range_hand_strings)))
+                selected_out_range = random.sample(non_range_hands, min(self._total_questions // 2, len(non_range_hands)))
+                selected_hands = selected_in_range + selected_out_range
+
+            for hand_str in selected_hands:
+                is_in_range = hand_str in range_hands
+                self._questions.append(
+                    TrainingQuestion(
+                        hand=hand_str,
+                        question=f"Est-ce que {hand_str} fait partie de cette range ?",
+                        correct_answer=str(is_in_range).lower(),
+                    )
+                )
+
+        elif self._mode == "complete":
+            # Mode "Compléter une range" : l'utilisateur doit compléter une range partiellement remplie
+            # On sélectionne des mains de la range et on en cache certaines
+            if len(range_hand_strings) == 0:
+                return
+
+            selected_hands = random.sample(range_hand_strings, min(self._total_questions, len(range_hand_strings)))
+            for hand_str in selected_hands:
+                action = range_hands.get(hand_str)
+                self._questions.append(
+                    TrainingQuestion(
+                        hand=hand_str,
+                        question=f"Quelle est l'action pour {hand_str} dans cette range ?",
+                        correct_answer=str(action) if action else "fold",
                     )
                 )
