@@ -35,7 +35,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:3001',
+    baseURL: process.env.BASE_URL || 'http://localhost:3001',
     
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -75,15 +75,21 @@ export default defineConfig({
     }]),
   ],
 
-  /* 
-   * In CI: Don't use webServer (we start it manually in the workflow)
-   * In local dev: Run the React dev server
+  /*
+   * Web server configuration
+   * In local dev: Start both backend and frontend servers
+   * In CI: Servers are started manually in the workflow
    */
   webServer: isCI ? undefined : {
-    command: 'npm run start',
-    url: 'http://localhost:3000',
+    // Start backend first (Flask server)
+    command: 'cd ../../backend && python3 main.py',
+    url: 'http://localhost:5000/api/health',
     reuseExistingServer: true,
-    timeout: 120000, // 2 minutes for dev server to start
+    timeout: 60000, // 60 seconds for backend to start
+    env: {
+      FLASK_ENV: 'development',
+      DATABASE_URL: 'sqlite:///../../backend/instance/poker_tool.db',
+    },
   },
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
