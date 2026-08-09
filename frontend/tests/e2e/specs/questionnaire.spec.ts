@@ -21,11 +21,11 @@ test.describe('Questionnaire sur une range', () => {
   
   test.beforeEach(async ({ page }) => {
     // Setup : accéder à la page de training avant chaque test
-    await page.goto('http://localhost:3000/training');
+    await page.goto('/training');
     await page.waitForLoadState('networkidle');
     
     // Vérifier qu'on est bien sur la page de training
-    await expect(page).toHaveURL('http://localhost:3000/training');
+    await expect(page).toHaveURL('/training');
   });
 
   test('Accéder à la page de training', async ({ page }) => {

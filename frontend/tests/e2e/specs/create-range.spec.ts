@@ -14,7 +14,7 @@ test.describe('Création d\'une range', () => {
   
   test.beforeEach(async ({ page }) => {
     // Setup : accéder à la page des ranges avant chaque test
-    await page.goto('http://localhost:3000/ranges');
+    await page.goto('//ranges');
     await page.waitForLoadState('networkidle');
   });
 
@@ -229,7 +229,7 @@ test.describe('Création d\'une range', () => {
     await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
     
     // 2. Aller sur la page /ranges pour voir la liste
-    await page.goto('http://localhost:3000/ranges');
+    await page.goto('//ranges');
     await page.waitForLoadState('networkidle');
     
     // 3. Vérifier que la range apparaît dans la liste
