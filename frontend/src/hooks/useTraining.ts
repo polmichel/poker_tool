@@ -72,20 +72,30 @@ export function useTraining() {
     setError(null);
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/training/sessions`, {
+      // Step 1: Create the session
+      const createResponse = await axios.post(`${API_BASE_URL}/training/sessions`, {
         mode,
         range_id: rangeId,
         user_id: userId,
         total_questions: totalQuestions,
       });
       
-      const sessionData = response.data;
+      const sessionId = createResponse.data.id;
+      
+      // Step 2: Start the session to generate questions
+      const startResponse = await axios.post(`${API_BASE_URL}/training/sessions/${sessionId}/start`);
+      
+      const sessionData = startResponse.data;
       
       // Set session and first question
       setCurrentSession(sessionData.session);
       setCurrentQuestion(sessionData.first_question);
-      setProgress(sessionData.progress);
-      setScore(sessionData.progress?.score || 0);
+      setProgress({
+        current: 0,
+        total: sessionData.session.total_questions || totalQuestions,
+        correct: 0,
+      });
+      setScore(0);
       setTimeSpent(0);
       setIsSessionActive(true);
       
@@ -196,12 +206,21 @@ export function useTraining() {
         total_questions: 10,
       });
       
-      const sessionData = createResponse.data;
+      const sessionId = createResponse.data.id;
+      
+      // Then start it to generate questions
+      const startResponse = await axios.post(`${API_BASE_URL}/training/sessions/${sessionId}/start`);
+      
+      const sessionData = startResponse.data;
       
       // Set session and first question
       setCurrentSession(sessionData.session);
       setCurrentQuestion(sessionData.first_question);
-      setProgress(sessionData.progress);
+      setProgress({
+        current: 0,
+        total: sessionData.session.total_questions || 10,
+        correct: 0,
+      });
       setScore(0);
       setTimeSpent(0);
       setIsSessionActive(true);
