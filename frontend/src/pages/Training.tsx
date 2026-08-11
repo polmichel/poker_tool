@@ -183,6 +183,7 @@ const Training: React.FC = () => {
               onClick={handleQuickStart}
               color="success"
               disabled={ranges.length === 0}
+              data-testid="quick-start-button"
             >
               Démarrer
             </Button>
@@ -256,7 +257,7 @@ const Training: React.FC = () => {
             
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Tooltip title="Terminer la session">
-                <IconButton onClick={handleEndSession} color="error">
+                <IconButton onClick={handleEndSession} color="error" data-testid="end-session-button">
                   <StopIcon />
                 </IconButton>
               </Tooltip>
@@ -309,6 +310,7 @@ const Training: React.FC = () => {
             onClick={handleStartTraining}
             disabled={!selectedRange}
             size="large"
+            data-testid="start-training-button"
           >
             Démarrer l'entraînement
           </Button>
@@ -344,11 +346,11 @@ const Training: React.FC = () => {
       </Dialog>
 
       {/* Dialogue des résultats */}
-      <Dialog open={openResultsDialog} onClose={handleCloseResults} maxWidth="sm" fullWidth>
+      <Dialog open={openResultsDialog} onClose={handleCloseResults} maxWidth="sm" fullWidth data-testid="results-dialog">
         <DialogTitle>Résultats de la Session</DialogTitle>
         <DialogContent>
           <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h4" color="primary" gutterBottom>
+            <Typography variant="h4" color="primary" gutterBottom data-testid="final-score">
               {Math.round(score)}%
             </Typography>
             <Typography variant="h6" gutterBottom>

@@ -29,7 +29,7 @@ test.describe('Questionnaire sur une range', () => {
   });
 
   test('Accéder à la page de training', async ({ page }) => {
-    // Vérifier que le titre de la page contient "Poker"
+    // Vérifier que le titre de la page contient "Poker" ou "Entraînement"
     const title = await page.title();
     expect(title.toLowerCase()).toContain('poker');
     
@@ -86,67 +86,24 @@ test.describe('Questionnaire sur une range', () => {
       const selectedModeText = await selectedModeButton.textContent();
       console.log(`Mode sélectionné: "${selectedModeText}"`);
       
-      // 3. Cliquer sur "Démarrer l'entraînement" (le bouton bleu, pas "Démarrer rapidement")
-      const startButton = page.locator('button:has-text("Démarrer l\'entraînement")');
+      // 3. Cliquer sur "Démarrer l'entraînement"
+      const startButton = page.locator('[data-testid="start-training-button"]');
       await startButton.waitFor({ state: 'visible', timeout: 5000 });
       
       console.log(`Avant clic, URL: ${page.url()}`);
-      console.log(`Avant clic, body contient: ${(await page.locator('body').textContent()).substring(0, 200)}...`);
       
       await startButton.click();
       
-      // Attendre un peu et vérifier TOUT ce qui a changé
+      // Attendre un peu et vérifier que le questionnaire a démarré
       await page.waitForTimeout(3000);
       
       console.log(`Après clic, URL: ${page.url()}`);
-      console.log(`Après clic, body contient: ${(await page.locator('body').textContent()).substring(0, 200)}...`);
       
-      // Vérifier s'il y a une alerte ou un snackbar
-      const alert = page.locator('.MuiAlert-root, .MuiSnackbar-root');
-      const alertCount = await alert.count();
-      if (alertCount > 0) {
-        const alertText = await alert.textContent();
-        console.log(`ALERTE/SNACKBAR: ${alertText}`);
-      }
-      
-      // Vérifier si le bouton a changé (devient disabled ?)
-      const startButtonAfter = page.locator('button:has-text("Démarrer l\'entraînement")');
-      const isDisabled = await startButtonAfter.getAttribute('disabled');
-      console.log(`Bouton Démarrer disabled: ${isDisabled}`);
-      
-      // Vérifier si un nouveau bouton est apparu (ex: "Terminer")
-      const endButton = page.locator('button:has-text("Terminer")');
-      const endButtonCount = await endButton.count();
-      console.log(`Bouton Terminer visible: ${endButtonCount > 0}`);
-      
-      // Vérifier si la question est apparue (plusieurs formats possibles)
-      const questionFormats = [
-        'text=/Question \d+ sur \d+/',
-        'text=/Question \d+/',
-        'text=Question',
-        '.MuiTypography-h6',
-        '.MuiPaper-root'
-      ];
-      
-      for (const format of questionFormats) {
-        const q = page.locator(format);
-        const count = await q.count();
-        if (count > 0) {
-          const text = await q.textContent();
-          console.log(`Question trouvée avec ${format}: "${text}"`);
-        }
-      }
-      
-      // Vérifier si isSessionActive est vrai (en regardant le DOM)
-      const sessionActiveIndicator = page.locator('text=/Question|Résultats/');
-      const sessionActiveCount = await sessionActiveIndicator.count();
-      console.log(`Indicateurs de session active: ${sessionActiveCount}`);
-      
-      // 4. Attendre que le questionnaire démarre (plusieurs formats possibles)
+      // Vérifier si le questionnaire est actif (recherche de la question)
       const questionIndicator = page.locator('text=/Question \d+ sur \d+/');
       await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
       
-      // 5. Vérifier qu'on est toujours sur la page /training
+      // 4. Vérifier qu'on est toujours sur la page /training
       const url = page.url();
       expect(url).toContain('/training');
       
@@ -166,7 +123,7 @@ test.describe('Questionnaire sur une range', () => {
     await firstModeButton.click();
     
     // 3. Démarrer le questionnaire
-    const startButton = page.locator('button:has-text("Démarrer l\'entraînement")');
+    const startButton = page.locator('[data-testid="start-training-button"]');
     await startButton.click();
     
     // 4. Attendre la première question (format: "Question 1 sur 10")
@@ -174,6 +131,7 @@ test.describe('Questionnaire sur une range', () => {
     await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
     
     // 5. Trouver et cliquer sur une réponse
+    // Les boutons de réponse sont ceux qui ne sont pas des boutons de contrôle
     const answerButtons = page.locator('button').filter({
       hasNotText: ['Démarrer rapidement', 'Démarrer l\'entraînement', 'Paramètres', 'Terminer', 'Précédent', 'Suivant', 
                    'Remplir une range', 'Deviner une range', 'Compléter une range', 'Besoin d\'un indice ?']
@@ -191,7 +149,7 @@ test.describe('Questionnaire sur une range', () => {
       
       // Vérifier soit la question suivante, soit les résultats
       const nextQuestion = page.locator('text=/Question 2 sur \d+/');
-      const resultsDialog = page.locator('text="Résultats de la Session"');
+      const resultsDialog = page.locator('[data-testid="results-dialog"]');
       
       const nextQuestionCount = await nextQuestion.count();
       const resultsCount = await resultsDialog.count();
@@ -229,7 +187,7 @@ test.describe('Questionnaire sur une range', () => {
     await firstModeButton.click();
     
     // 3. Démarrer le questionnaire
-    const startButton = page.locator('button:has-text("Démarrer l\'entraînement")');
+    const startButton = page.locator('[data-testid="start-training-button"]');
     await startButton.click();
     
     // 4. Attendre la première question (format: "Question 1 sur 10")
@@ -237,16 +195,16 @@ test.describe('Questionnaire sur une range', () => {
     await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
     
     // 5. Terminer la session (bouton Terminer)
-    const endButton = page.locator('button:has-text("Terminer")');
+    const endButton = page.locator('[data-testid="end-session-button"]');
     await endButton.waitFor({ state: 'visible', timeout: 5000 });
     await endButton.click();
     
     // 6. Vérifier que le dialogue des résultats s'affiche
-    const resultsDialog = page.locator('text="Résultats de la Session"');
+    const resultsDialog = page.locator('[data-testid="results-dialog"]');
     await resultsDialog.waitFor({ state: 'visible', timeout: 5000 });
     
     // 7. Vérifier qu'un score est affiché
-    const scoreElement = page.locator('text=/\d+%/');
+    const scoreElement = page.locator('[data-testid="final-score"]');
     await scoreElement.waitFor({ state: 'visible', timeout: 5000 });
     
     const scoreText = await scoreElement.textContent();
