@@ -10,18 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
-    services:
-      # Start PostgreSQL service (if needed, currently using SQLite)
-      # postgres:
-      #   image: postgres:15
-      #   env:
-      #     POSTGRES_PASSWORD: postgres
-      #     POSTGRES_USER: postgres
-      #     POSTGRES_DB: poker_tool_test
-      #   ports:
-      #     - 5432:5432
-      #   options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -58,7 +46,7 @@ jobs:
         # Create instance directory
         mkdir -p instance
         # Start Flask server in background
-        python3 main.py > /tmp/backend.log 2>&1 &
+        python3 -m poker_tool.app > /tmp/backend.log 2>&1 &
         BACKEND_PID=$!
         echo "Backend PID: $BACKEND_PID" >> $GITHUB_ENV
         
@@ -76,20 +64,20 @@ jobs:
         python3 -c "
 import sys
 sys.path.insert(0, '.')
-from app import create_app
-from database import db, User, RangeModel
-from models.range import RangeType, Position
+from poker_tool.app import PokerTool
+from poker_tool.adapters.sqlalchemy.storage import SqlAlchemyStorage
+from models.range import RangeModel, RangeType, Position
+from models.user import UserModel
 
-app = create_app()
-with app.app_context():
-    db.create_all()
-    
+app = PokerTool()
+with app.app.app_context():
     # Create test user
-    user = User.query.filter_by(username='testuser').first()
+    user = UserModel.query.filter_by(username='testuser').first()
     if not user:
-        user = User(username='testuser', email='test@test.com')
-        db.session.add(user)
-        db.session.commit()
+        user = UserModel(username='testuser', email='test@test.com')
+        user.set_password('password123')
+        app.storage.db.session.add(user)
+        app.storage.db.session.commit()
         print(f'User created: ID={user.id}')
     
     # Create test range with hands
@@ -103,8 +91,8 @@ with app.app_context():
             hands={'AA': 'raise', 'KK': 'raise', 'QQ': 'raise', 'AKs': 'raise', 'JJ': 'call', 'TT': 'call', 'AQs': 'raise', 'KQs': 'call'},
             user_id=user.id
         )
-        db.session.add(range_obj)
-        db.session.commit()
+        app.storage.db.session.add(range_obj)
+        app.storage.db.session.commit()
         print(f'Range created: ID={range_obj.id}')
     
     # Verify
@@ -151,11 +139,18 @@ with app.app_context():
         BASE_URL: http://localhost:3000
         CI: true
 
+    - name: Run smoke tests
+      working-directory: frontend
+      run: npx playwright test tests/e2e/specs/smoke.spec.ts
+      env:
+        BASE_URL: http://localhost:3000
+        CI: true
+
     - name: Stop servers
       if: always()
       run: |
         # Stop backend
-        pkill -f "python3 main.py" || true
+        pkill -f "python3 -m poker_tool.app" || true
         # Stop frontend
         pkill -f "npm start" || true
         pkill -f "node.*react-scripts" || true

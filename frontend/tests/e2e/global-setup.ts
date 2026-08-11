@@ -39,7 +39,7 @@ async function globalSetup(config: FullConfig) {
     // Create test user
     console.log('Creating test user...');
     try {
-      await axios.post(`${API_BASE_URL}/auth/register`, {
+      await axios.post(`${API_BASE_URL}/users`, {
         username: 'testuser',
         email: 'test@test.com',
         password: 'password123',
