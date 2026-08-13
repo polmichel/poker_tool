@@ -38,6 +38,9 @@ class PokerTool:
         self.app.config["SECRET_KEY"] = "poker_tool_secret_key"
         self.app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///poker_tool.db"
         self.app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+        # Accept both "/api/ranges" and "/api/ranges/" (the frontend uses
+        # trailing slashes). Avoids 404s from strict_slashes default behavior.
+        self.app.url_map.strict_slashes = False
         CORS(self.app, resources={r"/*": {"origins": "*"}})
 
     def run(self, host: str = "0.0.0.0", port: int = 5000, debug: bool = True) -> None:
