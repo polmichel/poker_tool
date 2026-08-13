@@ -3,6 +3,8 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { navigateTo, waitForLoadingToComplete } from '../utils';
+import { mockRange, mockRanges, newRangeData } from '../fixtures';
 
 test.describe('Smoke Tests', () => {
   
@@ -27,8 +29,6 @@ test.describe('Smoke Tests', () => {
 
   test('Test utilities are available', async ({ page }) => {
     // This test verifies that our test utilities can be imported
-    const { navigateTo, waitForLoadingToComplete } = await import('../utils');
-    
     // Test navigation utility
     await navigateTo(page, 'about:blank');
     await waitForLoadingToComplete(page);
@@ -38,8 +38,6 @@ test.describe('Smoke Tests', () => {
 
   test('Fixtures are available', async () => {
     // This test verifies that our fixtures can be imported
-    const { mockRange, mockRanges, newRangeData } = await import('../fixtures');
-    
     // Verify fixture structure
     expect(mockRange).toHaveProperty('id');
     expect(mockRange).toHaveProperty('name');
