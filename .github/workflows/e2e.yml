@@ -48,7 +48,7 @@ jobs:
         # Start Flask server in background
         python3 -m poker_tool.app > /tmp/backend.log 2>&1 &
         BACKEND_PID=$!
-        echo "Backend PID: $BACKEND_PID" >> $GITHUB_ENV
+        echo "Backend PID: $BACKEND_PID"
         
         # Wait for backend to be ready
         for i in {1..30}; do
@@ -69,7 +69,7 @@ jobs:
         # Start React dev server in background
         PORT=3000 BROWSER=none npm start > /tmp/frontend.log 2>&1 &
         FRONTEND_PID=$!
-        echo "Frontend PID: $FRONTEND_PID" >> $GITHUB_ENV
+        echo "Frontend PID: $FRONTEND_PID"
         
         # Wait for frontend to be ready
         for i in {1..30}; do
