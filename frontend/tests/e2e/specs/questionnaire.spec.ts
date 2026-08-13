@@ -22,7 +22,7 @@ test.describe('Questionnaire sur une range', () => {
   test.beforeEach(async ({ page }) => {
     // Setup : accéder à la page de training avant chaque test
     await page.goto('/training');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // Vérifier qu'on est bien sur la page de training
     await expect(page).toHaveURL('/training');
