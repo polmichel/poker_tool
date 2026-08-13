@@ -83,28 +83,28 @@ jobs:
 
     - name: Run CI basic tests
       working-directory: frontend
-      run: npx playwright test --config tests/e2e tests/e2e/specs/ci-basic.spec.ts
+      run: npx playwright test --config tests/e2e ci-basic.spec.ts
       env:
         BASE_URL: http://localhost:3000
         CI: true
 
     - name: Run questionnaire tests
       working-directory: frontend
-      run: npx playwright test --config tests/e2e tests/e2e/specs/questionnaire.spec.ts
+      run: npx playwright test --config tests/e2e questionnaire.spec.ts
       env:
         BASE_URL: http://localhost:3000
         CI: true
 
     - name: Run create range tests
       working-directory: frontend
-      run: npx playwright test --config tests/e2e tests/e2e/specs/create-range.spec.ts
+      run: npx playwright test --config tests/e2e create-range.spec.ts
       env:
         BASE_URL: http://localhost:3000
         CI: true
 
     - name: Run smoke tests
       working-directory: frontend
-      run: npx playwright test --config tests/e2e tests/e2e/specs/smoke.spec.ts
+      run: npx playwright test --config tests/e2e smoke.spec.ts
       env:
         BASE_URL: http://localhost:3000
         CI: true
