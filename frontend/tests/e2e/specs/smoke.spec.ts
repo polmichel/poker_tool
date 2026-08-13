@@ -8,18 +8,21 @@ test.describe('Smoke Tests', () => {
   
   test('Playwright is configured correctly', async ({ page }) => {
     // This test verifies that Playwright can launch a browser
-    await page.goto('https://www.google.com');
-    await expect(page).toHaveTitle(/Google/);
+    // Use a simple local navigation to avoid network issues in CI
+    await page.goto('about:blank');
+    await expect(page).toHaveTitle('about:blank');
   });
 
   test('Application base URL is accessible', async ({ page }) => {
     // This test verifies that the base URL is configured
-    // Note: This will fail if the server is not running
-    // but it verifies the configuration is correct
+    // In CI, the frontend server should be running on localhost:3000
+    // In local dev, this will use the configured baseURL
+    await page.goto('/');
     
-    // For now, we'll just test with a known working URL
-    await page.goto('https://www.example.com');
-    await expect(page).toHaveTitle(/Example/);
+    // Just verify we can navigate without error
+    // The page might show loading state or error, but navigation should work
+    const url = page.url();
+    expect(url).toContain('localhost:3000');
   });
 
   test('Test utilities are available', async ({ page }) => {
@@ -27,10 +30,10 @@ test.describe('Smoke Tests', () => {
     const { navigateTo, waitForLoadingToComplete } = await import('../utils');
     
     // Test navigation utility
-    await navigateTo(page, 'https://www.example.com');
+    await navigateTo(page, 'about:blank');
     await waitForLoadingToComplete(page);
     
-    await expect(page).toHaveURL('https://www.example.com');
+    await expect(page).toHaveURL('about:blank');
   });
 
   test('Fixtures are available', async () => {

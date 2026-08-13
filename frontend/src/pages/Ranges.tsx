@@ -166,6 +166,7 @@ const Ranges: React.FC = () => {
             startIcon={<AddIcon />}
             onClick={handleOpenNewRangeForm}
             color="primary"
+            data-testid="new-range-button"
           >
             Nouvelle Range
           </Button>

@@ -107,6 +107,7 @@ const RangeForm: React.FC<RangeFormProps> = ({
           <TextField
             label="Nom"
             value={name}
+            data-testid="range-name-input"
             onChange={(e) => setName(e.target.value)}
             error={!!errors.name}
             helperText={errors.name}
@@ -119,6 +120,7 @@ const RangeForm: React.FC<RangeFormProps> = ({
           <TextField
             label="Description"
             value={description}
+            data-testid="range-description-input"
             onChange={(e) => setDescription(e.target.value)}
             multiline
             rows={3}
@@ -134,6 +136,7 @@ const RangeForm: React.FC<RangeFormProps> = ({
               value={rangeType}
               onChange={(e) => setRangeType(e.target.value as RangeType)}
               label="Type de Range"
+              data-testid="range-type-select"
             >
               {RANGE_TYPES.map((type) => (
                 <MenuItem key={type.value} value={type.value}>
@@ -150,6 +153,7 @@ const RangeForm: React.FC<RangeFormProps> = ({
               value={position}
               onChange={(e) => setPosition(e.target.value as Position)}
               label="Position"
+              data-testid="range-position-select"
             >
               {POSITIONS.map((pos) => (
                 <MenuItem key={pos.value} value={pos.value}>
@@ -192,6 +196,7 @@ const RangeForm: React.FC<RangeFormProps> = ({
               variant="outlined"
               onClick={handleCancel}
               disabled={!onCancel}
+              data-testid="range-cancel-button"
             >
               Annuler
             </Button>
@@ -200,6 +205,7 @@ const RangeForm: React.FC<RangeFormProps> = ({
               type="submit"
               color="primary"
               disabled={!!errors.name}
+              data-testid="range-save-button"
             >
               {range ? 'Mettre à jour' : 'Créer'}
             </Button>
