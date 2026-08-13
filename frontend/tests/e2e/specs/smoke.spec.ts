@@ -12,7 +12,9 @@ test.describe('Smoke Tests', () => {
     // This test verifies that Playwright can launch a browser
     // Use a simple local navigation to avoid network issues in CI
     await page.goto('about:blank');
-    await expect(page).toHaveTitle('about:blank');
+    // about:blank may have an empty title in some headless browsers,
+    // so just verify navigation succeeded (URL is about:blank).
+    await expect(page).toHaveURL('about:blank');
   });
 
   test('Application base URL is accessible', async ({ page }) => {
