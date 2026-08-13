@@ -9,7 +9,7 @@ import axios from 'axios';
  * 3. Perform authentication if needed
  */
 
-const API_BASE_URL = process.env.BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.API_URL || 'http://localhost:5000/api';
 
 async function globalSetup(config: FullConfig) {
   console.log('Running global setup...');
