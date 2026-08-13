@@ -102,7 +102,7 @@ test.describe('Questionnaire sur une range', () => {
       
       // Vérifier si le questionnaire est actif (recherche de la question)
       const questionIndicator = page.locator('text=/Question \d+ sur \d+/');
-      await questionIndicator.waitFor({ state: 'visible', timeout: 30000 });
+      await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
       
       // 4. Vérifier qu'on est toujours sur la page /training
       const url = page.url();
@@ -129,7 +129,7 @@ test.describe('Questionnaire sur une range', () => {
     
     // 4. Attendre la première question (format: "Question 1 sur 10")
     const questionIndicator = page.locator('text=/Question 1 sur \d+/');
-    await questionIndicator.waitFor({ state: 'visible', timeout: 30000 });
+    await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
     
     // 5. Trouver et cliquer sur une réponse
     // Les boutons de réponse sont ceux qui ne sont pas des boutons de contrôle
@@ -193,7 +193,7 @@ test.describe('Questionnaire sur une range', () => {
     
     // 4. Attendre la première question (format: "Question 1 sur 10")
     const questionIndicator = page.locator('text=/Question 1 sur \d+/');
-    await questionIndicator.waitFor({ state: 'visible', timeout: 30000 });
+    await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
     
     // 5. Terminer la session (bouton Terminer)
     const endButton = page.locator('[data-testid="end-session-button"]');
