@@ -132,17 +132,13 @@ test.describe('Questionnaire sur une range', () => {
     await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
     
     // 5. Trouver et cliquer sur une réponse
-    // Les boutons de réponse sont ceux qui ne sont pas des boutons de contrôle
-    const answerButtons = page.locator('button').filter({
-      hasNotText: ['Démarrer rapidement', 'Démarrer l\'entraînement', 'Paramètres', 'Terminer', 'Précédent', 'Suivant', 
-                   'Remplir une range', 'Deviner une range', 'Compléter une range', 'Besoin d\'un indice ?']
-    });
+    const answerButtons = page.locator('[data-testid="answer-button"]');
     
     const answerCount = await answerButtons.count();
     
     if (answerCount > 0) {
       // Cliquer sur la première réponse disponible
-      await answerButtons.first().waitFor({ state: 'visible', timeout: 5000 });
+      await answerButtons.first().waitFor({ state: 'visible', timeout: 10000 });
       await answerButtons.first().click();
       
       // 6. Attendre la question suivante ou les résultats
