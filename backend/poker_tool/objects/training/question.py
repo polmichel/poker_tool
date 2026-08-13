@@ -7,10 +7,11 @@ from typing import Dict
 class TrainingQuestion:
     """Immutable training question value object."""
 
-    def __init__(self, hand: str, question: str, correct_answer: str):
+    def __init__(self, hand: str, question: str, correct_answer: str, q_type: str = "fill"):
         self._hand = hand
         self._question = question
         self._correct_answer = correct_answer
+        self._type = q_type
 
     @property
     def hand(self) -> str:
@@ -27,6 +28,11 @@ class TrainingQuestion:
         """Correct answer."""
         return self._correct_answer
 
+    @property
+    def type(self) -> str:
+        """Question type (mode)."""
+        return self._type
+
     def is_correct(self, answer: str) -> bool:
         """Check if answer is correct."""
         return answer.lower() == self._correct_answer.lower()
@@ -37,6 +43,7 @@ class TrainingQuestion:
             "hand": self._hand,
             "question": self._question,
             "correct_answer": self._correct_answer,
+            "type": self._type,
         }
 
     @classmethod
@@ -46,6 +53,7 @@ class TrainingQuestion:
             hand=data["hand"],
             question=data["question"],
             correct_answer=data["correct_answer"],
+            q_type=data.get("type", "fill"),
         )
 
     def __eq__(self, other: object) -> bool:

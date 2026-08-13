@@ -87,6 +87,7 @@ class TrainingSessionModel(db.Model):
     def to_domain(self):
         """Convert to domain TrainingSession object."""
         from ...objects.training.session import TrainingSession
+        from ...objects.training.question import TrainingQuestion
         from ...objects.user import User
         from ...objects.range import Range
 
@@ -102,11 +103,17 @@ class TrainingSessionModel(db.Model):
             session_id=self.id,
         )
 
+        # Restore persisted questions instead of the freshly (randomly)
+        # generated ones, so answers/progress stay consistent across reloads.
+        saved_questions = (self.details or {}).get("questions") or []
+        if saved_questions:
+            session._questions = [TrainingQuestion.from_dict(q) for q in saved_questions]
+
         # Set internal state from model
         session._current_index = self.current_question_index
         session._correct_answers = self.correct_answers
         session._start_time = datetime.fromisoformat(self.created_at.isoformat())
-        if self.details.get("ended_at"):
+        if (self.details or {}).get("ended_at"):
             session._ended_at = datetime.fromisoformat(self.details["ended_at"])
 
         return session

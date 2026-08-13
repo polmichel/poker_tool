@@ -197,6 +197,7 @@ class TrainingSession:
                         hand=hand_str,
                         question=f"Quelle action pour {hand_str} ?",
                         correct_answer=correct_answer,
+                        q_type=self._mode,
                     )
                 )
 
@@ -221,6 +222,7 @@ class TrainingSession:
                         hand=hand_str,
                         question=f"Est-ce que {hand_str} fait partie de cette range ?",
                         correct_answer=str(is_in_range).lower(),
+                        q_type=self._mode,
                     )
                 )
 
@@ -238,5 +240,6 @@ class TrainingSession:
                         hand=hand_str,
                         question=f"Quelle est l'action pour {hand_str} dans cette range ?",
                         correct_answer=str(action) if action else "fold",
+                        q_type=self._mode,
                     )
                 )
