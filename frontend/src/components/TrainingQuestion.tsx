@@ -182,7 +182,7 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
     >
       {/* Barre de progression */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
+        <Typography variant="body2" color="text.secondary" gutterBottom data-testid="question-indicator">
           Question {questionNumber} sur {totalQuestions}
         </Typography>
         <LinearProgress

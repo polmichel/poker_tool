@@ -101,7 +101,7 @@ test.describe('Questionnaire sur une range', () => {
       console.log(`Après clic, URL: ${page.url()}`);
       
       // Vérifier si le questionnaire est actif (recherche de la question)
-      const questionIndicator = page.locator('text=/Question \d+ sur \d+/');
+      const questionIndicator = page.locator('[data-testid="question-indicator"]');
       await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
       
       // 4. Vérifier qu'on est toujours sur la page /training
@@ -128,7 +128,7 @@ test.describe('Questionnaire sur une range', () => {
     await startButton.click();
     
     // 4. Attendre la première question (format: "Question 1 sur 10")
-    const questionIndicator = page.locator('text=/Question 1 sur \d+/');
+    const questionIndicator = page.locator('[data-testid="question-indicator"]');
     await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
     
     // 5. Trouver et cliquer sur une réponse
@@ -149,7 +149,7 @@ test.describe('Questionnaire sur une range', () => {
       await page.waitForTimeout(2000);
       
       // Vérifier soit la question suivante, soit les résultats
-      const nextQuestion = page.locator('text=/Question 2 sur \d+/');
+      const nextQuestion = page.locator('[data-testid="question-indicator"]');
       const resultsDialog = page.locator('[data-testid="results-dialog"]');
       
       const nextQuestionCount = await nextQuestion.count();
@@ -192,7 +192,7 @@ test.describe('Questionnaire sur une range', () => {
     await startButton.click();
     
     // 4. Attendre la première question (format: "Question 1 sur 10")
-    const questionIndicator = page.locator('text=/Question 1 sur \d+/');
+    const questionIndicator = page.locator('[data-testid="question-indicator"]');
     await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
     
     // 5. Terminer la session (bouton Terminer)
