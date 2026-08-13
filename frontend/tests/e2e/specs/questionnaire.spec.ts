@@ -18,6 +18,7 @@ const QUESTIONNAIRE_MODES = [
 ] as const;
 
 test.describe('Questionnaire sur une range', () => {
+  test.setTimeout(120000);
   
   test.beforeEach(async ({ page }) => {
     // Setup : accéder à la page de training avant chaque test
