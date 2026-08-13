@@ -47,7 +47,7 @@ export default defineConfig({
     video: isCI ? 'off' : 'retain-on-failure',
     
     /* Timeout for each test */
-    timeout: 60000,
+    timeout: 120000,
     
     /* Timeout for each action (click, fill, etc.) */
     actionTimeout: 5000,

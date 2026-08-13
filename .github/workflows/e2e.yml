@@ -46,7 +46,7 @@ jobs:
         # Create instance directory
         mkdir -p instance
         # Start Flask server in background
-        python3 -m poker_tool.app > /tmp/backend.log 2>&1 &
+        FLASK_ENV=production python3 -c "from poker_tool.app import PokerTool; PokerTool().run(debug=False)" > /tmp/backend.log 2>&1 &
         BACKEND_PID=$!
         echo "Backend PID: $BACKEND_PID"
         
@@ -113,7 +113,7 @@ jobs:
       if: always()
       run: |
         # Stop backend
-        pkill -f "python3 -m poker_tool.app" || true
+        pkill -f "poker_tool.app" || true
         # Stop frontend
         pkill -f "npm start" || true
         pkill -f "node.*react-scripts" || true
