@@ -98,6 +98,10 @@ async function globalSetup(config: FullConfig) {
     // await browser.close();
     
     console.log('Global setup completed!');
+  } catch (err) {
+    console.error('Global setup failed:', err);
+    throw err;
+  }
 }
 
 export default globalSetup;
