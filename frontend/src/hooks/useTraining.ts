@@ -72,7 +72,9 @@ export function useTraining() {
     setError(null);
     
     try {
-      // Step 1: Create the session
+      // POST /training/sessions creates the session AND returns the first
+      // question (questions are generated at creation), so no separate
+      // /start call is needed.
       const createResponse = await axios.post(`${API_BASE_URL}/training/sessions`, {
         mode,
         range_id: rangeId,
@@ -80,12 +82,7 @@ export function useTraining() {
         total_questions: totalQuestions,
       });
       
-      const sessionId = createResponse.data.id;
-      
-      // Step 2: Start the session to generate questions
-      const startResponse = await axios.post(`${API_BASE_URL}/training/sessions/${sessionId}/start`);
-      
-      const sessionData = startResponse.data;
+      const sessionData = createResponse.data;
       
       // Set session and first question
       setCurrentSession(sessionData.session);
@@ -198,7 +195,9 @@ export function useTraining() {
     setError(null);
     
     try {
-      // First create the session
+      // POST /training/sessions creates the session AND returns the first
+      // question (questions are generated at creation), so no separate
+      // /start call is needed.
       const createResponse = await axios.post(`${API_BASE_URL}/training/sessions`, {
         mode,
         range_id: rangeId,
@@ -206,12 +205,7 @@ export function useTraining() {
         total_questions: 10,
       });
       
-      const sessionId = createResponse.data.id;
-      
-      // Then start it to generate questions
-      const startResponse = await axios.post(`${API_BASE_URL}/training/sessions/${sessionId}/start`);
-      
-      const sessionData = startResponse.data;
+      const sessionData = createResponse.data;
       
       // Set session and first question
       setCurrentSession(sessionData.session);
