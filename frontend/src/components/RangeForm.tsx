@@ -11,9 +11,8 @@ import {
   Paper,
   Divider,
   Chip,
-  IconButton,
 } from '@mui/material';
-import { Range, RangeType, Position, ActionType } from '../types';
+import { Range, RangeType, Position } from '../types';
 import { RANGE_TYPES, POSITIONS, ACTION_LABELS } from '../utils/constants';
 import { generateUniqueRangeName } from '../utils/helpers';
 

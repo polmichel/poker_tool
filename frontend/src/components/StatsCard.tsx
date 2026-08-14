@@ -4,9 +4,7 @@ import {
   TrendingUp as TrendingUpIcon,
   Timer as TimerIcon,
   CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
 } from '@mui/icons-material';
-import { Stats } from '../types';
 import { formatPercentage, formatTime } from '../utils/helpers';
 
 interface StatsCardProps {

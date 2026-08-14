@@ -5,7 +5,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   CssBaseline,
-  Paper,
   Drawer,
   List,
   ListItem,

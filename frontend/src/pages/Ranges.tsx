@@ -14,16 +14,13 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Delete as DeleteIcon,
   Edit as EditIcon,
-  Visibility as VisibilityIcon,
   ImportExport as ImportExportIcon,
-  FilterList as FilterListIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { RangeList, RangeForm, RangeGrid, ImportExportDialog } from '../components';
 import { useRanges } from '../hooks';
-import { Range, RangeType, Position } from '../types';
+import { Range } from '../types';
 import { generateRangeGrid } from '../utils/helpers';
 
 const Ranges: React.FC = () => {

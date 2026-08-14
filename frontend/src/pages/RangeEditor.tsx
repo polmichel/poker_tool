@@ -1,22 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Divider,
-  Grid,
-  IconButton,
-  Tooltip,
-  Chip,
-} from '@mui/material';
+import { Box, Typography, Paper, Button, Divider, IconButton, Tooltip, Chip } from '@mui/material';
 import {
   Save as SaveIcon,
   Delete as DeleteIcon,
   Undo as UndoIcon,
   Redo as RedoIcon,
   ContentCopy as ContentCopyIcon,
-  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { RangeGrid, RangeStats } from '../components';
@@ -28,16 +17,8 @@ import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
 const RangeEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const {
-    ranges,
-    loading,
-    error,
-    selectedRange,
-    setSelectedRange,
-    fetchRange,
-    updateRange,
-    deleteRange,
-  } = useRanges();
+  const { loading, error, selectedRange, setSelectedRange, fetchRange, updateRange, deleteRange } =
+    useRanges();
 
   const [range, setRange] = useState<Range | null>(null);
   const [grid, setGrid] = useState<any[][]>([]);
@@ -134,7 +115,8 @@ const RangeEditor: React.FC = () => {
       setHistory([generateRangeGrid(updatedRange.hands)]);
       setHistoryIndex(0);
     }
-  }, [range, id, grid, updateRange, setSelectedRange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range, id, grid, updateRange]);
 
   // Supprimer la range
   const handleDelete = useCallback(async () => {

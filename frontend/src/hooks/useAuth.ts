@@ -114,7 +114,7 @@ export function useAuth(authApi?: AuthApi) {
 
   // Mettre à jour l'utilisateur
   const updateUser = useCallback(
-    async (userData: Partial<User>) => {
+    async (_userData: Partial<User>) => {
       setLoading(true);
       setError(null);
 
@@ -134,7 +134,7 @@ export function useAuth(authApi?: AuthApi) {
         setLoading(false);
       }
     },
-    [user, token, api],
+    [user, api],
   );
 
   // Initialiser le hook

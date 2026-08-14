@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Box, Paper, Tooltip, MenuItem, Menu } from '@mui/material';
 import { RangeGridCell, ActionType, RANKS } from '../types';
 import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
@@ -43,7 +43,6 @@ const RangeGrid: React.FC<RangeGridProps> = ({
   grid,
   onCellClick,
   editable = false,
-  selectedAction,
   cellSize = 40,
   showLabels = true,
 }) => {
@@ -72,7 +71,7 @@ const RangeGrid: React.FC<RangeGridProps> = ({
   }, []);
 
   const handleActionSelect = useCallback(
-    (action: ActionType, hand: string, currentAction: ActionType) => {
+    (action: ActionType, hand: string, _currentAction: ActionType) => {
       if (onCellClick) {
         onCellClick(hand, action);
       }
