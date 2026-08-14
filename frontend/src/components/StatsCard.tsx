@@ -18,7 +18,7 @@ import { formatPercentage, formatTime } from '../utils/helpers';
 
 interface StatsCardProps {
   title: string;
-  stats: Partial<Stats>;
+  stats: Record<string, any>;
   icon?: React.ReactNode;
   color?: string;
 }

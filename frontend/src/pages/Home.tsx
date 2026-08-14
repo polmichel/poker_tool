@@ -94,7 +94,7 @@ const Home: React.FC = () => {
             <Grid item xs={12} sm={6} md={3}>
               <StatsCard
                 title="Sessions"
-                stats={{ total_training_sessions: globalStats.total_training_sessions }}
+                stats={{ total_sessions: globalStats.total_sessions }}
                 icon={<SchoolIcon color="secondary" />}
                 color="#2196F3"
               />
@@ -110,7 +110,7 @@ const Home: React.FC = () => {
             <Grid item xs={12} sm={6} md={3}>
               <StatsCard
                 title="Temps Total"
-                stats={{ total_time_spent: globalStats.total_time_spent }}
+                stats={{ total_hands: globalStats.total_hands }}
                 icon={<ImportExportIcon color="success" />}
                 color="#8BC34A"
               />

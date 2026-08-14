@@ -92,7 +92,7 @@ const ImportExport: React.FC = () => {
     }
 
     try {
-      const result = await exportRange(selectedRange.id!, format);
+      const result = await exportRange(selectedRange.id!, format) as any;
       if (result) {
         // Télécharger le fichier
         let contentToDownload: string;
@@ -140,7 +140,7 @@ const ImportExport: React.FC = () => {
     }
 
     try {
-      const result = await exportRange(selectedRange.id!, format);
+      const result = await exportRange(selectedRange.id!, format) as any;
       if (result) {
         let contentToCopy: string;
 

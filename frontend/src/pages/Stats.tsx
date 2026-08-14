@@ -66,7 +66,7 @@ const Stats: React.FC = () => {
   const loadHistoryData = useCallback(async () => {
     const data = await fetchTrainingHistory();
     if (data) {
-      setHistoryData(data);
+      setHistoryData(data as any[]);
     }
   }, [fetchTrainingHistory]);
 
@@ -74,7 +74,7 @@ const Stats: React.FC = () => {
   const loadLeaderboardData = useCallback(async () => {
     const data = await fetchLeaderboard();
     if (data) {
-      setLeaderboardData(data);
+      setLeaderboardData(data as any[]);
     }
   }, [fetchLeaderboard]);
 
@@ -224,7 +224,7 @@ const Stats: React.FC = () => {
                   <Grid item xs={12} sm={6} md={3}>
                     <StatsCard
                       title="Sessions"
-                      stats={{ total_training_sessions: globalStats.total_training_sessions }}
+                      stats={{ total_training_sessions: globalStats.total_sessions }}
                       icon={<TimelineIcon color="secondary" />}
                       color="#2196F3"
                     />
@@ -240,7 +240,7 @@ const Stats: React.FC = () => {
                   <Grid item xs={12} sm={6} md={3}>
                     <StatsCard
                       title="Temps Total"
-                      stats={{ total_time_spent: globalStats.total_time_spent }}
+                      stats={{ total_time_spent: globalStats.total_hands }}
                       icon={<TimelineIcon color="success" />}
                       color="#8BC34A"
                     />
