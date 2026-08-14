@@ -11,9 +11,8 @@ on:
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-tests.yml'
-
-# Permet de déclencher manuellement le workflow
-workflow_dispatch:
+  # Permet de déclencher manuellement le workflow
+  workflow_dispatch:
 
 jobs:
   unit-tests:
