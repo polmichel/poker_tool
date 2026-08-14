@@ -83,6 +83,9 @@ class PokerTool:
         self.app.config["SECRET_KEY"] = self.config.secret_key
         self.app.config["SQLALCHEMY_DATABASE_URI"] = self.config.database_uri
         self.app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+        # Ensure the instance folder exists so SQLite can write to it.
+        import os
+        os.makedirs(self.app.instance_path, exist_ok=True)
         # Accept both "/api/ranges" and "/api/ranges/" (the frontend uses
         # trailing slashes). Avoids 404s from strict_slashes default behavior.
         self.app.url_map.strict_slashes = False

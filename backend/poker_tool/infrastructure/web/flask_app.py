@@ -87,6 +87,10 @@ class FlaskApp:
         def handle_http_error(e):
             return jsonify({"error": e.description}), e.code
 
+        @self.app.errorhandler(500)
+        def handle_internal_error(e):
+            return jsonify({"error": "Internal server error"}), 500
+
         @self.app.route("/")
         def home():
             return jsonify({
