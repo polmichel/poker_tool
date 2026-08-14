@@ -62,9 +62,16 @@ export function useAuth(authApi?: AuthApi) {
 
         return userData;
       } catch (err) {
-        const errorMessage = axios.isAxiosError(err)
-          ? err.response?.data?.error || err.response?.statusText || "Erreur lors de l'inscription"
-          : "Erreur lors de l'inscription";
+        let errorMessage = "Erreur lors de l'inscription";
+        if (axios.isAxiosError(err)) {
+          if (err.response?.data?.error) {
+            errorMessage = err.response.data.error;
+          } else if (err.response?.statusText) {
+            errorMessage = err.response.statusText;
+          } else if (err.message) {
+            errorMessage = 'Impossible de contacter le serveur';
+          }
+        }
         setError(errorMessage);
         console.error('Error registering:', err);
         return null;
@@ -90,9 +97,16 @@ export function useAuth(authApi?: AuthApi) {
 
         return userData;
       } catch (err) {
-        const errorMessage = axios.isAxiosError(err)
-          ? err.response?.data?.error || err.response?.statusText || 'Identifiants invalides'
-          : 'Identifiants invalides';
+        let errorMessage = 'Identifiants invalides';
+        if (axios.isAxiosError(err)) {
+          if (err.response?.data?.error) {
+            errorMessage = err.response.data.error;
+          } else if (err.response?.statusText) {
+            errorMessage = err.response.statusText;
+          } else if (err.message) {
+            errorMessage = 'Impossible de contacter le serveur';
+          }
+        }
         setError(errorMessage);
         console.error('Error logging in:', err);
         return null;
