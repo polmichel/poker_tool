@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { StatsApi, GlobalStats, UserStats } from '../api';
 
 // Hook personnalisé pour gérer les statistiques.
 // Dépend de StatsApi (injectable). L'état interne reste privé : l'UI n'a accès
 // qu'aux intentions (fetchGlobalStats, fetchUserStats, ...) — pas aux setters.
-export function useStats(statsApi: StatsApi = new StatsApi()) {
+export function useStats(statsApi?: StatsApi) {
+  const statsApiRef = useRef<StatsApi>(statsApi ?? new StatsApi());
+  const api = statsApiRef.current;
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -16,7 +18,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     setError(null);
 
     try {
-      const data = await statsApi.global();
+      const data = await api.global();
       setGlobalStats(data);
       return data;
     } catch (err) {
@@ -26,7 +28,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     } finally {
       setLoading(false);
     }
-  }, [statsApi]);
+  }, [api]);
 
   // Charger les statistiques d'un utilisateur
   const fetchUserStats = useCallback(async (userId: number) => {
@@ -34,7 +36,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     setError(null);
 
     try {
-      const data = await statsApi.byUser(userId);
+      const data = await api.byUser(userId);
       setUserStats(data);
       return data;
     } catch (err) {
@@ -44,7 +46,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     } finally {
       setLoading(false);
     }
-  }, [statsApi]);
+  }, [api]);
 
   // Charger les statistiques d'une range
   const fetchRangeStats = useCallback(async (rangeId: number) => {
@@ -52,7 +54,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     setError(null);
 
     try {
-      return await statsApi.byRange(rangeId);
+      return await api.byRange(rangeId);
     } catch (err) {
       setError(`Erreur lors du chargement des statistiques de la range ${rangeId}`);
       console.error(`Error fetching range stats for ${rangeId}:`, err);
@@ -60,7 +62,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     } finally {
       setLoading(false);
     }
-  }, [statsApi]);
+  }, [api]);
 
   // Charger l'historique des sessions
   const fetchTrainingHistory = useCallback(async () => {
@@ -68,7 +70,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     setError(null);
 
     try {
-      return await statsApi.history();
+      return await api.history();
     } catch (err) {
       setError('Erreur lors du chargement de l\'historique des sessions');
       console.error('Error fetching training history:', err);
@@ -76,7 +78,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     } finally {
       setLoading(false);
     }
-  }, [statsApi]);
+  }, [api]);
 
   // Charger le classement
   const fetchLeaderboard = useCallback(async () => {
@@ -84,7 +86,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     setError(null);
 
     try {
-      return await statsApi.leaderboard();
+      return await api.leaderboard();
     } catch (err) {
       setError('Erreur lors du chargement du classement');
       console.error('Error fetching leaderboard:', err);
@@ -92,7 +94,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     } finally {
       setLoading(false);
     }
-  }, [statsApi]);
+  }, [api]);
 
   // Charger la progression pour une range
   const fetchRangeProgress = useCallback(async (rangeId: number) => {
@@ -100,7 +102,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     setError(null);
 
     try {
-      return await statsApi.rangeProgress(rangeId);
+      return await api.rangeProgress(rangeId);
     } catch (err) {
       setError(`Erreur lors du chargement de la progression de la range ${rangeId}`);
       console.error(`Error fetching range progress for ${rangeId}:`, err);
@@ -108,7 +110,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     } finally {
       setLoading(false);
     }
-  }, [statsApi]);
+  }, [api]);
 
   // Exporter les statistiques
   const exportStats = useCallback(async (format: 'json' | 'csv' = 'json') => {
@@ -116,7 +118,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     setError(null);
 
     try {
-      return await statsApi.export(format);
+      return await api.export(format);
     } catch (err) {
       setError('Erreur lors de l\'export des statistiques');
       console.error('Error exporting stats:', err);
@@ -124,7 +126,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     } finally {
       setLoading(false);
     }
-  }, [statsApi]);
+  }, [api]);
 
   // Sauvegarder toutes les données
   const backupAllData = useCallback(async () => {
@@ -132,7 +134,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     setError(null);
 
     try {
-      return await statsApi.backup();
+      return await api.backup();
     } catch (err) {
       setError('Erreur lors de la sauvegarde des données');
       console.error('Error backing up data:', err);
@@ -140,7 +142,7 @@ export function useStats(statsApi: StatsApi = new StatsApi()) {
     } finally {
       setLoading(false);
     }
-  }, [statsApi]);
+  }, [api]);
 
   // Initialiser le hook
   useEffect(() => {

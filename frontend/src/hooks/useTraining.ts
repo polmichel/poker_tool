@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { TrainingApi } from '../api';
 import { TrainingSession, TrainingMode, TrainingQuestion } from '../types';
 
 // Hook personnalisé pour gérer l'entraînement.
 // Dépend de TrainingApi (injectable) plutôt que d'appeler axios directement.
-export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
+export function useTraining(trainingApi?: TrainingApi) {
+  const trainingApiRef = useRef<TrainingApi>(trainingApi ?? new TrainingApi());
+  const api = trainingApiRef.current;
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
   const [currentSession, setCurrentSession] = useState<TrainingSession | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<TrainingQuestion | null>(null);
@@ -25,7 +27,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     setError(null);
 
     try {
-      const data = await trainingApi.sessions();
+      const data = await api.sessions();
       setSessions(data);
     } catch (err) {
       setError('Erreur lors du chargement des sessions d\'entraînement');
@@ -33,7 +35,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     } finally {
       setLoading(false);
     }
-  }, [trainingApi]);
+  }, [api]);
 
   // Charger une session spécifique
   const fetchSession = useCallback(async (id: number) => {
@@ -41,7 +43,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     setError(null);
 
     try {
-      const sessionData = await trainingApi.session(id);
+      const sessionData = await api.session(id);
       setCurrentSession(sessionData.session);
       setCurrentQuestion(sessionData.current_question);
       setProgress(sessionData.progress);
@@ -56,7 +58,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     } finally {
       setLoading(false);
     }
-  }, [trainingApi]);
+  }, [api]);
 
   // Créer une nouvelle session d'entraînement
   const createSession = useCallback(async (
@@ -72,7 +74,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
       // POST /training/sessions creates the session AND returns the first
       // question (questions are generated at creation), so no separate
       // /start call is needed.
-      const sessionData = await trainingApi.createSession({
+      const sessionData = await api.createSession({
         mode,
         range_id: rangeId,
         user_id: userId,
@@ -99,7 +101,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     } finally {
       setLoading(false);
     }
-  }, [trainingApi]);
+  }, [api]);
 
   // Passer à la question suivante
   const nextQuestion = useCallback(async (sessionId: number, answer: string) => {
@@ -107,7 +109,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     setError(null);
 
     try {
-      const result = await trainingApi.answer(sessionId, answer);
+      const result = await api.answer(sessionId, answer);
 
       // Update state based on response
       if (result.session_complete) {
@@ -155,7 +157,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     } finally {
       setLoading(false);
     }
-  }, [progress, score, trainingApi]);
+  }, [progress, score, api]);
 
   // Terminer une session d'entraînement
   const endSession = useCallback(async (sessionId: number) => {
@@ -163,7 +165,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     setError(null);
 
     try {
-      const data = await trainingApi.end(sessionId);
+      const data = await api.end(sessionId);
       setIsSessionActive(false);
       setCurrentSession(data.session);
       setCurrentQuestion(null);
@@ -176,7 +178,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     } finally {
       setLoading(false);
     }
-  }, [fetchSessions, trainingApi]);
+  }, [fetchSessions, api]);
 
   // Démarrer rapidement une session (avec paramètres par défaut)
   const quickStart = useCallback(async (mode: TrainingMode, rangeId: number, userId?: number) => {
@@ -187,7 +189,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
       // POST /training/sessions creates the session AND returns the first
       // question (questions are generated at creation), so no separate
       // /start call is needed.
-      const sessionData = await trainingApi.createSession({
+      const sessionData = await api.createSession({
         mode,
         range_id: rangeId,
         user_id: userId,
@@ -214,7 +216,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     } finally {
       setLoading(false);
     }
-  }, [trainingApi]);
+  }, [api]);
 
   // Obtenir les modes d'entraînement disponibles
   const fetchTrainingModes = useCallback(async () => {
@@ -222,7 +224,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     setError(null);
 
     try {
-      return await trainingApi.modes();
+      return await api.modes();
     } catch (err) {
       setError('Erreur lors du chargement des modes d\'entraînement');
       console.error('Error fetching training modes:', err);
@@ -230,7 +232,7 @@ export function useTraining(trainingApi: TrainingApi = new TrainingApi()) {
     } finally {
       setLoading(false);
     }
-  }, [trainingApi]);
+  }, [api]);
 
   // Réinitialiser l'état
   const resetTrainingState = useCallback(() => {

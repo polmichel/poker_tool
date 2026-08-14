@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { RangesApi } from '../api';
 import { Range, ActionType } from '../types';
 
 // Hook personnalisé pour gérer les ranges.
 // Dépend de RangesApi (injectable) plutôt que d'appeler axios directement.
-export function useRanges(rangesApi: RangesApi = new RangesApi()) {
+export function useRanges(rangesApi?: RangesApi) {
+  const rangesApiRef = useRef<RangesApi>(rangesApi ?? new RangesApi());
+  const api = rangesApiRef.current;
   const [ranges, setRanges] = useState<Range[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +18,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      const data = await rangesApi.all();
+      const data = await api.all();
       setRanges(data);
     } catch (err) {
       setError('Erreur lors du chargement des ranges');
@@ -24,7 +26,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [rangesApi]);
+  }, [api]);
 
   // Charger une range spécifique
   const fetchRange = useCallback(async (id: number) => {
@@ -32,7 +34,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      const data = await rangesApi.byId(id);
+      const data = await api.byId(id);
       setSelectedRange(data);
       return data;
     } catch (err) {
@@ -42,7 +44,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [rangesApi]);
+  }, [api]);
 
   // Créer une nouvelle range
   const createRange = useCallback(async (rangeData: Omit<Range, 'id' | 'created_at' | 'updated_at'>) => {
@@ -50,7 +52,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      const data = await rangesApi.create(rangeData);
+      const data = await api.create(rangeData);
       setRanges(prev => [...prev, data]);
       return data;
     } catch (err) {
@@ -60,7 +62,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [rangesApi]);
+  }, [api]);
 
   // Mettre à jour une range
   const updateRange = useCallback(async (id: number, rangeData: Partial<Range>) => {
@@ -68,7 +70,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      const data = await rangesApi.update(id, rangeData);
+      const data = await api.update(id, rangeData);
       setRanges(prev => prev.map(r => r.id === id ? data : r));
       if (selectedRange?.id === id) {
         setSelectedRange(data);
@@ -81,7 +83,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [selectedRange, rangesApi]);
+  }, [selectedRange, api]);
 
   // Supprimer une range
   const deleteRange = useCallback(async (id: number) => {
@@ -89,7 +91,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      await rangesApi.remove(id);
+      await api.remove(id);
       setRanges(prev => prev.filter(r => r.id !== id));
       if (selectedRange?.id === id) {
         setSelectedRange(null);
@@ -102,7 +104,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [selectedRange, rangesApi]);
+  }, [selectedRange, api]);
 
   // Mettre à jour l'action d'une main dans une range
   const updateHandAction = useCallback(async (
@@ -114,7 +116,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      const data = await rangesApi.updateHand(rangeId, handStr, action);
+      const data = await api.updateHand(rangeId, handStr, action);
       setRanges(prev => prev.map(r => r.id === rangeId ? data : r));
       if (selectedRange?.id === rangeId) {
         setSelectedRange(data);
@@ -127,7 +129,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [selectedRange, rangesApi]);
+  }, [selectedRange, api]);
 
   // Retirer une main d'une range
   const removeHandFromRange = useCallback(async (rangeId: number, handStr: string) => {
@@ -135,7 +137,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      const data = await rangesApi.removeHand(rangeId, handStr);
+      const data = await api.removeHand(rangeId, handStr);
       setRanges(prev => prev.map(r => r.id === rangeId ? data : r));
       if (selectedRange?.id === rangeId) {
         setSelectedRange(data);
@@ -148,7 +150,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [selectedRange, rangesApi]);
+  }, [selectedRange, api]);
 
   // Exporter une range
   const exportRange = useCallback(async (rangeId: number, format: 'json' | 'text' | 'csv' = 'json') => {
@@ -156,7 +158,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      return await rangesApi.exportRange(rangeId, format);
+      return await api.exportRange(rangeId, format);
     } catch (err) {
       setError(`Erreur lors de l'export de la range ${rangeId}`);
       console.error(`Error exporting range ${rangeId}:`, err);
@@ -164,7 +166,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [rangesApi]);
+  }, [api]);
 
   // Importer une range
   const importRange = useCallback(async (content: string, format: 'json' | 'text' | 'csv' = 'json') => {
@@ -172,7 +174,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      const data = await rangesApi.importRange(content, format);
+      const data = await api.importRange(content, format);
       setRanges(prev => [...prev, data]);
       return data;
     } catch (err) {
@@ -182,7 +184,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [rangesApi]);
+  }, [api]);
 
   // Obtenir les statistiques d'une range
   const getRangeStats = useCallback(async (rangeId: number) => {
@@ -190,7 +192,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      return await rangesApi.stats(rangeId);
+      return await api.stats(rangeId);
     } catch (err) {
       setError(`Erreur lors du chargement des statistiques de la range ${rangeId}`);
       console.error(`Error fetching stats for range ${rangeId}:`, err);
@@ -198,7 +200,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [rangesApi]);
+  }, [api]);
 
   // Obtenir la grille d'une range
   const getRangeGrid = useCallback(async (rangeId: number) => {
@@ -206,7 +208,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      return await rangesApi.grid(rangeId);
+      return await api.grid(rangeId);
     } catch (err) {
       setError(`Erreur lors du chargement de la grille de la range ${rangeId}`);
       console.error(`Error fetching grid for range ${rangeId}:`, err);
@@ -214,7 +216,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [rangesApi]);
+  }, [api]);
 
   // Charger les ranges par défaut
   const fetchDefaultRanges = useCallback(async () => {
@@ -222,7 +224,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     setError(null);
 
     try {
-      return await rangesApi.defaultRanges();
+      return await api.defaultRanges();
     } catch (err) {
       setError('Erreur lors du chargement des ranges par défaut');
       console.error('Error fetching default ranges:', err);
@@ -230,7 +232,7 @@ export function useRanges(rangesApi: RangesApi = new RangesApi()) {
     } finally {
       setLoading(false);
     }
-  }, [rangesApi]);
+  }, [api]);
 
   // Initialiser le hook
   useEffect(() => {
