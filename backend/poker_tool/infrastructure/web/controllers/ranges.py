@@ -1,0 +1,77 @@
+"""HTTP controllers for the ranges resource."""
+from flask import Blueprint, jsonify, request
+from werkzeug.exceptions import BadRequest, NotFound
+from ....interfaces.ranges import Ranges
+from ....interfaces.auth import Auth
+from ....use_cases.create_range import CreateRange
+from ....use_cases.update_range import UpdateRange, RangeNotFound
+
+
+class RangeController:
+    """Thin HTTP controller for /api/ranges."""
+
+    def __init__(self, ranges: Ranges, auth: Auth,
+                 create_range: CreateRange, update_range: UpdateRange) -> None:
+        self._ranges = ranges
+        self._auth = auth
+        self._create_range = create_range
+        self._update_range = update_range
+
+    def register(self, api: Blueprint) -> None:
+        @api.route("/ranges", methods=["GET"])
+        def get_ranges():
+            ranges = self._ranges.all()
+            return jsonify([r.to_dict() for r in ranges])
+
+        @api.route("/ranges/<int:range_id>", methods=["GET"])
+        def get_range(range_id: int):
+            range_obj = self._ranges.range_by_id(range_id)
+            if not range_obj:
+                raise NotFound(f"Range {range_id} not found")
+            return jsonify(range_obj.to_dict())
+
+        @api.route("/ranges", methods=["POST"])
+        def create_range():
+            data = request.get_json()
+            if not data or "name" not in data:
+                raise BadRequest("Missing name")
+            saved_range = self._create_range.create(data)
+            return jsonify(saved_range.to_dict()), 201
+
+        @api.route("/ranges/<int:range_id>", methods=["PUT"])
+        def update_range(range_id: int):
+            data = request.get_json()
+            if not data:
+                raise BadRequest("Missing data")
+            try:
+                saved_range = self._update_range.update(range_id, data)
+            except RangeNotFound:
+                raise NotFound(f"Range {range_id} not found")
+            return jsonify(saved_range.to_dict())
+
+        @api.route("/ranges/<int:range_id>", methods=["DELETE"])
+        def delete_range(range_id: int):
+            range_obj = self._ranges.range_by_id(range_id)
+            if not range_obj:
+                raise NotFound(f"Range {range_id} not found")
+            self._ranges.remove(range_obj)
+            return jsonify({"message": f"Range {range_id} deleted"}), 200
+
+        @api.route("/ranges/user/<int:user_id>", methods=["GET"])
+        def get_user_ranges(user_id: int):
+            ranges = self._ranges.ranges_by_user(user_id)
+            return jsonify([r.to_dict() for r in ranges])
+
+        @api.route("/ranges/<int:range_id>/grid", methods=["GET"])
+        def get_range_grid(range_id: int):
+            range_obj = self._ranges.range_by_id(range_id)
+            if not range_obj:
+                raise NotFound(f"Range {range_id} not found")
+            return jsonify({"grid": range_obj.grid()})
+
+        @api.route("/ranges/<int:range_id>/stats", methods=["GET"])
+        def get_range_stats(range_id: int):
+            range_obj = self._ranges.range_by_id(range_id)
+            if not range_obj:
+                raise NotFound(f"Range {range_id} not found")
+            return jsonify(range_obj.statistics())
