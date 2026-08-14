@@ -9,6 +9,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { authenticatePage } from '../utils';
 
 // Les modes de questionnaire avec leurs labels en français
 const QUESTIONNAIRE_MODES = [
@@ -21,6 +22,8 @@ test.describe('Questionnaire sur une range', () => {
   test.setTimeout(120000);
   
   test.beforeEach(async ({ page }) => {
+    // Authenticate so the ProtectedRoute lets us through.
+    await authenticatePage(page);
     // Setup : accéder à la page de training avant chaque test
     await page.goto('/training');
     await page.waitForLoadState('domcontentloaded');

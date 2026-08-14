@@ -9,11 +9,13 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { authenticatePage } from '../utils';
 
 test.describe('Création d\'une range', () => {
   
   test.beforeEach(async ({ page }) => {
     // Setup : accéder à la page des ranges avant chaque test
+    await authenticatePage(page);
     await page.goto('/ranges');
     await page.waitForLoadState('domcontentloaded');
   });
@@ -138,6 +140,7 @@ test.describe('Création d\'une range', () => {
     await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
     
     // 2. Aller sur la page /ranges pour voir la liste
+    await authenticatePage(page);
     await page.goto('/ranges');
     await page.waitForLoadState('domcontentloaded');
     
