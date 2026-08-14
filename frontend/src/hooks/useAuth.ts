@@ -1,12 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { api } from '../utils/api';
-import { User, AuthResponse } from '../types';
+import { AuthApi } from '../api';
+import { User } from '../types';
 
-// URL de base pour l'API
+// Hook personnalisé pour gérer l'authentification.
+// L'état interne (user, token, error) reste privé : l'UI n'a accès qu'aux
+// intentions (register, login, logout, fetchCurrentUser, updateUser) — pas aux
+// setters, conformément au principe d'encapsulation (Elegant Objects).
+export function useAuth(authApi?: AuthApi) {
+  // Keep a stable AuthApi instance across renders. A default parameter
+  // (authApi = new AuthApi()) would create a new instance on every render,
+  // which re-triggers every useCallback/useEffect that depends on it and
+  // causes infinite re-render loops. useRef avoids that.
+  const authApiRef = useRef<AuthApi>(authApi ?? new AuthApi());
+  const api = authApiRef.current;
 
-// Hook personnalisé pour gérer l'authentification
-export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,13 +25,13 @@ export function useAuth() {
   const fetchCurrentUser = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const storedToken = localStorage.getItem('poker_tool_token');
       if (storedToken) {
         setToken(storedToken);
-        const response = await api.get('/auth/me');
-        setUser(response.data);
+        const currentUser = await api.me();
+        setUser(currentUser);
         setIsAuthenticated(true);
       }
     } catch (err) {
@@ -35,35 +43,25 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [api]);
 
   // Inscrire un nouvel utilisateur
   const register = useCallback(async (username: string, email: string, password: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.post('/auth/register', {
-        username,
-        email,
-        password,
-      });
-      
+      await api.register(username, email, password);
       // Connecter automatiquement après l'inscription
-      const loginResponse = await api.post('/auth/login', {
-        username,
-        password,
-      });
-      
-      const { access_token, user: userData } = loginResponse.data as AuthResponse;
+      const { access_token, user: userData } = await api.login(username, password);
       localStorage.setItem('poker_tool_token', access_token);
       setToken(access_token);
       setUser(userData);
       setIsAuthenticated(true);
-      
+
       return userData;
     } catch (err) {
-      const errorMessage = axios.isAxiosError(err) 
+      const errorMessage = axios.isAxiosError(err)
         ? err.response?.data?.error || 'Erreur lors de l\'inscription'
         : 'Erreur lors de l\'inscription';
       setError(errorMessage);
@@ -72,28 +70,23 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [api]);
 
   // Connecter un utilisateur
   const login = useCallback(async (username: string, password: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.post('/auth/login', {
-        username,
-        password,
-      });
-      
-      const { access_token, user: userData } = response.data as AuthResponse;
+      const { access_token, user: userData } = await api.login(username, password);
       localStorage.setItem('poker_tool_token', access_token);
       setToken(access_token);
       setUser(userData);
       setIsAuthenticated(true);
-      
+
       return userData;
     } catch (err) {
-      const errorMessage = axios.isAxiosError(err) 
+      const errorMessage = axios.isAxiosError(err)
         ? err.response?.data?.error || 'Identifiants invalides'
         : 'Identifiants invalides';
       setError(errorMessage);
@@ -102,7 +95,7 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [api]);
 
   // Déconnecter l'utilisateur
   const logout = useCallback(() => {
@@ -117,19 +110,15 @@ export function useAuth() {
   const updateUser = useCallback(async (userData: Partial<User>) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       if (!user?.id) {
         throw new Error('User ID not found');
       }
-      
-      const response = await api.put('/auth/me',
-        userData,
 
-      );
-      
-      setUser(response.data);
-      return response.data;
+      const response = await api.me();
+      setUser(response);
+      return response;
     } catch (err) {
       setError('Erreur lors de la mise à jour du profil');
       console.error('Error updating user:', err);
@@ -137,7 +126,7 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  }, [user, token]);
+  }, [user, token, api]);
 
   // Initialiser le hook
   useEffect(() => {
@@ -150,9 +139,6 @@ export function useAuth() {
     error,
     isAuthenticated,
     token,
-    setUser,
-    setIsAuthenticated,
-    setError,
     fetchCurrentUser,
     register,
     login,
