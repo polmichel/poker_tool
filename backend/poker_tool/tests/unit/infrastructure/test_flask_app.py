@@ -1,5 +1,9 @@
 """
 Unit tests for FlaskApp infrastructure.
+
+The FlaskApp now delegates business logic to use cases. These tests inject
+mocked use cases to verify the HTTP controllers translate requests/responses
+correctly.
 """
 import unittest
 from unittest.mock import MagicMock
@@ -15,28 +19,44 @@ class TestFlaskApp(unittest.TestCase):
     """Tests for FlaskApp class."""
 
     def setUp(self):
-        """Set up test fixtures."""
+        """Set up test fixtures with mocked ports and use cases."""
         self.app = Flask(__name__)
         self.app.config['TESTING'] = True
         self.users = MagicMock(spec=Users)
         self.ranges = MagicMock(spec=Ranges)
         self.sessions = MagicMock(spec=TrainingSessions)
         self.auth = MagicMock(spec=Auth)
+        self.register_user = MagicMock()
+        self.login_user = MagicMock()
+        self.current_user = MagicMock()
+        self.create_range = MagicMock()
+        self.update_range = MagicMock()
+        self.start_training = MagicMock()
+        self.answer_question = MagicMock()
+        self.end_training = MagicMock()
+        self.global_stats = MagicMock()
+        self.user_stats = MagicMock()
+
+    def _make_app(self):
+        return FlaskApp(
+            self.app, self.users, self.ranges, self.sessions, self.auth,
+            self.register_user, self.login_user, self.current_user,
+            self.create_range, self.update_range,
+            self.start_training, self.answer_question, self.end_training,
+            self.global_stats, self.user_stats,
+        )
 
     def test_flask_app_creation(self):
         """Test FlaskApp creation."""
-        flask_app = FlaskApp(self.app, self.users, self.ranges, self.sessions, self.auth)
-
+        flask_app = self._make_app()
         self.assertEqual(flask_app.app, self.app)
         self.assertEqual(flask_app.users, self.users)
         self.assertEqual(flask_app.ranges, self.ranges)
-        self.assertEqual(flask_app.sessions, self.sessions)
         self.assertEqual(flask_app.auth, self.auth)
 
     def test_flask_app_registers_routes(self):
         """Test that FlaskApp registers routes."""
-        flask_app = FlaskApp(self.app, self.users, self.ranges, self.sessions, self.auth)
-
+        self._make_app()
         with self.app.test_client() as client:
             response = client.get('/api/health')
             self.assertEqual(response.status_code, 200)
@@ -57,8 +77,7 @@ class TestFlaskApp(unittest.TestCase):
             range_id=1,
         )
         self.ranges.all.return_value = [mock_range]
-
-        flask_app = FlaskApp(self.app, self.users, self.ranges, self.sessions, self.auth)
+        self._make_app()
 
         with self.app.test_client() as client:
             response = client.get('/api/ranges')
@@ -81,8 +100,7 @@ class TestFlaskApp(unittest.TestCase):
             range_id=1,
         )
         self.ranges.range_by_id.return_value = mock_range
-
-        flask_app = FlaskApp(self.app, self.users, self.ranges, self.sessions, self.auth)
+        self._make_app()
 
         with self.app.test_client() as client:
             response = client.get('/api/ranges/1')
@@ -93,22 +111,17 @@ class TestFlaskApp(unittest.TestCase):
     def test_get_range_route_not_found(self):
         """Test GET /api/ranges/<id> route with non-existent range."""
         self.ranges.range_by_id.return_value = None
-
-        flask_app = FlaskApp(self.app, self.users, self.ranges, self.sessions, self.auth)
+        self._make_app()
 
         with self.app.test_client() as client:
             response = client.get('/api/ranges/999')
             self.assertEqual(response.status_code, 404)
 
     def test_create_range_route(self):
-        """Test POST /api/ranges route."""
+        """Test POST /api/ranges route delegates to the CreateRange use case."""
         from poker_tool.objects.range import Range
         from poker_tool.objects.range_type import RangeType
         from poker_tool.objects.position import Position
-        from poker_tool.objects.user import User
-
-        mock_user = User("testuser", "test@example.com", user_id=1)
-        self.auth.current_user.return_value = mock_user
 
         mock_range = Range(
             name="New Range",
@@ -116,23 +129,19 @@ class TestFlaskApp(unittest.TestCase):
             position=Position.BTN,
             user_id=1,
         )
-        self.ranges.add.return_value = mock_range
-
-        flask_app = FlaskApp(self.app, self.users, self.ranges, self.sessions, self.auth)
+        self.create_range.create.return_value = mock_range
+        self._make_app()
 
         with self.app.test_client() as client:
-            response = client.post(
-                '/api/ranges',
-                json={'name': 'New Range'}
-            )
+            response = client.post('/api/ranges', json={'name': 'New Range'})
             self.assertEqual(response.status_code, 201)
             data = response.get_json()
             self.assertEqual(data['name'], 'New Range')
+        self.create_range.create.assert_called_once_with({'name': 'New Range'})
 
     def test_create_range_route_missing_name(self):
         """Test POST /api/ranges route with missing name."""
-        flask_app = FlaskApp(self.app, self.users, self.ranges, self.sessions, self.auth)
-
+        self._make_app()
         with self.app.test_client() as client:
             response = client.post('/api/ranges', json={})
             self.assertEqual(response.status_code, 400)
