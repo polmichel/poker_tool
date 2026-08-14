@@ -1,5 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import axios, { AxiosError } from 'axios';
 import { StatsApi, GlobalStats, UserStats } from '../api';
+
+// Extract a human-readable message from a failed request.
+// Prefers the JSON {error} body returned by the backend controllers,
+// then axios's own message, then a sensible default.
+function extractErrorMessage(defaultMessage: string): (err: unknown) => string {
+  return (err: unknown) => {
+    if (axios.isAxiosError(err)) {
+      const axiosErr = err as AxiosError;
+      const body = axiosErr.response?.data as { error?: string } | undefined;
+      if (body?.error) return body.error;
+    }
+    if (err instanceof Error && err.message) return err.message;
+    return defaultMessage;
+  };
+}
 
 // Hook personnalisé pour gérer les statistiques.
 // Dépend de StatsApi (injectable). L'état interne reste privé : l'UI n'a accès
@@ -22,7 +38,8 @@ export function useStats(statsApi?: StatsApi) {
       setGlobalStats(data);
       return data;
     } catch (err) {
-      setError('Erreur lors du chargement des statistiques globales');
+      const toMessage = extractErrorMessage('Erreur lors du chargement des statistiques globales');
+      setError(toMessage(err));
       console.error('Error fetching global stats:', err);
       return null;
     } finally {
@@ -41,7 +58,10 @@ export function useStats(statsApi?: StatsApi) {
         setUserStats(data);
         return data;
       } catch (err) {
-        setError(`Erreur lors du chargement des statistiques de l'utilisateur ${userId}`);
+        const toMessage = extractErrorMessage(
+          `Erreur lors du chargement des statistiques de l'utilisateur ${userId}`,
+        );
+        setError(toMessage(err));
         console.error(`Error fetching user stats for ${userId}:`, err);
         return null;
       } finally {

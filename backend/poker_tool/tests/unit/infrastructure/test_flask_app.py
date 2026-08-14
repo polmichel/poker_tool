@@ -171,21 +171,21 @@ class TestFlaskApp(unittest.TestCase):
         self.global_stats.compute.assert_called_once_with()
 
     def test_get_global_stats_route_error(self):
-        """Test GET /api/stats/global returns 500 when the use case fails.
+        """Test GET /api/stats/global returns a JSON 500 when the use case fails.
 
         This is the backend side of the "Erreur lors du chargement des
         statistiques globales" message shown on the home page: a use-case
-        failure surfaces as a 500 the frontend turns into that error.
-        TESTING mode would re-raise the exception instead, so this case
-        disables exception propagation to match production behavior.
+        failure surfaces as a structured JSON 500 (not Flask's default HTML
+        error page) so the frontend receives a clean error body.
         """
         self.global_stats.compute.side_effect = RuntimeError('db down')
         self._make_app()
-        self.app.config['PROPAGATE_EXCEPTIONS'] = False
 
         with self.app.test_client() as client:
             response = client.get('/api/stats/global')
             self.assertEqual(response.status_code, 500)
+            self.assertEqual(response.get_json()['error'],
+                             'Erreur lors du chargement des statistiques globales')
         self.global_stats.compute.assert_called_once_with()
 
     def test_get_user_stats_route(self):
@@ -219,6 +219,17 @@ class TestFlaskApp(unittest.TestCase):
             response = client.get('/api/stats/user/999')
             self.assertEqual(response.status_code, 404)
         self.user_stats.compute.assert_called_once_with(999)
+
+    def test_get_user_stats_route_error(self):
+        """Test GET /api/stats/user/<id> returns a JSON 500 on unexpected failure."""
+        self.user_stats.compute.side_effect = RuntimeError('db down')
+        self._make_app()
+
+        with self.app.test_client() as client:
+            response = client.get('/api/stats/user/1')
+            self.assertEqual(response.status_code, 500)
+            self.assertIn('error', response.get_json())
+        self.user_stats.compute.assert_called_once_with(1)
 
 
 if __name__ == '__main__':

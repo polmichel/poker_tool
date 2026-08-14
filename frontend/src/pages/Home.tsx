@@ -13,7 +13,7 @@ import { useStats } from '../hooks';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { globalStats, loading, error } = useStats();
+  const { globalStats, loading, error, fetchGlobalStats } = useStats();
 
   const featureCards = [
     {
@@ -70,7 +70,17 @@ const Home: React.FC = () => {
       {loading ? (
         <Typography>Chargement des statistiques...</Typography>
       ) : error ? (
-        <Typography color="error">{error}</Typography>
+        <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography color="error">{error}</Typography>
+          <Button
+            variant="outlined"
+            color="primary"
+            size="small"
+            onClick={() => fetchGlobalStats()}
+          >
+            Réessayer
+          </Button>
+        </Box>
       ) : globalStats ? (
         <Box sx={{ mb: 4 }}>
           <Typography variant="h6" gutterBottom>
