@@ -18,11 +18,11 @@ import {
   Lock as LockIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks';
+import { useAuthContext } from '../auth/AuthContext';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { register, loading, error } = useAuth();
+  const { register, loading, error } = useAuthContext();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');

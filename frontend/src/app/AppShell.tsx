@@ -33,7 +33,7 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks';
+import { useAuthContext } from '../auth/AuthContext';
 import { THEME_COLORS } from '../utils/constants';
 
 const DRAWER_WIDTH = 240;
@@ -49,7 +49,7 @@ const menuItems = [
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
 
