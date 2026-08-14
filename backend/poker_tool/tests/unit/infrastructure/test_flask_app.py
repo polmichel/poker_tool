@@ -2,7 +2,7 @@
 Unit tests for FlaskApp infrastructure.
 """
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from flask import Flask
 from poker_tool.infrastructure.web.flask_app import FlaskApp
 from poker_tool.interfaces.storage import Storage
@@ -40,21 +40,20 @@ class TestFlaskApp(unittest.TestCase):
             self.assertEqual(data['status'], 'healthy')
             self.assertEqual(data['version'], '1.0.0')
 
-    @patch.object(Storage, 'all')
-    def test_get_ranges_route(self, mock_all):
+    def test_get_ranges_route(self):
         """Test GET /api/ranges route."""
         from poker_tool.objects.range import Range
         from poker_tool.objects.range_type import RangeType
         from poker_tool.objects.position import Position
         
-        # Setup mock
+        # Setup mock on the instance (not the class)
         mock_range = Range(
             name="Test Range",
             range_type=RangeType.PREFLOP,
             position=Position.BTN,
             range_id=1,
         )
-        mock_all.return_value = [mock_range]
+        self.storage.all.return_value = [mock_range]
         
         flask_app = FlaskApp(self.app, self.storage, self.auth)
         
@@ -66,21 +65,20 @@ class TestFlaskApp(unittest.TestCase):
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0]['name'], 'Test Range')
 
-    @patch.object(Storage, 'get')
-    def test_get_range_route(self, mock_get):
+    def test_get_range_route(self):
         """Test GET /api/ranges/<id> route."""
         from poker_tool.objects.range import Range
         from poker_tool.objects.range_type import RangeType
         from poker_tool.objects.position import Position
         
-        # Setup mock
+        # Setup mock on the instance
         mock_range = Range(
             name="Test Range",
             range_type=RangeType.PREFLOP,
             position=Position.BTN,
             range_id=1,
         )
-        mock_get.return_value = mock_range
+        self.storage.get.return_value = mock_range
         
         flask_app = FlaskApp(self.app, self.storage, self.auth)
         
@@ -90,10 +88,9 @@ class TestFlaskApp(unittest.TestCase):
             data = response.get_json()
             self.assertEqual(data['name'], 'Test Range')
 
-    @patch.object(Storage, 'get')
-    def test_get_range_route_not_found(self, mock_get):
+    def test_get_range_route_not_found(self):
         """Test GET /api/ranges/<id> route with non-existent range."""
-        mock_get.return_value = None
+        self.storage.get.return_value = None
         
         flask_app = FlaskApp(self.app, self.storage, self.auth)
         
@@ -101,24 +98,24 @@ class TestFlaskApp(unittest.TestCase):
             response = client.get('/api/ranges/999')
             self.assertEqual(response.status_code, 404)
 
-    @patch.object(Storage, 'save')
-    @patch.object(Auth, 'current_user')
-    def test_create_range_route(self, mock_current_user, mock_save):
+    def test_create_range_route(self):
         """Test POST /api/ranges route."""
         from poker_tool.objects.range import Range
+        from poker_tool.objects.range_type import RangeType
+        from poker_tool.objects.position import Position
         from poker_tool.objects.user import User
         
-        # Setup mocks
+        # Setup mocks on the instances
         mock_user = User("testuser", "test@example.com", user_id=1)
-        mock_current_user.return_value = mock_user
+        self.auth.current_user.return_value = mock_user
         
         mock_range = Range(
             name="New Range",
-            range_type=None,
-            position=None,
+            range_type=RangeType.PREFLOP,
+            position=Position.BTN,
             user_id=1,
         )
-        mock_save.return_value = mock_range
+        self.storage.save.return_value = mock_range
         
         flask_app = FlaskApp(self.app, self.storage, self.auth)
         

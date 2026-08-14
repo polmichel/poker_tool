@@ -3,7 +3,7 @@ JWT implementation of the Auth interface (Elegant Objects).
 """
 from typing import Optional
 from flask import Flask
-from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required, decode_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from ...interfaces.auth import Auth
 from ...objects.user import User
@@ -61,7 +61,6 @@ class JwtAuth(Auth):
         try:
             # This is a simplified implementation
             # In a real scenario, we would decode the token and fetch the user from storage
-            from flask_jwt_extended import decode_token
             decoded = decode_token(token)
             user_id = decoded["sub"]
             return User(username="", email="", user_id=user_id)
