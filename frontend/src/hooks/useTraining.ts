@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { TrainingApi } from '../api';
-import { TrainingSession, TrainingMode, TrainingQuestion } from '../types';
+import { useState, useEffect, useCallback } from 'react';
+import { api } from '../api/client';
+import { TrainingSession, TrainingMode, TrainingQuestion, Range } from '../types';
 
-// Hook personnalisé pour gérer l'entraînement.
-// Dépend de TrainingApi (injectable) plutôt que d'appeler axios directement.
-export function useTraining(trainingApi?: TrainingApi) {
-  const trainingApiRef = useRef<TrainingApi>(trainingApi ?? new TrainingApi());
-  const api = trainingApiRef.current;
+// URL de base pour l'API
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+// Hook personnalisé pour gérer l'entraînement
+export function useTraining() {
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
   const [currentSession, setCurrentSession] = useState<TrainingSession | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<TrainingQuestion | null>(null);
@@ -25,25 +25,26 @@ export function useTraining(trainingApi?: TrainingApi) {
   const fetchSessions = useCallback(async () => {
     setLoading(true);
     setError(null);
-
+    
     try {
-      const data = await api.sessions();
-      setSessions(data);
+      const response = await api.get('/training/sessions');
+      setSessions(response.data);
     } catch (err) {
       setError('Erreur lors du chargement des sessions d\'entraînement');
       console.error('Error fetching training sessions:', err);
     } finally {
       setLoading(false);
     }
-  }, [api]);
+  }, []);
 
   // Charger une session spécifique
   const fetchSession = useCallback(async (id: number) => {
     setLoading(true);
     setError(null);
-
+    
     try {
-      const sessionData = await api.session(id);
+      const response = await api.get(`/training/sessions/${id}`);
+      const sessionData = response.data;
       setCurrentSession(sessionData.session);
       setCurrentQuestion(sessionData.current_question);
       setProgress(sessionData.progress);
@@ -58,7 +59,7 @@ export function useTraining(trainingApi?: TrainingApi) {
     } finally {
       setLoading(false);
     }
-  }, [api]);
+  }, []);
 
   // Créer une nouvelle session d'entraînement
   const createSession = useCallback(async (
@@ -69,18 +70,20 @@ export function useTraining(trainingApi?: TrainingApi) {
   ) => {
     setLoading(true);
     setError(null);
-
+    
     try {
       // POST /training/sessions creates the session AND returns the first
       // question (questions are generated at creation), so no separate
       // /start call is needed.
-      const sessionData = await api.createSession({
+      const createResponse = await api.post('/training/sessions', {
         mode,
         range_id: rangeId,
         user_id: userId,
         total_questions: totalQuestions,
       });
-
+      
+      const sessionData = createResponse.data;
+      
       // Set session and first question
       setCurrentSession(sessionData.session);
       setCurrentQuestion(sessionData.first_question);
@@ -92,7 +95,7 @@ export function useTraining(trainingApi?: TrainingApi) {
       setScore(0);
       setTimeSpent(0);
       setIsSessionActive(true);
-
+      
       return sessionData;
     } catch (err) {
       setError('Erreur lors de la création de la session d\'entraînement');
@@ -101,16 +104,20 @@ export function useTraining(trainingApi?: TrainingApi) {
     } finally {
       setLoading(false);
     }
-  }, [api]);
+  }, []);
 
   // Passer à la question suivante
   const nextQuestion = useCallback(async (sessionId: number, answer: string) => {
     setLoading(true);
     setError(null);
-
+    
     try {
-      const result = await api.answer(sessionId, answer);
-
+      const response = await api.post(`/training/sessions/${sessionId}/next`,
+        { answer }
+      );
+      
+      const result = response.data;
+      
       // Update state based on response
       if (result.session_complete) {
         // Session is complete
@@ -122,7 +129,7 @@ export function useTraining(trainingApi?: TrainingApi) {
           correct: result.progress?.correct || progress.correct,
         });
         setScore(result.progress?.score || score);
-
+        
         return {
           isCorrect: result.is_correct,
           correctAnswer: result.correct_answer,
@@ -135,14 +142,15 @@ export function useTraining(trainingApi?: TrainingApi) {
         };
       } else {
         // There's a next question
-        setCurrentQuestion(result.next_question || null);
+        setCurrentQuestion(result.next_question);
         setProgress({
           current: result.progress?.current || 0,
           total: result.progress?.total || 0,
           correct: result.progress?.correct || 0,
         });
         setScore(result.progress?.score || 0);
-
+        setTimeSpent(result.progress?.time_spent || 0);
+        
         return {
           isCorrect: result.is_correct,
           correctAnswer: result.correct_answer,
@@ -157,20 +165,20 @@ export function useTraining(trainingApi?: TrainingApi) {
     } finally {
       setLoading(false);
     }
-  }, [progress, score, api]);
+  }, [progress, score]);
 
   // Terminer une session d'entraînement
   const endSession = useCallback(async (sessionId: number) => {
     setLoading(true);
     setError(null);
-
+    
     try {
-      const data = await api.end(sessionId);
+      const response = await api.post(`/training/sessions/${sessionId}/end`);
       setIsSessionActive(false);
-      setCurrentSession(data.session);
+      setCurrentSession(response.data.session);
       setCurrentQuestion(null);
       fetchSessions();
-      return data;
+      return response.data;
     } catch (err) {
       setError(`Erreur lors de la fin de la session ${sessionId}`);
       console.error(`Error ending session ${sessionId}:`, err);
@@ -178,24 +186,26 @@ export function useTraining(trainingApi?: TrainingApi) {
     } finally {
       setLoading(false);
     }
-  }, [fetchSessions, api]);
+  }, [fetchSessions]);
 
   // Démarrer rapidement une session (avec paramètres par défaut)
   const quickStart = useCallback(async (mode: TrainingMode, rangeId: number, userId?: number) => {
     setLoading(true);
     setError(null);
-
+    
     try {
       // POST /training/sessions creates the session AND returns the first
       // question (questions are generated at creation), so no separate
       // /start call is needed.
-      const sessionData = await api.createSession({
+      const createResponse = await api.post('/training/sessions', {
         mode,
         range_id: rangeId,
         user_id: userId,
         total_questions: 10,
       });
-
+      
+      const sessionData = createResponse.data;
+      
       // Set session and first question
       setCurrentSession(sessionData.session);
       setCurrentQuestion(sessionData.first_question);
@@ -207,7 +217,7 @@ export function useTraining(trainingApi?: TrainingApi) {
       setScore(0);
       setTimeSpent(0);
       setIsSessionActive(true);
-
+      
       return sessionData;
     } catch (err) {
       setError('Erreur lors du démarrage rapide');
@@ -216,15 +226,16 @@ export function useTraining(trainingApi?: TrainingApi) {
     } finally {
       setLoading(false);
     }
-  }, [api]);
+  }, []);
 
   // Obtenir les modes d'entraînement disponibles
   const fetchTrainingModes = useCallback(async () => {
     setLoading(true);
     setError(null);
-
+    
     try {
-      return await api.modes();
+      const response = await api.get('/training/modes');
+      return response.data;
     } catch (err) {
       setError('Erreur lors du chargement des modes d\'entraînement');
       console.error('Error fetching training modes:', err);
@@ -232,7 +243,7 @@ export function useTraining(trainingApi?: TrainingApi) {
     } finally {
       setLoading(false);
     }
-  }, [api]);
+  }, []);
 
   // Réinitialiser l'état
   const resetTrainingState = useCallback(() => {
@@ -260,9 +271,8 @@ export function useTraining(trainingApi?: TrainingApi) {
     isSessionActive,
     timeSpent,
     progress,
-    // NOTE: setIsSessionActive is exposed because Training.tsx drives the
-    // session lifecycle from the page. A future refactor of Training.tsx
-    // should replace these with higher-level intentions on the hook.
+    setCurrentSession,
+    setCurrentQuestion,
     setIsSessionActive,
     fetchSessions,
     fetchSession,
