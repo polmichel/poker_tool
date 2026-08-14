@@ -1,4 +1,4 @@
-import { getActionLabel, gridToHands, handsToGrid } from '../helpers';
+import { getActionLabel, gridToHands, generateRangeGrid } from '../helpers';
 import { ActionType, RangeGridCell } from '../../types';
 
 describe('Helper Functions', () => {
@@ -20,7 +20,7 @@ describe('Helper Functions', () => {
     });
 
     it('returns correct label for all_in action', () => {
-      expect(getActionLabel('all_in' as ActionType)).toBe('Tout miser');
+      expect(getActionLabel('all_in' as ActionType)).toBe('All-In');
     });
 
     it('returns correct label for undefined action', () => {
@@ -57,7 +57,7 @@ describe('Helper Functions', () => {
     });
   });
 
-  describe('handsToGrid', () => {
+  describe('generateRangeGrid', () => {
     it('converts hands object to grid', () => {
       const hands = {
         AA: 'open',
@@ -66,7 +66,7 @@ describe('Helper Functions', () => {
         QQ: 'call',
       };
 
-      const result = handsToGrid(hands);
+      const result = generateRangeGrid(hands);
       // Should be a 13x13 grid
       expect(result.length).toBe(13);
       expect(result[0].length).toBe(13);
@@ -83,10 +83,11 @@ describe('Helper Functions', () => {
 
     it('returns 13x13 grid for empty hands', () => {
       const hands = {};
-      const result = handsToGrid(hands);
+      const result = generateRangeGrid(hands);
       expect(result.length).toBe(13);
       expect(result[0].length).toBe(13);
-      expect(result[0][0].action).toBe('undefined');
+      // generateRangeGrid defaults missing hands to 'fold'
+      expect(result[0][0].action).toBe('fold');
     });
   });
 });

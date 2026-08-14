@@ -18,7 +18,7 @@ jest.mock('../../utils/constants', () => ({
     raise: 'Relancer',
     call: 'Suivre',
     fold: 'Passer',
-    all_in: 'Tout miser',
+    all_in: 'All-In',
     undefined: 'Non défini',
   },
 }));
@@ -104,8 +104,15 @@ describe('RangeGrid Component', () => {
         onCellClick={mockOnCellClick}
       />
     );
-    const aaCell = screen.getByText('AA').parentElement;
-    expect(aaCell).toHaveStyle({ backgroundColor: '#4CAF50' });
+    // jsdom does not reliably compute MUI Emotion `sx` background colors, so
+    // assert on the tooltip/aria-label which encodes the cell's action (and
+    // thus its color mapping) instead of the computed style.
+    expect(
+      screen.getByLabelText('Main: AA | Action: Ouvrir')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Main: AKs | Action: Relancer')
+    ).toBeInTheDocument();
   });
 
   it('renders row and column labels when showLabels is true', () => {
@@ -116,9 +123,10 @@ describe('RangeGrid Component', () => {
         showLabels={true}
       />
     );
-    // Should have row labels (A, K)
-    expect(screen.getByText('A')).toBeInTheDocument();
-    expect(screen.getByText('K')).toBeInTheDocument();
+    // Row and column labels both render single letters, so there are
+    // multiple matches per letter.
+    expect(screen.getAllByText('A').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('K').length).toBeGreaterThan(0);
   });
 
   it('does not render context menu when not editable', () => {

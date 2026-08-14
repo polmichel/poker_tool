@@ -3,28 +3,29 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import RangeList from '../RangeList';
 import { Range, RangeType, Position } from '../../types';
 
-// Mock des constantes
+// Mock des constantes. The real constants module exports RANGE_TYPES and
+// POSITIONS as arrays (the component calls .find on them), so the mock must
+// match that shape.
 jest.mock('../../utils/constants', () => ({
-  RANGE_TYPES: {
-    preflop: 'Préflop',
-    postflop: 'Postflop',
-    push_fold: 'Push/Fold',
-  },
-  POSITIONS: {
-    UTG: 'UTG',
-    MP: 'MP',
-    CO: 'CO',
-    BTN: 'BTN',
-    SB: 'SB',
-    BB: 'BB',
-    undefined: 'Non défini',
-  },
+  RANGE_TYPES: [
+    { value: 'preflop', label: 'Préflop' },
+    { value: 'postflop', label: 'Postflop' },
+    { value: 'push_fold', label: 'Push/Fold' },
+  ],
+  POSITIONS: [
+    { value: 'UTG', label: 'UTG' },
+    { value: 'MP', label: 'MP' },
+    { value: 'CO', label: 'CO' },
+    { value: 'BTN', label: 'BTN' },
+    { value: 'SB', label: 'SB' },
+    { value: 'BB', label: 'BB' },
+  ],
   ACTION_LABELS: {
     open: 'Ouvrir',
     raise: 'Relancer',
     call: 'Suivre',
     fold: 'Passer',
-    all_in: 'Tout miser',
+    all_in: 'All-In',
     undefined: 'Non défini',
   },
   ACTION_COLORS: {
@@ -130,7 +131,9 @@ describe('RangeList Component', () => {
       />
     );
     expect(screen.getByText('Range d\'ouverture UTG')).toBeInTheDocument();
-    expect(screen.getByText('Préflop')).toBeInTheDocument();
-    expect(screen.getByText('UTG')).toBeInTheDocument();
+    // The range type and position are rendered together as "Préflop • UTG".
+    expect(
+      screen.getByText((content) => content.includes('Préflop') && content.includes('UTG'))
+    ).toBeInTheDocument();
   });
 });
