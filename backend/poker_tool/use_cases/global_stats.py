@@ -5,8 +5,8 @@ Encapsulates: aggregating ranges, users and sessions into a global stats
 payload. Dependencies (the three ports) are injected.
 """
 from ..interfaces.ranges import Ranges
-from ..interfaces.users import Users
 from ..interfaces.training_sessions import TrainingSessions
+from ..interfaces.users import Users
 
 
 class GlobalStats:

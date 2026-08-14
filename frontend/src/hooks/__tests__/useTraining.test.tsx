@@ -8,8 +8,14 @@ import { TrainingApi } from '../../api';
 function makeFakeTrainingApi() {
   const fake: any = {};
   for (const method of [
-    'sessions', 'session', 'createSession', 'start',
-    'answer', 'end', 'sessionsByUser', 'modes',
+    'sessions',
+    'session',
+    'createSession',
+    'start',
+    'answer',
+    'end',
+    'sessionsByUser',
+    'modes',
   ]) {
     fake[method] = jest.fn();
   }
@@ -57,7 +63,7 @@ describe('useTraining Hook', () => {
     await act(async () => {
       await result.current.fetchSessions();
     });
-    expect(result.current.error).toBe('Erreur lors du chargement des sessions d\'entraînement');
+    expect(result.current.error).toBe("Erreur lors du chargement des sessions d'entraînement");
     expect(result.current.loading).toBe(false);
   });
 

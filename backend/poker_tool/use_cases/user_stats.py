@@ -5,8 +5,8 @@ Encapsulates: validating the user exists and aggregating their sessions and
 ranges. Dependencies (Users, Ranges, TrainingSessions ports) are injected.
 """
 from ..interfaces.ranges import Ranges
-from ..interfaces.users import Users
 from ..interfaces.training_sessions import TrainingSessions
+from ..interfaces.users import Users
 
 
 class UserNotFound(Exception):

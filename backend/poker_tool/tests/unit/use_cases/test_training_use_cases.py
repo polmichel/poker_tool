@@ -6,14 +6,18 @@ with real domain objects and in-memory ports.
 """
 import unittest
 from unittest.mock import patch
-from poker_tool.use_cases.register_user import RegisterUser
-from poker_tool.use_cases.create_range import CreateRange
-from poker_tool.use_cases.start_training_session import (
-    StartTrainingSession, RangeNotFound, RangeHasNoHands, UserRequired,
-)
+
 from poker_tool.use_cases.answer_question import AnswerQuestion, SessionNotFound
+from poker_tool.use_cases.create_range import CreateRange
 from poker_tool.use_cases.end_training_session import EndTrainingSession
-from .fakes import FakeUsers, FakeRanges, FakeSessions, FakeAuth
+from poker_tool.use_cases.register_user import RegisterUser
+from poker_tool.use_cases.start_training_session import (
+    RangeHasNoHands,
+    RangeNotFound,
+    StartTrainingSession,
+)
+
+from .fakes import FakeAuth, FakeRanges, FakeSessions, FakeUsers
 
 
 class TestStartTrainingSession(unittest.TestCase):

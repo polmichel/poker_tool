@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  ToggleButtonGroup,
-  ToggleButton,
-  Tooltip,
-} from '@mui/material';
+import { Box, Typography, Paper, ToggleButtonGroup, ToggleButton, Tooltip } from '@mui/material';
 import { TrainingMode } from '../types';
 import { TRAINING_MODES } from '../utils/constants';
 import { HelpOutline, Edit, CheckBox, AutoAwesome } from '@mui/icons-material';
@@ -25,7 +18,7 @@ const modeIcons: Record<TrainingMode, React.ReactNode> = {
 
 const modeDescriptions: Record<TrainingMode, string> = {
   fill: 'Complétez une grille de range vide avec les bonnes actions pour chaque main.',
-  guess: 'Déterminez si des mains font partie d\'une range donnée.',
+  guess: "Déterminez si des mains font partie d'une range donnée.",
   complete: 'Complétez une range partiellement remplie.',
 };
 
@@ -34,10 +27,7 @@ const TrainingModeSelector: React.FC<TrainingModeSelectorProps> = ({
   onModeChange,
   disabled = false,
 }) => {
-  const handleModeChange = (
-    event: React.MouseEvent<HTMLElement>,
-    newMode: TrainingMode | null
-  ) => {
+  const handleModeChange = (event: React.MouseEvent<HTMLElement>, newMode: TrainingMode | null) => {
     if (newMode !== null) {
       onModeChange(newMode);
     }
@@ -48,7 +38,7 @@ const TrainingModeSelector: React.FC<TrainingModeSelectorProps> = ({
       <Typography variant="subtitle1" gutterBottom>
         Mode d'entraînement
       </Typography>
-      
+
       <ToggleButtonGroup
         value={selectedMode}
         exclusive

@@ -1,11 +1,11 @@
 """
 SQLAlchemy implementation of the :class:`Users` port (Elegant Objects).
 """
-from typing import List, Optional
-from flask_sqlalchemy import SQLAlchemy
+
+
 from ...interfaces.users import Users
 from ...objects.user import User
-from .models import db, UserModel
+from .models import UserModel, db
 
 
 class SqlUsers(Users):
@@ -44,17 +44,17 @@ class SqlUsers(Users):
         self.db.session.commit()
         return model.to_domain()
 
-    def user_by_id(self, user_id: int) -> Optional[User]:
+    def user_by_id(self, user_id: int) -> User | None:
         model = UserModel.query.get(user_id)
         return model.to_domain() if model else None
 
-    def user_by_username(self, username: str) -> Optional[User]:
+    def user_by_username(self, username: str) -> User | None:
         model = UserModel.query.filter_by(username=username).first()
         return model.to_domain() if model else None
 
-    def user_by_email(self, email: str) -> Optional[User]:
+    def user_by_email(self, email: str) -> User | None:
         model = UserModel.query.filter_by(email=email).first()
         return model.to_domain() if model else None
 
-    def all(self) -> List[User]:
+    def all(self) -> list[User]:
         return [model.to_domain() for model in UserModel.query.all()]

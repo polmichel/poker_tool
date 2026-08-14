@@ -1,8 +1,9 @@
 """HTTP controllers for the stats resource."""
 from flask import Blueprint, jsonify
 from werkzeug.exceptions import NotFound
+
 from ....use_cases.global_stats import GlobalStats
-from ....use_cases.user_stats import UserStats, UserNotFound
+from ....use_cases.user_stats import UserNotFound, UserStats
 
 
 class StatsController:

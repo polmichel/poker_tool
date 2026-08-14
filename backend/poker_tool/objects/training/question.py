@@ -1,7 +1,6 @@
 """
 Immutable training question value object (Elegant Objects).
 """
-from typing import Dict
 
 
 class TrainingQuestion:
@@ -37,7 +36,7 @@ class TrainingQuestion:
         """Check if answer is correct."""
         return answer.lower() == self._correct_answer.lower()
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             "hand": self._hand,
@@ -47,7 +46,7 @@ class TrainingQuestion:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'TrainingQuestion':
+    def from_dict(cls, data: dict) -> 'TrainingQuestion':
         """Create from dictionary."""
         return cls(
             hand=data["hand"],

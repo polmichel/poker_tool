@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Paper,
-  Typography,
-  Divider,
-  Chip,
-  LinearProgress,
-} from '@mui/material';
+import { Box, Paper, Typography, Divider, Chip, LinearProgress } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
   Timer as TimerIcon,
@@ -23,12 +16,7 @@ interface StatsCardProps {
   color?: string;
 }
 
-const StatsCard: React.FC<StatsCardProps> = ({
-  title,
-  stats,
-  icon,
-  color = '#4CAF50',
-}) => {
+const StatsCard: React.FC<StatsCardProps> = ({ title, stats, icon, color = '#4CAF50' }) => {
   return (
     <Paper
       sx={{
@@ -64,18 +52,14 @@ const StatsCard: React.FC<StatsCardProps> = ({
         {stats.avg_score !== undefined && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CheckCircleIcon color="success" fontSize="small" />
-            <Typography variant="body2">
-              Précision: {formatPercentage(stats.avg_score)}
-            </Typography>
+            <Typography variant="body2">Précision: {formatPercentage(stats.avg_score)}</Typography>
           </Box>
         )}
 
         {stats.total_time_spent !== undefined && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <TimerIcon color="action" fontSize="small" />
-            <Typography variant="body2">
-              Temps: {formatTime(stats.total_time_spent)}
-            </Typography>
+            <Typography variant="body2">Temps: {formatTime(stats.total_time_spent)}</Typography>
           </Box>
         )}
 

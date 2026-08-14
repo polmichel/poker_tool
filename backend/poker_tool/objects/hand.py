@@ -71,7 +71,7 @@ class Hand:
         rank2_idx = RANKS.index(self._rank2)
         other_rank1_idx = RANKS.index(other._rank1)
         other_rank2_idx = RANKS.index(other._rank2)
-        
+
         # Compare highest rank first
         if rank1_idx != other_rank1_idx:
             return rank1_idx < other_rank1_idx

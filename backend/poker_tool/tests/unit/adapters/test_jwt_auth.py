@@ -1,14 +1,15 @@
 """
 Unit tests for JwtAuth adapter.
 """
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 from unittest.mock import MagicMock, patch
+
 from poker_tool.adapters.jwt.auth import JwtAuth
 from poker_tool.config import Config
 from poker_tool.interfaces.auth import Auth
@@ -29,7 +30,7 @@ class TestJwtAuth(unittest.TestCase):
     def test_jwt_auth_creation_without_config(self):
         """Test JwtAuth creation falls back to dev defaults when no config."""
         with patch('poker_tool.adapters.jwt.auth.JWTManager') as mock_jwt:
-            auth = JwtAuth(self.app)
+            JwtAuth(self.app)
 
             # Check that JWTManager was initialized
             mock_jwt.assert_called_once_with(self.app)
@@ -45,7 +46,7 @@ class TestJwtAuth(unittest.TestCase):
             "JWT_ACCESS_TOKEN_EXPIRES": "7200",
         })
         with patch('poker_tool.adapters.jwt.auth.JWTManager'):
-            auth = JwtAuth(self.app, config)
+            JwtAuth(self.app, config)
 
             self.assertEqual(self.app.config.get("JWT_SECRET_KEY"), "injected-jwt-secret")
             self.assertEqual(self.app.config.get("JWT_ACCESS_TOKEN_EXPIRES"), 7200)

@@ -1,10 +1,10 @@
 """
 SQLAlchemy implementation of the :class:`TrainingSessions` port (Elegant Objects).
 """
-from typing import List, Optional
+
 from ...interfaces.training_sessions import TrainingSessions
 from ...objects.training.session import TrainingSession
-from .models import db, TrainingSessionModel
+from .models import TrainingSessionModel, db
 
 
 class SqlTrainingSessions(TrainingSessions):
@@ -65,14 +65,14 @@ class SqlTrainingSessions(TrainingSessions):
         self.db.session.commit()
         return model.to_domain()
 
-    def session_by_id(self, session_id: int) -> Optional[TrainingSession]:
+    def session_by_id(self, session_id: int) -> TrainingSession | None:
         model = TrainingSessionModel.query.get(session_id)
         return model.to_domain() if model else None
 
-    def all(self) -> List[TrainingSession]:
+    def all(self) -> list[TrainingSession]:
         return [model.to_domain() for model in TrainingSessionModel.query.all()]
 
-    def sessions_by_user(self, user_id: int) -> List[TrainingSession]:
+    def sessions_by_user(self, user_id: int) -> list[TrainingSession]:
         return [
             model.to_domain()
             for model in TrainingSessionModel.query.filter_by(user_id=user_id).all()

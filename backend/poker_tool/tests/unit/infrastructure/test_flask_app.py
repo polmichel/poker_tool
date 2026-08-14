@@ -7,12 +7,14 @@ correctly.
 """
 import unittest
 from unittest.mock import MagicMock
+
 from flask import Flask
+
 from poker_tool.infrastructure.web.flask_app import FlaskApp
-from poker_tool.interfaces.users import Users
+from poker_tool.interfaces.auth import Auth
 from poker_tool.interfaces.ranges import Ranges
 from poker_tool.interfaces.training_sessions import TrainingSessions
-from poker_tool.interfaces.auth import Auth
+from poker_tool.interfaces.users import Users
 
 
 class TestFlaskApp(unittest.TestCase):
@@ -66,9 +68,9 @@ class TestFlaskApp(unittest.TestCase):
 
     def test_get_ranges_route(self):
         """Test GET /api/ranges route."""
+        from poker_tool.objects.position import Position
         from poker_tool.objects.range import Range
         from poker_tool.objects.range_type import RangeType
-        from poker_tool.objects.position import Position
 
         mock_range = Range(
             name="Test Range",
@@ -89,9 +91,9 @@ class TestFlaskApp(unittest.TestCase):
 
     def test_get_range_route(self):
         """Test GET /api/ranges/<id> route."""
+        from poker_tool.objects.position import Position
         from poker_tool.objects.range import Range
         from poker_tool.objects.range_type import RangeType
-        from poker_tool.objects.position import Position
 
         mock_range = Range(
             name="Test Range",
@@ -119,9 +121,9 @@ class TestFlaskApp(unittest.TestCase):
 
     def test_create_range_route(self):
         """Test POST /api/ranges route delegates to the CreateRange use case."""
+        from poker_tool.objects.position import Position
         from poker_tool.objects.range import Range
         from poker_tool.objects.range_type import RangeType
-        from poker_tool.objects.position import Position
 
         mock_range = Range(
             name="New Range",

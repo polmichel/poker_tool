@@ -54,32 +54,35 @@ const RangeForm: React.FC<RangeFormProps> = ({
 
   const validate = useCallback(() => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!name.trim()) {
       newErrors.name = 'Le nom est requis';
     }
-    
+
     if (existingRangeNames.includes(name) && (!range || range.name !== name)) {
       newErrors.name = 'Ce nom est déjà utilisé';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [name, existingRangeNames, range]);
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (validate()) {
-      onSubmit({
-        name,
-        description,
-        range_type: rangeType,
-        position,
-        hands: range?.hands || {},
-      });
-    }
-  }, [name, description, rangeType, position, range, validate, onSubmit]);
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (validate()) {
+        onSubmit({
+          name,
+          description,
+          range_type: rangeType,
+          position,
+          hands: range?.hands || {},
+        });
+      }
+    },
+    [name, description, rangeType, position, range, validate, onSubmit],
+  );
 
   const handleCancel = useCallback(() => {
     if (onCancel) {
@@ -98,9 +101,9 @@ const RangeForm: React.FC<RangeFormProps> = ({
       <Typography variant="h6" gutterBottom>
         {range ? 'Modifier la Range' : 'Nouvelle Range'}
       </Typography>
-      
+
       <Divider sx={{ my: 2 }} />
-      
+
       <form onSubmit={handleSubmit}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* Nom */}
@@ -178,12 +181,8 @@ const RangeForm: React.FC<RangeFormProps> = ({
                   label={label}
                   size="small"
                   sx={{
-                    backgroundColor: action === 'undefined' 
-                      ? 'grey.500' 
-                      : `${action}.main`,
-                    color: action === 'undefined' || action === 'fold' 
-                      ? 'text.primary' 
-                      : 'white',
+                    backgroundColor: action === 'undefined' ? 'grey.500' : `${action}.main`,
+                    color: action === 'undefined' || action === 'fold' ? 'text.primary' : 'white',
                   }}
                 />
               ))}

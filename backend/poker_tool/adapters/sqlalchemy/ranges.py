@@ -1,10 +1,10 @@
 """
 SQLAlchemy implementation of the :class:`Ranges` port (Elegant Objects).
 """
-from typing import List, Optional
+
 from ...interfaces.ranges import Ranges
 from ...objects.range import Range
-from .models import db, RangeModel
+from .models import RangeModel, db
 
 
 class SqlRanges(Ranges):
@@ -53,11 +53,11 @@ class SqlRanges(Ranges):
         self.db.session.commit()
         return model.to_domain()
 
-    def range_by_id(self, range_id: int) -> Optional[Range]:
+    def range_by_id(self, range_id: int) -> Range | None:
         model = RangeModel.query.get(range_id)
         return model.to_domain() if model else None
 
-    def all(self) -> List[Range]:
+    def all(self) -> list[Range]:
         return [model.to_domain() for model in RangeModel.query.all()]
 
     def remove(self, range_obj: Range) -> None:
@@ -67,7 +67,7 @@ class SqlRanges(Ranges):
                 self.db.session.delete(model)
                 self.db.session.commit()
 
-    def ranges_by_user(self, user_id: int) -> List[Range]:
+    def ranges_by_user(self, user_id: int) -> list[Range]:
         return [
             model.to_domain()
             for model in RangeModel.query.filter_by(user_id=user_id).all()

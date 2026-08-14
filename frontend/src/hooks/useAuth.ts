@@ -46,56 +46,62 @@ export function useAuth(authApi?: AuthApi) {
   }, [api]);
 
   // Inscrire un nouvel utilisateur
-  const register = useCallback(async (username: string, email: string, password: string) => {
-    setLoading(true);
-    setError(null);
+  const register = useCallback(
+    async (username: string, email: string, password: string) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      await api.register(username, email, password);
-      // Connecter automatiquement après l'inscription
-      const { access_token, user: userData } = await api.login(username, password);
-      localStorage.setItem('poker_tool_token', access_token);
-      setToken(access_token);
-      setUser(userData);
-      setIsAuthenticated(true);
+      try {
+        await api.register(username, email, password);
+        // Connecter automatiquement après l'inscription
+        const { access_token, user: userData } = await api.login(username, password);
+        localStorage.setItem('poker_tool_token', access_token);
+        setToken(access_token);
+        setUser(userData);
+        setIsAuthenticated(true);
 
-      return userData;
-    } catch (err) {
-      const errorMessage = axios.isAxiosError(err)
-        ? err.response?.data?.error || 'Erreur lors de l\'inscription'
-        : 'Erreur lors de l\'inscription';
-      setError(errorMessage);
-      console.error('Error registering:', err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [api]);
+        return userData;
+      } catch (err) {
+        const errorMessage = axios.isAxiosError(err)
+          ? err.response?.data?.error || "Erreur lors de l'inscription"
+          : "Erreur lors de l'inscription";
+        setError(errorMessage);
+        console.error('Error registering:', err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [api],
+  );
 
   // Connecter un utilisateur
-  const login = useCallback(async (username: string, password: string) => {
-    setLoading(true);
-    setError(null);
+  const login = useCallback(
+    async (username: string, password: string) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const { access_token, user: userData } = await api.login(username, password);
-      localStorage.setItem('poker_tool_token', access_token);
-      setToken(access_token);
-      setUser(userData);
-      setIsAuthenticated(true);
+      try {
+        const { access_token, user: userData } = await api.login(username, password);
+        localStorage.setItem('poker_tool_token', access_token);
+        setToken(access_token);
+        setUser(userData);
+        setIsAuthenticated(true);
 
-      return userData;
-    } catch (err) {
-      const errorMessage = axios.isAxiosError(err)
-        ? err.response?.data?.error || 'Identifiants invalides'
-        : 'Identifiants invalides';
-      setError(errorMessage);
-      console.error('Error logging in:', err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [api]);
+        return userData;
+      } catch (err) {
+        const errorMessage = axios.isAxiosError(err)
+          ? err.response?.data?.error || 'Identifiants invalides'
+          : 'Identifiants invalides';
+        setError(errorMessage);
+        console.error('Error logging in:', err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [api],
+  );
 
   // Déconnecter l'utilisateur
   const logout = useCallback(() => {
@@ -107,26 +113,29 @@ export function useAuth(authApi?: AuthApi) {
   }, []);
 
   // Mettre à jour l'utilisateur
-  const updateUser = useCallback(async (userData: Partial<User>) => {
-    setLoading(true);
-    setError(null);
+  const updateUser = useCallback(
+    async (userData: Partial<User>) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      if (!user?.id) {
-        throw new Error('User ID not found');
+      try {
+        if (!user?.id) {
+          throw new Error('User ID not found');
+        }
+
+        const response = await api.me();
+        setUser(response);
+        return response;
+      } catch (err) {
+        setError('Erreur lors de la mise à jour du profil');
+        console.error('Error updating user:', err);
+        return null;
+      } finally {
+        setLoading(false);
       }
-
-      const response = await api.me();
-      setUser(response);
-      return response;
-    } catch (err) {
-      setError('Erreur lors de la mise à jour du profil');
-      console.error('Error updating user:', err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [user, token, api]);
+    },
+    [user, token, api],
+  );
 
   // Initialiser le hook
   useEffect(() => {

@@ -2,10 +2,12 @@
 Unit tests for the CreateRange and UpdateRange use cases (in-memory fakes).
 """
 import unittest
+
 from poker_tool.use_cases.create_range import CreateRange
-from poker_tool.use_cases.update_range import UpdateRange, RangeNotFound
 from poker_tool.use_cases.register_user import RegisterUser
-from .fakes import FakeUsers, FakeRanges, FakeAuth
+from poker_tool.use_cases.update_range import RangeNotFound, UpdateRange
+
+from .fakes import FakeAuth, FakeRanges, FakeUsers
 
 
 class TestCreateRange(unittest.TestCase):

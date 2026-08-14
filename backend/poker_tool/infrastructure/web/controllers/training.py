@@ -1,13 +1,20 @@
 """HTTP controllers for the training resource."""
 from flask import Blueprint, jsonify, request
 from werkzeug.exceptions import BadRequest, NotFound
+
 from ....interfaces.training_sessions import TrainingSessions
+from ....use_cases.answer_question import AnswerQuestion
+from ....use_cases.answer_question import SessionNotFound as AnswerSessionNotFound
+from ....use_cases.end_training_session import EndTrainingSession
+from ....use_cases.end_training_session import SessionNotFound as EndSessionNotFound
 from ....use_cases.start_training_session import (
-    StartTrainingSession, RangeNotFound as StartRangeNotFound,
-    RangeHasNoHands, UserRequired,
+    RangeHasNoHands,
+    StartTrainingSession,
+    UserRequired,
 )
-from ....use_cases.answer_question import AnswerQuestion, SessionNotFound as AnswerSessionNotFound
-from ....use_cases.end_training_session import EndTrainingSession, SessionNotFound as EndSessionNotFound
+from ....use_cases.start_training_session import (
+    RangeNotFound as StartRangeNotFound,
+)
 
 
 class TrainingController:

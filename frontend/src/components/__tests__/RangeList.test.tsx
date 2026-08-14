@@ -43,7 +43,7 @@ describe('RangeList Component', () => {
     {
       id: 1,
       name: 'UTG Open Range',
-      description: 'Range d\'ouverture UTG',
+      description: "Range d'ouverture UTG",
       range_type: 'preflop' as RangeType,
       position: 'UTG' as Position,
       hands: { AA: 'open', KK: 'open', QQ: 'open' },
@@ -54,7 +54,7 @@ describe('RangeList Component', () => {
     {
       id: 2,
       name: 'BTN Open Range',
-      description: 'Range d\'ouverture BTN',
+      description: "Range d'ouverture BTN",
       range_type: 'preflop' as RangeType,
       position: 'BTN' as Position,
       hands: { AA: 'open', KK: 'open', QQ: 'open', JJ: 'open' },
@@ -79,7 +79,7 @@ describe('RangeList Component', () => {
         onSelectRange={mockOnSelectRange}
         onEditRange={mockOnEditRange}
         onDeleteRange={mockOnDeleteRange}
-      />
+      />,
     );
     expect(screen.getByText('UTG Open Range')).toBeInTheDocument();
     expect(screen.getByText('BTN Open Range')).toBeInTheDocument();
@@ -92,7 +92,7 @@ describe('RangeList Component', () => {
         onSelectRange={mockOnSelectRange}
         onEditRange={mockOnEditRange}
         onDeleteRange={mockOnDeleteRange}
-      />
+      />,
     );
     expect(screen.getByText('UTG Open Range')).toBeInTheDocument();
     expect(screen.getByText('BTN Open Range')).toBeInTheDocument();
@@ -105,19 +105,14 @@ describe('RangeList Component', () => {
         onSelectRange={mockOnSelectRange}
         onEditRange={mockOnEditRange}
         onDeleteRange={mockOnDeleteRange}
-      />
+      />,
     );
     fireEvent.click(screen.getByText('UTG Open Range'));
     expect(mockOnSelectRange).toHaveBeenCalledWith(mockRanges[0]);
   });
 
   it('works without onEditRange and onDeleteRange (optional props)', () => {
-    render(
-      <RangeList
-        ranges={mockRanges}
-        onSelectRange={mockOnSelectRange}
-      />
-    );
+    render(<RangeList ranges={mockRanges} onSelectRange={mockOnSelectRange} />);
     expect(screen.getByText('UTG Open Range')).toBeInTheDocument();
   });
 
@@ -128,12 +123,12 @@ describe('RangeList Component', () => {
         onSelectRange={mockOnSelectRange}
         onEditRange={mockOnEditRange}
         onDeleteRange={mockOnDeleteRange}
-      />
+      />,
     );
-    expect(screen.getByText('Range d\'ouverture UTG')).toBeInTheDocument();
+    expect(screen.getByText("Range d'ouverture UTG")).toBeInTheDocument();
     // The range type and position are rendered together as "Préflop • UTG".
     expect(
-      screen.getByText((content) => content.includes('Préflop') && content.includes('UTG'))
+      screen.getByText((content) => content.includes('Préflop') && content.includes('UTG')),
     ).toBeInTheDocument();
   });
 });

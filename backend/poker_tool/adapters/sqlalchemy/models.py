@@ -2,8 +2,9 @@
 SQLAlchemy models for Poker Tool.
 These models are internal implementation details of the SQLAlchemy adapter.
 """
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+
+from flask_sqlalchemy import SQLAlchemy
 
 # Create SQLAlchemy instance (will be initialized by the adapter)
 db = SQLAlchemy()
@@ -25,10 +26,10 @@ class RangeModel(db.Model):
 
     def to_domain(self):
         """Convert to domain Range object."""
-        from ...objects.range import Range
         from ...objects.action import Action, ActionType
-        from ...objects.range_type import RangeType
         from ...objects.position import Position
+        from ...objects.range import Range
+        from ...objects.range_type import RangeType
 
         hands = {
             hand_str: Action(ActionType[action.upper()])
@@ -86,10 +87,10 @@ class TrainingSessionModel(db.Model):
 
     def to_domain(self):
         """Convert to domain TrainingSession object."""
-        from ...objects.training.session import TrainingSession
-        from ...objects.training.question import TrainingQuestion
-        from ...objects.user import User
         from ...objects.range import Range
+        from ...objects.training.question import TrainingQuestion
+        from ...objects.training.session import TrainingSession
+        from ...objects.user import User
 
         # Get user and range from storage (simplified for now)
         user = User(username="", email="", user_id=self.user_id)

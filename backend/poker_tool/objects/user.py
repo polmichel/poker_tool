@@ -1,7 +1,6 @@
 """
 Immutable user entity (Elegant Objects).
 """
-from typing import Optional
 
 
 class User:
@@ -11,8 +10,8 @@ class User:
         self,
         username: str,
         email: str,
-        password_hash: Optional[str] = None,
-        user_id: Optional[int] = None,
+        password_hash: str | None = None,
+        user_id: int | None = None,
     ):
         self._username = username
         self._email = email
@@ -20,7 +19,7 @@ class User:
         self._id = user_id
 
     @property
-    def id(self) -> Optional[int]:
+    def id(self) -> int | None:
         """User ID."""
         return self._id
 
@@ -35,7 +34,7 @@ class User:
         return self._email
 
     @property
-    def password_hash(self) -> Optional[str]:
+    def password_hash(self) -> str | None:
         """Password hash."""
         return self._password_hash
 

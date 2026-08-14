@@ -1,15 +1,17 @@
 """
 Unit tests for the SqlTrainingSessions adapter.
 """
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 from unittest.mock import MagicMock, patch
+
 from flask import Flask
+
 from poker_tool.adapters.sqlalchemy.training_sessions import SqlTrainingSessions
 from poker_tool.interfaces.training_sessions import TrainingSessions
 
@@ -25,7 +27,7 @@ class TestSqlTrainingSessions(unittest.TestCase):
         """Test SqlTrainingSessions creation initializes the db."""
         mock_app = MagicMock(spec=Flask)
         with patch('poker_tool.adapters.sqlalchemy.training_sessions.db') as mock_db:
-            sessions = SqlTrainingSessions(mock_app)
+            SqlTrainingSessions(mock_app)
             mock_db.init_app.assert_called_once_with(mock_app)
             mock_db.create_all.assert_called_once()
 

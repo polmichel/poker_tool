@@ -5,25 +5,26 @@ This is the infrastructure layer — it only composes the HTTP controllers
 and delegates every business operation to the injected use cases. No
 business logic lives here.
 """
-from flask import Flask, Blueprint, jsonify
-from ...interfaces.users import Users
+from flask import Blueprint, Flask, jsonify
+
+from ...interfaces.auth import Auth
 from ...interfaces.ranges import Ranges
 from ...interfaces.training_sessions import TrainingSessions
-from ...interfaces.auth import Auth
-from ...use_cases.register_user import RegisterUser
-from ...use_cases.login_user import LoginUser
-from ...use_cases.current_user import CurrentUser
-from ...use_cases.create_range import CreateRange
-from ...use_cases.update_range import UpdateRange
-from ...use_cases.start_training_session import StartTrainingSession
+from ...interfaces.users import Users
 from ...use_cases.answer_question import AnswerQuestion
+from ...use_cases.create_range import CreateRange
+from ...use_cases.current_user import CurrentUser
 from ...use_cases.end_training_session import EndTrainingSession
 from ...use_cases.global_stats import GlobalStats
+from ...use_cases.login_user import LoginUser
+from ...use_cases.register_user import RegisterUser
+from ...use_cases.start_training_session import StartTrainingSession
+from ...use_cases.update_range import UpdateRange
 from ...use_cases.user_stats import UserStats
+from .controllers.auth import AuthController, UserController
 from .controllers.ranges import RangeController
-from .controllers.auth import UserController, AuthController
-from .controllers.training import TrainingController
 from .controllers.stats import StatsController
+from .controllers.training import TrainingController
 
 
 class FlaskApp:

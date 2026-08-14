@@ -10,13 +10,12 @@ the relevant variables must be provided via the environment (see
 ``backend/.env.example``).
 """
 import os
-from typing import List
 
 
 class Config:
     """Environment-driven application configuration."""
 
-    def __init__(self, env: dict = None) -> None:
+    def __init__(self, env: dict | None = None) -> None:
         self._env = env if env is not None else os.environ
 
     @property
@@ -32,7 +31,7 @@ class Config:
         return self._env.get("DATABASE_URL", "sqlite:///poker_tool.db")
 
     @property
-    def cors_origins(self) -> List[str]:
+    def cors_origins(self) -> list[str]:
         raw = self._env.get("CORS_ORIGINS", "*")
         if raw == "*":
             return ["*"]

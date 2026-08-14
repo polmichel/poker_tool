@@ -6,10 +6,10 @@ user (explicit, auth, or fallback) and creating + persisting the session.
 Dependencies (Ranges port, Users port, TrainingSessions port, Auth port) are
 injected.
 """
-from ..interfaces.ranges import Ranges
-from ..interfaces.users import Users
-from ..interfaces.training_sessions import TrainingSessions
 from ..interfaces.auth import Auth
+from ..interfaces.ranges import Ranges
+from ..interfaces.training_sessions import TrainingSessions
+from ..interfaces.users import Users
 from ..objects.training.session import TrainingSession
 
 

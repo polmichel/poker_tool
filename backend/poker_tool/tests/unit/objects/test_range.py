@@ -2,11 +2,11 @@
 Unit tests for Range entity.
 """
 import unittest
+
+from poker_tool.objects.action import Action, ActionType
+from poker_tool.objects.position import Position
 from poker_tool.objects.range import Range
 from poker_tool.objects.range_type import RangeType
-from poker_tool.objects.position import Position
-from poker_tool.objects.action import Action, ActionType
-from poker_tool.objects.hand import RANKS
 
 
 class TestRange(unittest.TestCase):
@@ -23,7 +23,7 @@ class TestRange(unittest.TestCase):
             user_id=1,
             range_id=1,
         )
-        
+
         self.assertEqual(range_obj.name, "Test Range")
         self.assertEqual(range_obj.description, "A test range")
         self.assertEqual(range_obj.type, RangeType.PREFLOP)
@@ -35,7 +35,7 @@ class TestRange(unittest.TestCase):
     def test_range_creation_minimal(self):
         """Test Range creation with minimal parameters."""
         range_obj = Range(name="Test Range")
-        
+
         self.assertEqual(range_obj.name, "Test Range")
         self.assertEqual(range_obj.description, "")
         self.assertEqual(range_obj.type, RangeType.PREFLOP)
@@ -47,9 +47,9 @@ class TestRange(unittest.TestCase):
     def test_range_with_hand(self):
         """Test with_hand method (immutable)."""
         range_obj = Range(name="Test Range")
-        
+
         new_range = range_obj.with_hand("AKs", Action(ActionType.RAISE))
-        
+
         self.assertEqual(len(new_range.hands), 1)
         self.assertEqual(new_range.hands["AKs"].type, ActionType.RAISE)
         # Original should be unchanged
@@ -61,9 +61,9 @@ class TestRange(unittest.TestCase):
             name="Test Range",
             hands={"AKs": Action(ActionType.RAISE), "TT": Action(ActionType.OPEN)},
         )
-        
+
         new_range = range_obj.without_hand("AKs")
-        
+
         self.assertEqual(len(new_range.hands), 1)
         self.assertNotIn("AKs", new_range.hands)
         self.assertIn("TT", new_range.hands)
@@ -76,14 +76,14 @@ class TestRange(unittest.TestCase):
             name="Test Range",
             hands={"AKs": Action(ActionType.RAISE)},
         )
-        
+
         grid = range_obj.grid()
-        
+
         # Should be 13x13 grid
         self.assertEqual(len(grid), 13)
         for row in grid:
             self.assertEqual(len(row), 13)
-        
+
         # Check that AKs is in the grid with correct action
         # AKs should be at position [0, 1] (A=0, K=1)
         # But the grid generation logic is a bit complex, so just check structure
@@ -103,9 +103,9 @@ class TestRange(unittest.TestCase):
                 "AKo": Action(ActionType.RAISE),
             },
         )
-        
+
         stats = range_obj.statistics()
-        
+
         self.assertEqual(stats["total_hands"], 3)
         self.assertEqual(stats["by_action"]["RAISE"], 2)
         self.assertEqual(stats["by_action"]["OPEN"], 1)
@@ -121,9 +121,9 @@ class TestRange(unittest.TestCase):
             user_id=1,
             range_id=1,
         )
-        
+
         range_dict = range_obj.to_dict()
-        
+
         self.assertEqual(range_dict["id"], 1)
         self.assertEqual(range_dict["name"], "Test Range")
         self.assertEqual(range_dict["description"], "A test range")
@@ -143,9 +143,9 @@ class TestRange(unittest.TestCase):
             "hands": {"AKs": "raise", "TT": "open"},
             "user_id": 1,
         }
-        
+
         range_obj = Range.from_dict(data)
-        
+
         self.assertEqual(range_obj.id, 1)
         self.assertEqual(range_obj.name, "Test Range")
         self.assertEqual(range_obj.description, "A test range")

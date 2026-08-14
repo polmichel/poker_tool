@@ -5,7 +5,7 @@ import { RANKS, ACTION_COLORS, ActionType, Hand, RangeGridCell } from '../types'
 // Générer une grille 13x13 pour une range donnée
 export function generateRangeGrid(rangeHands: Record<string, ActionType>): RangeGridCell[][] {
   const grid: RangeGridCell[][] = [];
-  
+
   for (let i = 0; i < RANKS.length; i++) {
     const row: RangeGridCell[] = [];
     for (let j = 0; j < RANKS.length; j++) {
@@ -15,9 +15,9 @@ export function generateRangeGrid(rangeHands: Record<string, ActionType>): Range
       } else if (i > j) {
         handStr = `${RANKS[j]}${RANKS[i]}o`; // Offsuit
       } else {
-        handStr = `${RANKS[i]}${RANKS[j]}`;   // Pair
+        handStr = `${RANKS[i]}${RANKS[j]}`; // Pair
       }
-      
+
       const action = rangeHands[handStr] || 'fold';
       row.push({
         hand: handStr,
@@ -27,26 +27,26 @@ export function generateRangeGrid(rangeHands: Record<string, ActionType>): Range
     }
     grid.push(row);
   }
-  
+
   return grid;
 }
 
 // Convertir une grille en objet hands (pour sauvegarde)
 export function gridToHands(grid: RangeGridCell[][]): Record<string, ActionType> {
   const hands: Record<string, ActionType> = {};
-  
+
   for (const row of grid) {
     for (const cell of row) {
       hands[cell.hand] = cell.action;
     }
   }
-  
+
   return hands;
 }
 
 // Inverser une grille (pour l'affichage en miroir)
 export function reverseGrid(grid: RangeGridCell[][]): RangeGridCell[][] {
-  return [...grid].reverse().map(row => [...row].reverse());
+  return [...grid].reverse().map((row) => [...row].reverse());
 }
 
 // Obtenir le nom complet d'une main (ex: "AKs" -> "As Ks")
@@ -108,31 +108,31 @@ export function getHandRanks(handStr: string): { rank1: string; rank2: string } 
 // Comparer deux mains (pour le tri)
 export function compareHands(a: string, b: string): number {
   const rankIndex = (rank: string): number => RANKS.indexOf(rank as any);
-  
+
   const aRanks = getHandRanks(a);
   const bRanks = getHandRanks(b);
-  
+
   const aRank1 = rankIndex(aRanks.rank1);
   const aRank2 = rankIndex(aRanks.rank2);
   const bRank1 = rankIndex(bRanks.rank1);
   const bRank2 = rankIndex(bRanks.rank2);
-  
+
   // Comparer par le rank le plus haut
   const aHigh = Math.min(aRank1, aRank2);
   const bHigh = Math.min(bRank1, bRank2);
-  
+
   if (aHigh !== bHigh) {
     return aHigh - bHigh;
   }
-  
+
   // Comparer par le rank le plus bas
   const aLow = Math.max(aRank1, aRank2);
   const bLow = Math.max(bRank1, bRank2);
-  
+
   if (aLow !== bLow) {
     return aLow - bLow;
   }
-  
+
   // Si même ranks, les paires viennent avant les mains suited, qui viennent avant les mains offsuit
   if (aRanks.rank1 === aRanks.rank2 && bRanks.rank1 === bRanks.rank2) {
     return 0;
@@ -145,14 +145,14 @@ export function compareHands(a: string, b: string): number {
   } else if (!a.endsWith('s') && b.endsWith('s')) {
     return 1;
   }
-  
+
   return 0;
 }
 
 // Filtrer les mains par action
 export function filterHandsByAction(
   hands: Record<string, ActionType>,
-  action: ActionType
+  action: ActionType,
 ): Record<string, ActionType> {
   const filtered: Record<string, ActionType> = {};
   for (const [hand, handAction] of Object.entries(hands)) {
@@ -180,15 +180,15 @@ export function calculateRangeStats(hands: Record<string, ActionType>): {
     bet: 0,
     undefined: 0,
   };
-  
+
   for (const action of Object.values(hands)) {
     byAction[action] = (byAction[action] || 0) + 1;
   }
-  
+
   return {
     total,
     byAction,
-    percentage: total / 169 * 100,
+    percentage: (total / 169) * 100,
   };
 }
 
@@ -196,12 +196,12 @@ export function calculateRangeStats(hands: Record<string, ActionType>): {
 export function generateUniqueRangeName(existingNames: string[]): string {
   let counter = 1;
   let name = `Ma Range ${counter}`;
-  
+
   while (existingNames.includes(name)) {
     counter++;
     name = `Ma Range ${counter}`;
   }
-  
+
   return name;
 }
 
@@ -220,8 +220,14 @@ export function formatPercentage(value: number): string {
 // Générer une couleur aléatoire (pour les statistiques)
 export function getRandomColor(): string {
   const colors = [
-    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-    '#9966FF', '#FF9F40', '#8AC24A', '#607D8B',
+    '#FF6384',
+    '#36A2EB',
+    '#FFCE56',
+    '#4BC0C0',
+    '#9966FF',
+    '#FF9F40',
+    '#8AC24A',
+    '#607D8B',
   ];
   return colors[Math.floor(Math.random() * colors.length)];
 }
@@ -231,23 +237,23 @@ export function isValidHand(handStr: string): boolean {
   if (!handStr || handStr.length < 2 || handStr.length > 3) {
     return false;
   }
-  
+
   const upperHand = handStr.toUpperCase();
   const ranks = upperHand.slice(0, 2);
   const suit = upperHand.slice(2);
-  
+
   // Vérifier les ranks
   for (const rank of ranks) {
     if (!RANKS.includes(rank as any)) {
       return false;
     }
   }
-  
+
   // Vérifier le suit (s'il est présent)
   if (suit && !['S', 'O', ''].includes(suit)) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -257,7 +263,7 @@ export function getRandomHand(): string {
   const i = Math.floor(Math.random() * ranks.length);
   const j = Math.floor(Math.random() * ranks.length);
   const suited = Math.random() > 0.5;
-  
+
   if (i === j) {
     return `${ranks[i]}${ranks[j]}`;
   } else if (i < j) {

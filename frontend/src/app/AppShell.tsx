@@ -94,7 +94,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 },
               }}
             >
-              <ListItemIcon sx={{ color: location.pathname === item.path ? THEME_COLORS.primary : 'inherit' }}>
+              <ListItemIcon
+                sx={{ color: location.pathname === item.path ? THEME_COLORS.primary : 'inherit' }}
+              >
                 {item.icon}
               </ListItemIcon>
               <ListItemText primary={item.text} />
@@ -106,7 +108,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <List>
         <ListItem disablePadding>
           <ListItemButton onClick={() => navigate('/settings')}>
-            <ListItemIcon><SettingsIcon /></ListItemIcon>
+            <ListItemIcon>
+              <SettingsIcon />
+            </ListItemIcon>
             <ListItemText primary="Paramètres" />
           </ListItemButton>
         </ListItem>
@@ -138,7 +142,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
           </IconButton>
 
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {menuItems.find(item => location.pathname.startsWith(item.path))?.text || 'Poker Tool'}
+            {menuItems.find((item) => location.pathname.startsWith(item.path))?.text ||
+              'Poker Tool'}
           </Typography>
 
           <Box>
@@ -147,19 +152,29 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 <Button color="inherit" startIcon={<PersonIcon />} onClick={handleMenuOpen}>
                   {user.username}
                 </Button>
-                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}
-                  PaperProps={{ sx: { mt: '45px' } }}>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  PaperProps={{ sx: { mt: '45px' } }}
+                >
                   <MenuItem onClick={handleMenuClose}>
-                    <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
+                    <ListItemIcon>
+                      <PersonIcon fontSize="small" />
+                    </ListItemIcon>
                     <ListItemText>Profil</ListItemText>
                   </MenuItem>
                   <MenuItem onClick={handleMenuClose}>
-                    <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
+                    <ListItemIcon>
+                      <SettingsIcon fontSize="small" />
+                    </ListItemIcon>
                     <ListItemText>Paramètres</ListItemText>
                   </MenuItem>
                   <Divider />
                   <MenuItem onClick={handleLogout}>
-                    <ListItemIcon><LogoutIcon fontSize="small" color="error" /></ListItemIcon>
+                    <ListItemIcon>
+                      <LogoutIcon fontSize="small" color="error" />
+                    </ListItemIcon>
                     <ListItemText>Déconnexion</ListItemText>
                   </MenuItem>
                 </Menu>
@@ -173,7 +188,11 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </Toolbar>
       </AppBar>
 
-      <Box component="nav" sx={{ width: { sm: DRAWER_WIDTH }, flexShrink: { sm: 0 } }} aria-label="navigation">
+      <Box
+        component="nav"
+        sx={{ width: { sm: DRAWER_WIDTH }, flexShrink: { sm: 0 } }}
+        aria-label="navigation"
+      >
         <Drawer
           variant="temporary"
           open={mobileOpen}
