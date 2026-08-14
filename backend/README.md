@@ -1,205 +1,110 @@
 # Poker Tool Backend
 
-A Flask-based backend for a poker range training tool, **restructured using Elegant Objects principles** (inspired by Yegor Bugayenko).
+A Flask backend for a poker range training tool, structured around
+**Elegant Objects** principles (inspired by Yegor Bugayenko): objects that
+expose behaviour (not state), dependencies injected through constructors, and
+concrete adapters behind small abstract ports.
 
 ## 🏗️ Architecture
 
-The backend follows a **clean architecture** with clear separation of concerns:
-
 ```
 backend/
-└── poker_tool/                          # Main package
-    ├── domain/                          # 🏗️ Domain Layer (Pure Business Logic)
-    │   ├── range.py      # Range, RangeType, Position, ActionType
-    │   ├── hand.py       # Hand, RANKS, generate_all_hands()
-    │   ├── user.py       # User (immutable)
-    │   └── scenario.py   # Scenario, ScenarioType
-    │
-    ├── ports/                           # 🔌 Ports Layer (Abstractions)
-    │   ├── database.py   # DatabasePort interface
-    │   └── auth.py       # AuthPort interface
-    │
-    ├── adapters/                        # 🔌 Adapters Layer (Implementations)
-    │   ├── sqlalchemy_db.py  # SQLAlchemy implementation of DatabasePort
-    │   └── jwt_auth.py       # JWT implementation of AuthPort
-    │
-    ├── services/                        # 🎭 Services Layer (Use Cases)
-    │   ├── range_service.py    # RangeService(database: DatabasePort)
-    │   ├── auth_service.py     # AuthService(database, auth)
-    │   └── training_service.py # TrainingService(database)
-    │
-    └── web/                             # 🌐 Web Layer (HTTP)
-        └── routes/              # Flask routes with dependency injection
-            └── __init__.py      # register_routes(app, services...)
-    │
-    ├── app.py                   # 🎛️ Application composition
-    └── main.py                  # 🚀 Entry point
+├── poker_tool/                      # Main package (the only backend)
+│   ├── config.py                    # Environment-driven configuration
+│   ├── app.py                       # Composition root (PokerTool) — wires DI
+│   ├── main.py                      # Entry point (python -m poker_tool.main)
+│   ├── objects/                     # Domain objects (pure, no I/O)
+│   │   ├── user.py, range.py, hand.py, position.py, range_type.py, action.py
+│   │   ├── training/
+│   │   │   ├── session.py, question.py
+│   │   └── stats/
+│   │       ├── user_stats.py, global_stats.py
+│   ├── interfaces/                  # Ports (abstract interfaces)
+│   │   ├── storage.py               # Storage port
+│   │   └── auth.py                  # Auth port
+│   ├── adapters/                    # Concrete implementations of the ports
+│   │   ├── sqlalchemy/              # SqlAlchemyStorage (Storage)
+│   │   │   ├── storage.py, models.py
+│   │   └── jwt/                     # JwtAuth (Auth)
+│   │       └── auth.py
+│   ├── infrastructure/             # Technical layer
+│   │   └── web/
+│   │       └── flask_app.py        # Flask routes (thin controllers)
+│   └── tests/
+│       ├── unit/                    # Unit tests with fake ports (no mocks)
+│       └── integration/             # Composition / wiring tests
+├── scripts/
+│   └── create_test_data.py          # Seed script (uses poker_tool.app)
+├── requirements.txt                 # Runtime + test dependencies
+├── pyproject.toml                   # uv / project metadata
+└── .env.example                     # Example environment configuration
 ```
 
-## 🎯 Key Principles (Elegant Objects)
+### Layers
 
-1. **Immutable Objects**
-   - All domain objects use `@dataclass(frozen=True)`
-   - No setters, only pure functions
-   - Example: `Range`, `User`, `Hand` are all immutable
+- **`objects/`** — pure domain objects. No Flask, no SQLAlchemy, no I/O. They
+  expose behaviour (e.g. `range.grid()`, `session.answer(...)`) and are the
+  only place business rules live.
+- **`interfaces/`** — small abstract ports describing what the application
+  needs (`Storage`, `Auth`). One responsibility per port.
+- **`adapters/`** — concrete implementations of the ports (SQLAlchemy, JWT).
+- **`infrastructure/web/`** — thin HTTP layer; routes delegate to objects and
+  ports. No business logic here.
+- **`app.py`** — the **composition root**: the single place that reads the
+  environment (`Config`), constructs the concrete adapters and injects them.
 
-2. **Dependency Injection**
-   - No hidden dependencies (no singletons, no global state)
-   - All dependencies are passed via constructors
-   - Example: `RangeService(database: DatabasePort)`
+### Configuration
 
-3. **No `new` in Functions**
-   - Use factories (`from_dict`, `create_app`) instead
-   - Example: `Range.from_dict(data)` instead of `Range(...)`
+All configuration is read from the environment through `poker_tool.config.Config`
+and injected in the composition root. No secrets are hard-coded. See
+`.env.example` for the available variables.
 
-4. **Ports & Adapters**
-   - **Ports**: Abstract interfaces (what we need)
-   - **Adapters**: Concrete implementations (how we do it)
-   - Example: `DatabasePort` ↔ `SQLAlchemyDatabase`
+| Variable                       | Default                              | Description                  |
+| ------------------------------ | ------------------------------------ | ---------------------------- |
+| `SECRET_KEY`                   | `poker_tool_dev_secret_key`          | Flask secret key             |
+| `JWT_SECRET_KEY`               | `poker_tool_dev_jwt_secret_key`      | JWT signing secret           |
+| `DATABASE_URL`                 | `sqlite:///poker_tool.db`            | SQLAlchemy database URI      |
+| `CORS_ORIGINS`                 | `*`                                  | Comma-separated origins      |
+| `JWT_ACCESS_TOKEN_EXPIRES`      | `3600`                               | Token lifetime in seconds    |
 
-5. **Testable Without Mocks**
-   - Provide alternative implementations of ports for testing
-   - Example: `FakeDatabase` implements `DatabasePort`
+> The defaults are for local development only. Provide real secrets in any
+> non-dev environment.
 
 ## 🚀 Quick Start
 
-### 1. Install Dependencies
+```bash
+cd backend
+pip install -r requirements.txt
+python -m poker_tool.main
+```
+
+The API is served at `http://localhost:5000/api`.
+
+## 🧪 Testing
 
 ```bash
 cd backend
-uv sync  # Uses pyproject.toml for dependencies
+pip install -r requirements.txt   # includes pytest
+python -m pytest poker_tool/tests/unit/ -v
+python -m pytest poker_tool/tests/integration/ -v
 ```
 
-### 2. Run the Application
-
-```bash
-# Option 1: Using the new structure
-python -m poker_tool.main
-
-# Option 2: Using the old structure (still works)
-python app.py
-```
-
-The API will be available at `http://localhost:5000`
-
-### 3. Run Tests
-
-```bash
-# Unit tests (no mocks!)
-python -m pytest tests/unit/ -v
-
-# All tests
-python -m pytest tests/ -v
-```
-
-## 🌐 API Endpoints
-
-### Auth
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login and get JWT token
-- `GET /api/auth/me` - Get current user info
-
-### Ranges
-- `GET /api/ranges` - List all ranges
-- `GET /api/ranges/<id>` - Get a specific range
-- `POST /api/ranges` - Create a new range
-- `PUT /api/ranges/<id>` - Update a range
-- `DELETE /api/ranges/<id>` - Delete a range
-- `GET /api/ranges/<id>/grid` - Get 13x13 grid for a range
-- `GET /api/ranges/<id>/stats` - Get statistics for a range
-- `GET /api/ranges/default` - Get default ranges
-
-### Training
-- `GET /api/training/modes` - List training modes
-- `GET /api/training/sessions` - List training sessions
-- `POST /api/training/sessions` - Create a training session
-- `POST /api/training/sessions/<id>/next` - Submit answer and get next question
-- `POST /api/training/sessions/<id>/end` - End a training session
-
-## 🧪 Testing Philosophy
-
-### No Mocks!
-
-Instead of mocking dependencies, we:
-1. **Create fake implementations** of ports
-2. **Inject them** into services
-3. **Test real behavior**
-
-### Example: Testing RangeService
-
-```python
-from poker_tool.ports.database import DatabasePort
-from poker_tool.services.range_service import RangeService
-
-class FakeDatabase(DatabasePort):
-    def save_range(self, range_obj):
-        # Store in memory
-        self.ranges[range_obj.id] = range_obj
-        return range_obj
-    # ... implement all abstract methods
-
-# Test with real RangeService + FakeDatabase
-db = FakeDatabase()
-service = RangeService(db)
-range_obj = service.create_range(name="Test Range")
-# No mocks needed! ✨
-```
-
-See `tests/unit/test_range_service.py` and `tests/unit/test_auth_service.py` for examples.
+Tests use **fake implementations of the ports** rather than mocks: each port
+gets a small in-memory fake, so unit tests exercise real object behaviour. The
+integration tests verify that the composition root wires everything together.
 
 ## 📦 Dependencies
 
-- **Flask** - Web framework
-- **Flask-CORS** - CORS support
-- **Flask-JWT-Extended** - JWT authentication
-- **SQLAlchemy** - ORM
-- **uv** - Dependency management
+- **Flask** — web framework
+- **Flask-CORS** — CORS support
+- **Flask-JWT-Extended** — JWT authentication
+- **Flask-SQLAlchemy** — ORM
+- **pytest** — test runner
 
-All dependencies are defined in `pyproject.toml`.
-
-## 🔄 Migration from Old Structure
-
-The old structure (`app.py`, `database.py`, `routes/`, `models/`) is still present but **deprecated**. 
-
-To migrate:
-1. Use the new `poker_tool/` package
-2. Update imports to use domain objects
-3. Inject dependencies instead of using global state
-
-### Example Migration
-
-**Old way:**
-```python
-from database import db, User
-from routes import api_bp
-
-app = Flask(__name__)
-db.init_app(app)
-app.register_blueprint(api_bp)
-```
-
-**New way:**
-```python
-from poker_tool.app import PokerToolApp
-
-app = PokerToolApp()
-app.run()
-```
+All dependencies are declared in `requirements.txt` (runtime + test) and in
+`pyproject.toml` (uv metadata).
 
 ## 📚 Resources
 
 - [Elegant Objects by Yegor Bugayenko](https://www.yegor256.com/elegant-objects.html)
-- [Clean Architecture by Uncle Bob](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
-- [Ports and Adapters (Hexagonal Architecture)](https://alistair.cockburn.us/Hexagonal-architecture/)
-
-## 🤝 Contributing
-
-1. Follow Elegant Objects principles
-2. Add tests for new features (without mocks!)
-3. Keep domain objects immutable
-4. Use dependency injection
-5. Document your code
-
-## 📄 License
-
-MIT License - Feel free to use, modify, and distribute.
+- [Ports and Adapters (Hexagonal Architecture)](https://alistair.cockburn.us/hexagonal-architecture/)

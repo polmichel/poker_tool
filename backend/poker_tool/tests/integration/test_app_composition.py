@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirna
 from unittest.mock import MagicMock, patch
 from flask import Flask
 from poker_tool.app import PokerTool
+from poker_tool.config import Config
 from poker_tool.interfaces.storage import Storage
 from poker_tool.interfaces.auth import Auth
 
@@ -34,16 +35,42 @@ class TestAppComposition(unittest.TestCase):
         self.assertIsNotNone(app.flask_app)
 
     def test_app_config(self):
-        """Test that Flask app is configured correctly."""
+        """Test that Flask app is configured from the injected Config."""
         app = PokerTool()
-        
-        self.assertEqual(app.app.config.get("SECRET_KEY"), "poker_tool_secret_key")
-        self.assertEqual(app.app.config.get("SQLALCHEMY_DATABASE_URI"), "sqlite:///poker_tool.db")
+
+        self.assertEqual(app.app.config.get("SECRET_KEY"), app.config.secret_key)
+        self.assertEqual(app.app.config.get("SQLALCHEMY_DATABASE_URI"), app.config.database_uri)
         self.assertEqual(app.app.config.get("SQLALCHEMY_TRACK_MODIFICATIONS"), False)
+        self.assertEqual(app.app.config.get("JWT_SECRET_KEY"), app.config.jwt_secret_key)
+
+    def test_config_is_injected_from_environment(self):
+        """Test that Config reads values from the environment."""
+        env = {
+            "SECRET_KEY": "env-secret",
+            "JWT_SECRET_KEY": "env-jwt-secret",
+            "DATABASE_URL": "sqlite:///custom.db",
+            "CORS_ORIGINS": "http://localhost:3000,http://localhost:4000",
+            "JWT_ACCESS_TOKEN_EXPIRES": "7200",
+        }
+        config = Config(env)
+        self.assertEqual(config.secret_key, "env-secret")
+        self.assertEqual(config.jwt_secret_key, "env-jwt-secret")
+        self.assertEqual(config.database_uri, "sqlite:///custom.db")
+        self.assertEqual(config.cors_origins, ["http://localhost:3000", "http://localhost:4000"])
+        self.assertEqual(config.jwt_access_token_expires_seconds, 7200)
+
+    def test_config_defaults(self):
+        """Test that Config provides safe defaults for development."""
+        config = Config({})
+        self.assertEqual(config.secret_key, "poker_tool_dev_secret_key")
+        self.assertEqual(config.jwt_secret_key, "poker_tool_dev_jwt_secret_key")
+        self.assertEqual(config.database_uri, "sqlite:///poker_tool.db")
+        self.assertEqual(config.cors_origins, ["*"])
+        self.assertEqual(config.jwt_access_token_expires_seconds, 3600)
 
     @patch('poker_tool.app.CORS')
     def test_cors_configuration(self, mock_cors):
-        """Test that CORS is configured."""
+        """Test that CORS is configured from the injected Config."""
         app = PokerTool()
         
         # Check that CORS was initialized
@@ -51,7 +78,7 @@ class TestAppComposition(unittest.TestCase):
         # Check the arguments passed to CORS
         cors_instance = mock_cors.call_args[0][0]  # First argument is the Flask app
         resources_arg = mock_cors.call_args[1].get('resources')
-        self.assertEqual(resources_arg, {r"/*": {"origins": "*"}})
+        self.assertEqual(resources_arg, {r"/*": {"origins": app.config.cors_origins}})
 
 
 class TestObjectCreationFlow(unittest.TestCase):
