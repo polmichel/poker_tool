@@ -17,11 +17,11 @@ import {
   Lock as LockIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks';
+import { useAuthContext } from '../auth/AuthContext';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login, loading, error } = useAuth();
+  const { login, loading, error } = useAuthContext();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');

@@ -4,10 +4,10 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks';
+import { useAuthContext } from '../auth/AuthContext';
 
 export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuthContext();
   if (loading) {
     return (
       <Box

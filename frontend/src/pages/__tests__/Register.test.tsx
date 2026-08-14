@@ -18,8 +18,8 @@ const mockUseAuth = jest.fn(() => ({
   error: null,
 }));
 
-jest.mock('../../hooks', () => ({
-  useAuth: () => mockUseAuth(),
+jest.mock('../../auth/AuthContext', () => ({
+  useAuthContext: () => mockUseAuth(),
 }));
 
 const renderRegister = () =>
