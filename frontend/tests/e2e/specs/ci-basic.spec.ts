@@ -8,7 +8,6 @@ import { navigateTo, waitForLoadingToComplete } from '../utils';
 import { mockRange, mockRanges, newRangeData } from '../fixtures';
 
 test.describe('CI Basic Tests - No Server Required', () => {
-  
   test('Playwright is properly configured', async ({ page }) => {
     // Test that Playwright can launch and navigate to a public site
     await page.goto('https://www.example.com');
@@ -37,7 +36,7 @@ test.describe('CI Basic Tests - No Server Required', () => {
     expect(mockRange).toHaveProperty('position');
     expect(mockRange).toHaveProperty('hands');
     expect(mockRange).toHaveProperty('user_id');
-    
+
     // Verify specific values
     expect(mockRange.id).toBe(1);
     expect(mockRange.name).toBe('Test Range');
@@ -51,9 +50,9 @@ test.describe('CI Basic Tests - No Server Required', () => {
     // Verify the structure of mockRanges
     expect(Array.isArray(mockRanges)).toBeTruthy();
     expect(mockRanges.length).toBeGreaterThan(0);
-    
+
     // Verify each range in the array
-    mockRanges.forEach(range => {
+    mockRanges.forEach((range) => {
       expect(range).toHaveProperty('id');
       expect(range).toHaveProperty('name');
       expect(range).toHaveProperty('hands');
@@ -67,7 +66,7 @@ test.describe('CI Basic Tests - No Server Required', () => {
     expect(newRangeData).toHaveProperty('range_type');
     expect(newRangeData).toHaveProperty('position');
     expect(newRangeData).toHaveProperty('hands');
-    
+
     // Verify specific values
     expect(newRangeData.name).toBe('New Test Range');
     expect(newRangeData.range_type).toBe('preflop');

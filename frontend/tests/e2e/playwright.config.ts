@@ -36,22 +36,22 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: process.env.BASE_URL || 'http://localhost:3000',
-    
+
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-    
+
     /* Take a screenshot when a test fails */
     screenshot: 'only-on-failure',
-    
+
     /* Record video when a test fails */
     video: isCI ? 'off' : 'retain-on-failure',
-    
+
     /* Timeout for each test */
     timeout: 120000,
-    
+
     /* Timeout for each action (click, fill, etc.) */
     actionTimeout: 5000,
-    
+
     /* Timeout for navigation */
     navigationTimeout: 30000,
   },
@@ -64,16 +64,18 @@ export default defineConfig({
     },
 
     // Only test additional browsers in non-CI environments to save resources
-    ...(isCI ? [] : [
-      {
-        name: 'firefox',
-        use: { ...devices['Desktop Firefox'] },
-      },
-      {
-        name: 'webkit',
-        use: { ...devices['Desktop Safari'] },
-      },
-    ]),
+    ...(isCI
+      ? []
+      : [
+          {
+            name: 'firefox',
+            use: { ...devices['Desktop Firefox'] },
+          },
+          {
+            name: 'webkit',
+            use: { ...devices['Desktop Safari'] },
+          },
+        ]),
   ],
 
   /*
@@ -81,17 +83,19 @@ export default defineConfig({
    * In local dev: Start both backend and frontend servers
    * In CI: Servers are started manually in the workflow
    */
-  webServer: isCI ? undefined : {
-    // Start backend first (Flask server)
-    command: 'cd ../../backend && python3 main.py',
-    url: 'http://localhost:5000/api/health',
-    reuseExistingServer: true,
-    timeout: 60000, // 60 seconds for backend to start
-    env: {
-      FLASK_ENV: 'development',
-      DATABASE_URL: 'sqlite:///../../backend/instance/poker_tool.db',
-    },
-  },
+  webServer: isCI
+    ? undefined
+    : {
+        // Start backend first (Flask server)
+        command: 'cd ../../backend && python3 main.py',
+        url: 'http://localhost:5000/api/health',
+        reuseExistingServer: true,
+        timeout: 60000, // 60 seconds for backend to start
+        env: {
+          FLASK_ENV: 'development',
+          DATABASE_URL: 'sqlite:///../../backend/instance/poker_tool.db',
+        },
+      },
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   outputDir: '../../test-results/',

@@ -94,7 +94,13 @@ const Training: React.FC = () => {
     }
   }, [selectedMode, ranges, quickStart, setIsSessionActive]);
 
-  // Soumettre une réponse
+  // Soumettre une réponse — store feedback for the feedback screen
+  const [feedback, setFeedback] = useState<{
+    isCorrect: boolean;
+    correctAnswer: string | null;
+    sessionComplete: boolean;
+  } | null>(null);
+
   const handleAnswer = useCallback(
     async (answer: string) => {
       if (!currentSession || !currentSession.id) return;
@@ -102,15 +108,24 @@ const Training: React.FC = () => {
       const result = await nextQuestion(currentSession.id, answer);
 
       if (result) {
-        // Si la session est terminée
-        if (result.sessionComplete) {
-          setIsSessionActive(false);
-          setOpenResultsDialog(true);
-        }
+        setFeedback({
+          isCorrect: result.isCorrect,
+          correctAnswer: result.correctAnswer,
+          sessionComplete: result.sessionComplete,
+        });
       }
     },
-    [currentSession, nextQuestion, setIsSessionActive],
+    [currentSession, nextQuestion],
   );
+
+  // Advance to next question (or show results if session is complete)
+  const handleNextQuestion = useCallback(() => {
+    if (feedback?.sessionComplete) {
+      setIsSessionActive(false);
+      setOpenResultsDialog(true);
+    }
+    setFeedback(null);
+  }, [feedback, setIsSessionActive]);
 
   // Terminer la session
   const handleEndSession = useCallback(async () => {
@@ -274,10 +289,10 @@ const Training: React.FC = () => {
           <TrainingQuestion
             question={currentQuestion}
             onAnswer={handleAnswer}
-            isLastQuestion={questionNumber === totalQuestions}
+            onNext={handleNextQuestion}
+            feedback={feedback}
             questionNumber={questionNumber}
-            totalQuestions={totalQuestions}
-            timeLeft={undefined}
+            totalQuestions={progress?.total || totalQuestions}
           />
         </Box>
       )}

@@ -1,181 +1,51 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Paper, Typography, Button, Divider, Chip, LinearProgress } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Paper, Typography, Button, Divider, LinearProgress, Chip } from '@mui/material';
+import { CheckCircle, Cancel, ArrowForward } from '@mui/icons-material';
 import { TrainingQuestion as TrainingQuestionType, ActionType } from '../types';
 import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
-import { getActionLabel } from '../utils/helpers';
 
 interface TrainingQuestionProps {
   question: TrainingQuestionType;
   onAnswer: (answer: string) => void;
-  isLastQuestion?: boolean;
+  onNext: () => void;
+  feedback?: { isCorrect: boolean; correctAnswer: string | null } | null;
   questionNumber: number;
   totalQuestions: number;
-  timeLeft?: number;
 }
 
 const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
   question,
   onAnswer,
-  isLastQuestion: _isLastQuestion = false,
+  onNext,
+  feedback,
   questionNumber,
   totalQuestions,
-  timeLeft,
 }) => {
   const [selectedAnswer, setSelectedAnswer] = useState<string>('');
-  const [showHint, setShowHint] = useState<boolean>(false);
 
-  // Réinitialiser la réponse sélectionnée quand la question change
+  // Reset when a new question appears (feedback is cleared)
   useEffect(() => {
     setSelectedAnswer('');
-    setShowHint(false);
-  }, [question]);
+  }, [question, feedback]);
 
-  const handleAnswer = useCallback(
-    (answer: string) => {
-      setSelectedAnswer(answer);
-      onAnswer(answer);
-    },
-    [onAnswer],
-  );
-
-  const handleShowHint = useCallback(() => {
-    setShowHint(true);
-  }, []);
-
-  const renderQuestionContent = () => {
-    switch (question.type) {
-      case 'fill':
-        return (
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              {question.question}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-              Sélectionnez l'action pour la main : <strong>{question.hand}</strong>
-            </Typography>
-
-            {/* Boutons pour les actions */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-              {Object.entries(ACTION_LABELS).map(([action, label]) => (
-                <Button
-                  key={action}
-                  variant={selectedAnswer === action ? 'contained' : 'outlined'}
-                  onClick={() => handleAnswer(action)}
-                  disabled={!!selectedAnswer}
-                  data-testid="answer-button"
-                  sx={{
-                    backgroundColor:
-                      selectedAnswer === action
-                        ? ACTION_COLORS[action as ActionType]
-                        : 'transparent',
-                    borderColor: ACTION_COLORS[action as ActionType],
-                    color:
-                      selectedAnswer === action || action === 'undefined'
-                        ? 'white'
-                        : ACTION_COLORS[action as ActionType],
-                    '&:hover': {
-                      backgroundColor: ACTION_COLORS[action as ActionType],
-                      color: 'white',
-                    },
-                  }}
-                >
-                  {label}
-                </Button>
-              ))}
-            </Box>
-          </Box>
-        );
-
-      case 'guess':
-        return (
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              {question.question}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-              La main <strong>{question.hand}</strong> fait-elle partie de cette range ?
-            </Typography>
-
-            {/* Boutons Oui/Non */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-              <Button
-                variant={selectedAnswer === 'true' ? 'contained' : 'outlined'}
-                onClick={() => handleAnswer('true')}
-                disabled={!!selectedAnswer}
-                color="success"
-                sx={{ flex: 1 }}
-              >
-                Oui
-              </Button>
-              <Button
-                variant={selectedAnswer === 'false' ? 'contained' : 'outlined'}
-                onClick={() => handleAnswer('false')}
-                disabled={!!selectedAnswer}
-                color="error"
-                sx={{ flex: 1 }}
-              >
-                Non
-              </Button>
-            </Box>
-          </Box>
-        );
-
-      case 'complete':
-        return (
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              {question.question}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-              Quelle est l'action pour la main : <strong>{question.hand}</strong>
-            </Typography>
-
-            {/* Boutons pour les actions */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-              {Object.entries(ACTION_LABELS).map(([action, label]) => (
-                <Button
-                  key={action}
-                  variant={selectedAnswer === action ? 'contained' : 'outlined'}
-                  onClick={() => handleAnswer(action)}
-                  disabled={!!selectedAnswer}
-                  data-testid="answer-button"
-                  sx={{
-                    backgroundColor:
-                      selectedAnswer === action
-                        ? ACTION_COLORS[action as ActionType]
-                        : 'transparent',
-                    borderColor: ACTION_COLORS[action as ActionType],
-                    color:
-                      selectedAnswer === action || action === 'undefined'
-                        ? 'white'
-                        : ACTION_COLORS[action as ActionType],
-                    '&:hover': {
-                      backgroundColor: ACTION_COLORS[action as ActionType],
-                      color: 'white',
-                    },
-                  }}
-                >
-                  {label}
-                </Button>
-              ))}
-            </Box>
-          </Box>
-        );
-
-      default:
-        return <Typography variant="body1">Type de question inconnu.</Typography>;
-    }
+  const handleAnswer = (answer: string) => {
+    if (feedback) return; // Don't allow re-answering
+    setSelectedAnswer(answer);
+    onAnswer(answer);
   };
 
+  const getAnswerLabel = (answer: string): string => {
+    if (answer === 'true') return 'Oui';
+    if (answer === 'false') return 'Non';
+    return ACTION_LABELS[answer as ActionType] || answer;
+  };
+
+  const isAnswered = !!feedback;
+  const progressPercent = (questionNumber / totalQuestions) * 100;
+
   return (
-    <Paper
-      sx={{
-        p: 3,
-        maxWidth: 800,
-        margin: 'auto',
-      }}
-    >
-      {/* Barre de progression */}
+    <Paper sx={{ p: 3, maxWidth: 800, margin: 'auto' }} data-testid="question-paper">
+      {/* Progress bar */}
       <Box sx={{ mb: 3 }}>
         <Typography
           variant="body2"
@@ -187,40 +57,150 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
         </Typography>
         <LinearProgress
           variant="determinate"
-          value={(questionNumber / totalQuestions) * 100}
-          sx={{
-            height: 8,
-            borderRadius: 4,
-          }}
+          value={progressPercent}
+          sx={{ height: 8, borderRadius: 4 }}
         />
-        {timeLeft !== undefined && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Temps restant : {Math.floor(timeLeft / 60)}m {timeLeft % 60}s
-          </Typography>
-        )}
       </Box>
 
       <Divider sx={{ my: 2 }} />
 
-      {/* Contenu de la question */}
-      {renderQuestionContent()}
+      {/* Question content */}
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="h5" gutterBottom sx={{ textAlign: 'center' }}>
+          {question.hand}
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', mb: 3 }}>
+          {question.type === 'guess'
+            ? 'Cette main fait-elle partie de la range ?'
+            : 'Quelle action pour cette main ?'}
+        </Typography>
+      </Box>
 
-      <Divider sx={{ my: 2 }} />
+      {/* Answer buttons */}
+      {question.type === 'guess' ? (
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <Button
+            variant={selectedAnswer === 'true' ? 'contained' : 'outlined'}
+            onClick={() => handleAnswer('true')}
+            disabled={isAnswered}
+            color="success"
+            sx={{ flex: 1, py: 2, fontSize: '1.2rem' }}
+          >
+            Oui
+          </Button>
+          <Button
+            variant={selectedAnswer === 'false' ? 'contained' : 'outlined'}
+            onClick={() => handleAnswer('false')}
+            disabled={isAnswered}
+            color="error"
+            sx={{ flex: 1, py: 2, fontSize: '1.2rem' }}
+          >
+            Non
+          </Button>
+        </Box>
+      ) : (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2, justifyContent: 'center' }}>
+          {Object.entries(ACTION_LABELS).map(([action, label]) => {
+            const isSelected = selectedAnswer === action;
+            const isCorrect = feedback?.correctAnswer === action;
+            const showCorrect = isAnswered && isCorrect;
+            const showWrong = isAnswered && isSelected && !isCorrect;
 
-      {/* Indice (si disponible) */}
-      {showHint && question.type === 'fill' && (
-        <Chip
-          label={`Indice : ${getActionLabel(question.correct_answer as ActionType)}`}
-          color="info"
-          size="small"
-        />
+            return (
+              <Button
+                key={action}
+                variant={isSelected || showCorrect ? 'contained' : 'outlined'}
+                onClick={() => handleAnswer(action)}
+                disabled={isAnswered}
+                data-testid="answer-button"
+                sx={{
+                  minWidth: 100,
+                  py: 1.5,
+                  fontSize: '1rem',
+                  backgroundColor: showCorrect
+                    ? ACTION_COLORS[action as ActionType]
+                    : showWrong
+                      ? 'error.main'
+                      : isSelected
+                        ? ACTION_COLORS[action as ActionType]
+                        : 'transparent',
+                  borderColor: showCorrect
+                    ? ACTION_COLORS[action as ActionType]
+                    : showWrong
+                      ? 'error.main'
+                      : ACTION_COLORS[action as ActionType],
+                  color: isSelected || showCorrect ? 'white' : ACTION_COLORS[action as ActionType],
+                  '&:hover': {
+                    backgroundColor: ACTION_COLORS[action as ActionType],
+                    color: 'white',
+                  },
+                }}
+              >
+                {label}
+                {showCorrect ? ' ✓' : ''}
+                {showWrong ? ' ✗' : ''}
+              </Button>
+            );
+          })}
+        </Box>
       )}
 
-      {/* Bouton pour afficher l'indice (si pas encore montré) */}
-      {!showHint && !selectedAnswer && (
-        <Button variant="text" onClick={handleShowHint} color="info" size="small" sx={{ mt: 1 }}>
-          Besoin d'un indice ?
-        </Button>
+      {/* Feedback panel after answering */}
+      {feedback && (
+        <Box
+          data-testid="feedback-panel"
+          sx={{
+            mt: 3,
+            p: 2,
+            borderRadius: 2,
+            backgroundColor: feedback.isCorrect ? 'success.dark' : 'error.dark',
+            color: 'white',
+            textAlign: 'center',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
+              mb: 1,
+            }}
+          >
+            {feedback.isCorrect ? <CheckCircle /> : <Cancel />}
+            <Typography variant="h6">{feedback.isCorrect ? 'Correct !' : 'Faux'}</Typography>
+          </Box>
+          {!feedback.isCorrect && feedback.correctAnswer && (
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              La bonne réponse était : <strong>{getAnswerLabel(feedback.correctAnswer)}</strong>
+            </Typography>
+          )}
+          {feedback.isCorrect && (
+            <Typography variant="body2" sx={{ mb: 2, opacity: 0.8 }}>
+              Vous avez répondu : {getAnswerLabel(selectedAnswer)}
+            </Typography>
+          )}
+          <Button
+            variant="contained"
+            onClick={onNext}
+            endIcon={<ArrowForward />}
+            sx={{
+              backgroundColor: 'white',
+              color: feedback.isCorrect ? 'success.dark' : 'error.dark',
+              '&:hover': { backgroundColor: 'rgba(255,255,255,0.9)' },
+            }}
+            data-testid="next-question-button"
+          >
+            Question suivante
+          </Button>
+        </Box>
+      )}
+
+      {/* Show selected answer before feedback arrives (brief loading state) */}
+      {isAnswered === false && selectedAnswer && (
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Chip label={`Vous avez répondu : ${getAnswerLabel(selectedAnswer)}`} color="info" />
+        </Box>
       )}
     </Paper>
   );

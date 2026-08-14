@@ -51,7 +51,11 @@ export async function navigateTo(page: Page, path: string): Promise<void> {
 /**
  * Wait for an element to be visible
  */
-export async function waitForElement(page: Page, selector: string, timeout: number = 5000): Promise<Locator> {
+export async function waitForElement(
+  page: Page,
+  selector: string,
+  timeout: number = 5000,
+): Promise<Locator> {
   const element = page.locator(selector);
   await element.waitFor({ state: 'visible', timeout });
   return element;
@@ -60,14 +64,22 @@ export async function waitForElement(page: Page, selector: string, timeout: numb
 /**
  * Wait for an element to disappear
  */
-export async function waitForElementToDisappear(page: Page, selector: string, timeout: number = 5000): Promise<void> {
+export async function waitForElementToDisappear(
+  page: Page,
+  selector: string,
+  timeout: number = 5000,
+): Promise<void> {
   await page.locator(selector).waitFor({ state: 'hidden', timeout });
 }
 
 /**
  * Click an element with retry logic
  */
-export async function clickWithRetry(page: Page, selector: string, timeout: number = 5000): Promise<void> {
+export async function clickWithRetry(
+  page: Page,
+  selector: string,
+  timeout: number = 5000,
+): Promise<void> {
   const element = page.locator(selector);
   await element.waitFor({ state: 'visible', timeout });
   await element.click();
@@ -110,13 +122,18 @@ export async function elementExists(page: Page, selector: string): Promise<boole
 export async function getElementText(page: Page, selector: string): Promise<string> {
   const element = page.locator(selector);
   await element.waitFor({ state: 'visible' });
-  return await element.textContent() || '';
+  return (await element.textContent()) || '';
 }
 
 /**
  * Wait for a specific number of elements to be visible
  */
-export async function waitForElementCount(page: Page, selector: string, count: number, timeout: number = 5000): Promise<void> {
+export async function waitForElementCount(
+  page: Page,
+  selector: string,
+  count: number,
+  timeout: number = 5000,
+): Promise<void> {
   const elements = page.locator(selector);
   await expect(elements).toHaveCount(count, { timeout });
 }
@@ -139,7 +156,7 @@ export async function waitForLoadingToComplete(page: Page, timeout: number = 100
     'text="Chargement..."',
     'text="Loading..."',
   ];
-  
+
   for (const selector of loadingSelectors) {
     try {
       await page.locator(selector).waitFor({ state: 'hidden', timeout: 1000 });
@@ -152,7 +169,12 @@ export async function waitForLoadingToComplete(page: Page, timeout: number = 100
 /**
  * Mock API responses using Playwright's route functionality
  */
-export async function mockApiResponse(page: Page, url: string | RegExp, response: any, status: number = 200): Promise<void> {
+export async function mockApiResponse(
+  page: Page,
+  url: string | RegExp,
+  response: any,
+  status: number = 200,
+): Promise<void> {
   await page.route(url, (route) => {
     route.fulfill({
       status,
