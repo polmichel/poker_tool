@@ -1,12 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '../utils/api';
+import { RangesApi } from '../api';
 import { Range, ActionType } from '../types';
 
-// URL de base pour l'API
-
-
-// Hook personnalisé pour gérer les ranges
-export function useRanges() {
+// Hook personnalisé pour gérer les ranges.
+// Dépend de RangesApi (injectable) plutôt que d'appeler axios directement.
+export function useRanges(rangesApi: RangesApi = new RangesApi()) {
   const [ranges, setRanges] = useState<Range[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,27 +14,27 @@ export function useRanges() {
   const fetchRanges = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.get('/ranges/');
-      setRanges(response.data);
+      const data = await rangesApi.all();
+      setRanges(data);
     } catch (err) {
       setError('Erreur lors du chargement des ranges');
       console.error('Error fetching ranges:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [rangesApi]);
 
   // Charger une range spécifique
   const fetchRange = useCallback(async (id: number) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.get(`/ranges/${id}`);
-      setSelectedRange(response.data);
-      return response.data;
+      const data = await rangesApi.byId(id);
+      setSelectedRange(data);
+      return data;
     } catch (err) {
       setError(`Erreur lors du chargement de la range ${id}`);
       console.error(`Error fetching range ${id}:`, err);
@@ -44,17 +42,17 @@ export function useRanges() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [rangesApi]);
 
   // Créer une nouvelle range
   const createRange = useCallback(async (rangeData: Omit<Range, 'id' | 'created_at' | 'updated_at'>) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.post('/ranges/', rangeData);
-      setRanges(prev => [...prev, response.data]);
-      return response.data;
+      const data = await rangesApi.create(rangeData);
+      setRanges(prev => [...prev, data]);
+      return data;
     } catch (err) {
       setError('Erreur lors de la création de la range');
       console.error('Error creating range:', err);
@@ -62,20 +60,20 @@ export function useRanges() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [rangesApi]);
 
   // Mettre à jour une range
   const updateRange = useCallback(async (id: number, rangeData: Partial<Range>) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.put(`/ranges/${id}`, rangeData);
-      setRanges(prev => prev.map(r => r.id === id ? response.data : r));
+      const data = await rangesApi.update(id, rangeData);
+      setRanges(prev => prev.map(r => r.id === id ? data : r));
       if (selectedRange?.id === id) {
-        setSelectedRange(response.data);
+        setSelectedRange(data);
       }
-      return response.data;
+      return data;
     } catch (err) {
       setError(`Erreur lors de la mise à jour de la range ${id}`);
       console.error(`Error updating range ${id}:`, err);
@@ -83,15 +81,15 @@ export function useRanges() {
     } finally {
       setLoading(false);
     }
-  }, [selectedRange]);
+  }, [selectedRange, rangesApi]);
 
   // Supprimer une range
   const deleteRange = useCallback(async (id: number) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      await api.delete(`/ranges/${id}`);
+      await rangesApi.remove(id);
       setRanges(prev => prev.filter(r => r.id !== id));
       if (selectedRange?.id === id) {
         setSelectedRange(null);
@@ -104,7 +102,7 @@ export function useRanges() {
     } finally {
       setLoading(false);
     }
-  }, [selectedRange]);
+  }, [selectedRange, rangesApi]);
 
   // Mettre à jour l'action d'une main dans une range
   const updateHandAction = useCallback(async (
@@ -114,16 +112,14 @@ export function useRanges() {
   ) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.put(`/ranges/${rangeId}/hands/${handStr}`,
-        { action }
-      );
-      setRanges(prev => prev.map(r => r.id === rangeId ? response.data : r));
+      const data = await rangesApi.updateHand(rangeId, handStr, action);
+      setRanges(prev => prev.map(r => r.id === rangeId ? data : r));
       if (selectedRange?.id === rangeId) {
-        setSelectedRange(response.data);
+        setSelectedRange(data);
       }
-      return response.data;
+      return data;
     } catch (err) {
       setError(`Erreur lors de la mise à jour de la main ${handStr}`);
       console.error(`Error updating hand ${handStr}:`, err);
@@ -131,21 +127,20 @@ export function useRanges() {
     } finally {
       setLoading(false);
     }
-  }, [selectedRange]);
+  }, [selectedRange, rangesApi]);
 
   // Retirer une main d'une range
   const removeHandFromRange = useCallback(async (rangeId: number, handStr: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.delete(`/ranges/${rangeId}/hands/${handStr}`
-      );
-      setRanges(prev => prev.map(r => r.id === rangeId ? response.data : r));
+      const data = await rangesApi.removeHand(rangeId, handStr);
+      setRanges(prev => prev.map(r => r.id === rangeId ? data : r));
       if (selectedRange?.id === rangeId) {
-        setSelectedRange(response.data);
+        setSelectedRange(data);
       }
-      return response.data;
+      return data;
     } catch (err) {
       setError(`Erreur lors de la suppression de la main ${handStr}`);
       console.error(`Error removing hand ${handStr}:`, err);
@@ -153,17 +148,15 @@ export function useRanges() {
     } finally {
       setLoading(false);
     }
-  }, [selectedRange]);
+  }, [selectedRange, rangesApi]);
 
   // Exporter une range
   const exportRange = useCallback(async (rangeId: number, format: 'json' | 'text' | 'csv' = 'json') => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.get(`/ranges/export/${rangeId}?format=${format}`
-      );
-      return response.data;
+      return await rangesApi.exportRange(rangeId, format);
     } catch (err) {
       setError(`Erreur lors de l'export de la range ${rangeId}`);
       console.error(`Error exporting range ${rangeId}:`, err);
@@ -171,19 +164,17 @@ export function useRanges() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [rangesApi]);
 
   // Importer une range
   const importRange = useCallback(async (content: string, format: 'json' | 'text' | 'csv' = 'json') => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.post('/ranges/import',
-        { content, format }
-      );
-      setRanges(prev => [...prev, response.data]);
-      return response.data;
+      const data = await rangesApi.importRange(content, format);
+      setRanges(prev => [...prev, data]);
+      return data;
     } catch (err) {
       setError('Erreur lors de l\'import de la range');
       console.error('Error importing range:', err);
@@ -191,16 +182,15 @@ export function useRanges() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [rangesApi]);
 
   // Obtenir les statistiques d'une range
   const getRangeStats = useCallback(async (rangeId: number) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.get(`/ranges/${rangeId}/stats`);
-      return response.data;
+      return await rangesApi.stats(rangeId);
     } catch (err) {
       setError(`Erreur lors du chargement des statistiques de la range ${rangeId}`);
       console.error(`Error fetching stats for range ${rangeId}:`, err);
@@ -208,16 +198,15 @@ export function useRanges() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [rangesApi]);
 
   // Obtenir la grille d'une range
   const getRangeGrid = useCallback(async (rangeId: number) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.get(`/ranges/${rangeId}/grid`);
-      return response.data;
+      return await rangesApi.grid(rangeId);
     } catch (err) {
       setError(`Erreur lors du chargement de la grille de la range ${rangeId}`);
       console.error(`Error fetching grid for range ${rangeId}:`, err);
@@ -225,16 +214,15 @@ export function useRanges() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [rangesApi]);
 
   // Charger les ranges par défaut
   const fetchDefaultRanges = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.get('/ranges/default');
-      return response.data;
+      return await rangesApi.defaultRanges();
     } catch (err) {
       setError('Erreur lors du chargement des ranges par défaut');
       console.error('Error fetching default ranges:', err);
@@ -242,7 +230,7 @@ export function useRanges() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [rangesApi]);
 
   // Initialiser le hook
   useEffect(() => {

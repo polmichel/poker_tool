@@ -39,8 +39,6 @@ const Training: React.FC = () => {
     isSessionActive,
     timeSpent,
     progress,
-    setCurrentSession,
-    setCurrentQuestion,
     setIsSessionActive,
     createSession,
     nextQuestion,

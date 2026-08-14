@@ -6,7 +6,7 @@
  * and is easy to test/mock.
  */
 import { api } from './client';
-import { Range } from '../types';
+import { Range, ActionType } from '../types';
 
 export class RangesApi {
   async all(): Promise<Range[]> {
@@ -45,6 +45,31 @@ export class RangesApi {
 
   async stats(id: number): Promise<Record<string, unknown>> {
     const response = await api.get(`/ranges/${id}/stats`);
+    return response.data;
+  }
+
+  async updateHand(rangeId: number, handStr: string, action: ActionType): Promise<Range> {
+    const response = await api.put<Range>(`/ranges/${rangeId}/hands/${handStr}`, { action });
+    return response.data;
+  }
+
+  async removeHand(rangeId: number, handStr: string): Promise<Range> {
+    const response = await api.delete<Range>(`/ranges/${rangeId}/hands/${handStr}`);
+    return response.data;
+  }
+
+  async exportRange(rangeId: number, format: 'json' | 'text' | 'csv' = 'json'): Promise<unknown> {
+    const response = await api.get(`/ranges/export/${rangeId}?format=${format}`);
+    return response.data;
+  }
+
+  async importRange(content: string, format: 'json' | 'text' | 'csv' = 'json'): Promise<Range> {
+    const response = await api.post<Range>('/ranges/import', { content, format });
+    return response.data;
+  }
+
+  async defaultRanges(): Promise<Range[]> {
+    const response = await api.get<Range[]>('/ranges/default');
     return response.data;
   }
 }
