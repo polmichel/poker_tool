@@ -9,6 +9,10 @@ from .question import TrainingQuestion
 import random
 
 
+# Sentinel for "no override" in _clone (distinct from None which is a valid value).
+_UNSET = object()
+
+
 class TrainingSession:
     """Training session entity."""
 
@@ -95,6 +99,26 @@ class TrainingSession:
         return self._current_index >= len(self._questions) or \
                self._current_index >= self._total_questions
 
+    def _clone(self, questions=None, current_index=None,
+              correct_answers=None, ended_at=_UNSET) -> 'TrainingSession':
+        """Return a copy of this session with overridden fields (immutable).
+
+        ``_questions`` is copied by value (a new list) so the original and the
+        clone never share mutable state.
+        """
+        new_session = TrainingSession.__new__(TrainingSession)
+        new_session._user = self._user
+        new_session._range = self._range
+        new_session._mode = self._mode
+        new_session._total_questions = self._total_questions
+        new_session._id = self._id
+        new_session._questions = list(questions) if questions is not None else list(self._questions)
+        new_session._current_index = self._current_index if current_index is None else current_index
+        new_session._correct_answers = self._correct_answers if correct_answers is None else correct_answers
+        new_session._start_time = self._start_time
+        new_session._ended_at = self._ended_at if ended_at is _UNSET else ended_at
+        return new_session
+
     def answer(self, answer: str) -> 'TrainingSession':
         """Submit an answer and move to next question (immutable)."""
         if self.is_complete:
@@ -106,38 +130,19 @@ class TrainingSession:
         else:
             new_correct = self._correct_answers
 
-        new_session = TrainingSession(
-            user=self._user,
-            range_obj=self._range,
-            mode=self._mode,
-            total_questions=self._total_questions,
-            session_id=self._id,
+        new_index = self._current_index + 1
+        ended_at = datetime.utcnow() if (
+            new_index >= len(self._questions) or new_index >= self._total_questions
+        ) else None
+        return self._clone(
+            current_index=new_index,
+            correct_answers=new_correct,
+            ended_at=ended_at,
         )
-        new_session._questions = self._questions
-        new_session._current_index = self._current_index + 1
-        new_session._correct_answers = new_correct
-        new_session._start_time = self._start_time
-
-        if new_session.is_complete:
-            new_session._ended_at = datetime.utcnow()
-
-        return new_session
 
     def end(self) -> 'TrainingSession':
         """End the session (immutable)."""
-        new_session = TrainingSession(
-            user=self._user,
-            range_obj=self._range,
-            mode=self._mode,
-            total_questions=self._total_questions,
-            session_id=self._id,
-        )
-        new_session._questions = self._questions
-        new_session._current_index = self._current_index
-        new_session._correct_answers = self._correct_answers
-        new_session._start_time = self._start_time
-        new_session._ended_at = datetime.utcnow()
-        return new_session
+        return self._clone(ended_at=datetime.utcnow())
 
     def to_dict(self) -> Dict:
         """Serialize to dictionary."""

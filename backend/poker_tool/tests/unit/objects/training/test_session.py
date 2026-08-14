@@ -71,6 +71,31 @@ class TestTrainingSession(unittest.TestCase):
         self.assertFalse(new_session.is_complete)
 
     @patch('poker_tool.objects.training.session.random.sample')
+    def test_session_answer_does_not_mutate_original(self, mock_sample):
+        """Answering must not mutate the original session (true immutability)."""
+        mock_sample.return_value = ["AKs", "TT"]
+
+        session = TrainingSession(
+            user=self.user,
+            range_obj=self.range_obj,
+            mode="fill",
+            total_questions=2,
+            session_id=1,
+        )
+        original_index = session.current_index
+        original_correct = session.correct_answers
+        original_questions = list(session._questions)
+
+        new_session = session.answer("raise")
+
+        # The original session must be untouched.
+        self.assertEqual(session.current_index, original_index)
+        self.assertEqual(session.correct_answers, original_correct)
+        self.assertEqual(session._questions, original_questions)
+        # The clone must not share the questions list reference.
+        self.assertIsNot(session._questions, new_session._questions)
+
+    @patch('poker_tool.objects.training.session.random.sample')
     def test_session_answer_incorrect(self, mock_sample):
         """Test answering a question incorrectly."""
         mock_sample.return_value = ["AKs", "TT"]
