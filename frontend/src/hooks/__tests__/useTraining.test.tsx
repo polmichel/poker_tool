@@ -1,10 +1,34 @@
 import { renderHook, act } from '@testing-library/react';
-import { useTraining } from '../useTraining';
 import axios from 'axios';
+import { useTraining } from '../useTraining';
 
-// Mock axios
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+// Mock axios so the shared 'api' instance (axios.create) in utils/api.ts is a
+// mock with jest spy methods, without running the real network layer or the
+// localStorage-backed interceptors. The factory must be self-contained (it is
+// hoisted above all variable declarations), so it builds the mock object and
+// exposes it through axios.create().
+jest.mock('axios', () => {
+  const mockApi = {
+    get: jest.fn(),
+    post: jest.fn(),
+    interceptors: {
+      request: { use: jest.fn() },
+      response: { use: jest.fn() },
+    },
+  };
+  return {
+    __esModule: true,
+    default: {
+      create: jest.fn(() => mockApi),
+    },
+  };
+});
+
+// Retrieve the mocked api instance that api.ts created via axios.create().
+const mockedApi = axios.create() as jest.Mocked<{
+  get: jest.Mock;
+  post: jest.Mock;
+}>;
 
 describe('useTraining Hook', () => {
   beforeEach(() => {
@@ -26,7 +50,7 @@ describe('useTraining Hook', () => {
       { id: 1, user_id: 1, range_id: 1, mode: 'fill', score: 85 },
       { id: 2, user_id: 1, range_id: 2, mode: 'guess', score: 90 },
     ];
-    mockedAxios.get.mockResolvedValue({ data: mockSessions });
+    mockedApi.get.mockResolvedValue({ data: mockSessions });
 
     const { result } = renderHook(() => useTraining());
     await act(async () => {
@@ -39,7 +63,7 @@ describe('useTraining Hook', () => {
   });
 
   it('handles error when fetching sessions', async () => {
-    mockedAxios.get.mockRejectedValue(new Error('Network error'));
+    mockedApi.get.mockRejectedValue(new Error('Network error'));
 
     const { result } = renderHook(() => useTraining());
     await act(async () => {
@@ -59,7 +83,7 @@ describe('useTraining Hook', () => {
       current_question: null,
       progress: { current: 0, total: 10, score: 0 },
     };
-    mockedAxios.get.mockResolvedValue({ data: mockResponse });
+    mockedApi.get.mockResolvedValue({ data: mockResponse });
 
     const { result } = renderHook(() => useTraining());
     await act(async () => {
@@ -76,7 +100,7 @@ describe('useTraining Hook', () => {
       session: { id: 1, user_id: 1, range_id: 1, mode: 'fill', score: 0, total_questions: 10 },
       first_question: { type: 'fill', hand: 'AA', question: 'Quelle action pour AA ?' },
     };
-    mockedAxios.post.mockResolvedValue({ data: mockResponse });
+    mockedApi.post.mockResolvedValue({ data: mockResponse });
 
     const { result } = renderHook(() => useTraining());
     await act(async () => {
@@ -96,7 +120,7 @@ describe('useTraining Hook', () => {
       correct_answer: 'open',
       progress: { current: 1, total: 10, correct: 1, score: 50 },
     };
-    mockedAxios.post.mockResolvedValue({ data: mockResponse });
+    mockedApi.post.mockResolvedValue({ data: mockResponse });
 
     const { result } = renderHook(() => useTraining());
     await act(async () => {
@@ -117,7 +141,7 @@ describe('useTraining Hook', () => {
 
   it('ends a training session successfully', async () => {
     const mockSession = { id: 1, user_id: 1, range_id: 1, mode: 'fill', score: 85 };
-    mockedAxios.post.mockResolvedValue({ data: { session: mockSession } });
+    mockedApi.post.mockResolvedValue({ data: { session: mockSession } });
 
     const { result } = renderHook(() => useTraining());
     await act(async () => {
