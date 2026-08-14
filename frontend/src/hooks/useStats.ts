@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import { api } from '../utils/api';
 import { Stats, UserStats } from '../types';
 
 // URL de base pour l'API
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 
 // Hook personnalisé pour gérer les statistiques
 export function useStats() {
@@ -18,7 +18,7 @@ export function useStats() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/stats/`);
+      const response = await api.get('/stats/');
       setGlobalStats(response.data);
       return response.data;
     } catch (err) {
@@ -36,7 +36,7 @@ export function useStats() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/stats/user/${userId}`);
+      const response = await api.get(`/stats/user/${userId}`);
       setUserStats(response.data);
       return response.data;
     } catch (err) {
@@ -54,7 +54,7 @@ export function useStats() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/stats/range/${rangeId}`);
+      const response = await api.get(`/stats/range/${rangeId}`);
       return response.data;
     } catch (err) {
       setError(`Erreur lors du chargement des statistiques de la range ${rangeId}`);
@@ -71,7 +71,7 @@ export function useStats() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/stats/history`);
+      const response = await api.get('/stats/history');
       return response.data;
     } catch (err) {
       setError('Erreur lors du chargement de l\'historique des sessions');
@@ -88,7 +88,7 @@ export function useStats() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/stats/leaderboard`);
+      const response = await api.get('/stats/leaderboard');
       return response.data;
     } catch (err) {
       setError('Erreur lors du chargement du classement');
@@ -105,7 +105,7 @@ export function useStats() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/stats/range/${rangeId}/progress`);
+      const response = await api.get(`/stats/range/${rangeId}/progress`);
       return response.data;
     } catch (err) {
       setError(`Erreur lors du chargement de la progression de la range ${rangeId}`);
@@ -122,7 +122,7 @@ export function useStats() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/stats/export?format=${format}`);
+      const response = await api.get(`/stats/export?format=${format}`);
       return response.data;
     } catch (err) {
       setError('Erreur lors de l\'export des statistiques');
@@ -139,7 +139,7 @@ export function useStats() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/stats/backup`);
+      const response = await api.get('/stats/backup');
       return response.data;
     } catch (err) {
       setError('Erreur lors de la sauvegarde des données');

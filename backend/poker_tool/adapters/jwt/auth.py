@@ -3,7 +3,7 @@ JWT implementation of the Auth interface (Elegant Objects).
 """
 from typing import Optional
 from flask import Flask
-from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required, decode_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from ...interfaces.auth import Auth
 from ...objects.user import User
@@ -44,8 +44,11 @@ class JwtAuth(Auth):
         try:
             user_id = get_jwt_identity()
             if user_id:
-                # In a real implementation, we would fetch the user from storage
-                # For now, return a dummy user (will be replaced by actual user from storage)
+                # flask-jwt-extended v4 requires string subjects
+                try:
+                    user_id = int(user_id)
+                except (TypeError, ValueError):
+                    pass
                 return User(username="", email="", user_id=user_id)
         except Exception:
             return None
@@ -53,7 +56,7 @@ class JwtAuth(Auth):
     def generate_token(self, user: User) -> str:
         """Generate a JWT access token for a user."""
         if user.id:
-            return create_access_token(identity=user.id)
+            return create_access_token(identity=str(user.id))
         raise ValueError("Cannot generate token for user without ID")
 
     def verify_token(self, token: str) -> Optional[User]:
@@ -61,9 +64,12 @@ class JwtAuth(Auth):
         try:
             # This is a simplified implementation
             # In a real scenario, we would decode the token and fetch the user from storage
-            from flask_jwt_extended import decode_token
             decoded = decode_token(token)
             user_id = decoded["sub"]
+            try:
+                user_id = int(user_id)
+            except (TypeError, ValueError):
+                pass
             return User(username="", email="", user_id=user_id)
         except Exception:
             return None
