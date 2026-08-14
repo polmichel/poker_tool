@@ -6,6 +6,7 @@ and delegates every business operation to the injected use cases. No
 business logic lives here.
 """
 from flask import Blueprint, Flask, jsonify
+from werkzeug.exceptions import BadRequest, NotFound
 
 from ...interfaces.auth import Auth
 from ...interfaces.ranges import Ranges
@@ -77,6 +78,14 @@ class FlaskApp:
             controller.register(api)
 
         self.app.register_blueprint(api)
+
+        # Return JSON for all HTTP exceptions (BadRequest, NotFound, etc.)
+        # so the frontend can read error.message from response.data.error
+        # instead of getting an HTML error page.
+        @self.app.errorhandler(BadRequest)
+        @self.app.errorhandler(NotFound)
+        def handle_http_error(e):
+            return jsonify({"error": e.description}), e.code
 
         @self.app.route("/")
         def home():

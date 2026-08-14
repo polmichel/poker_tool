@@ -63,7 +63,7 @@ export function useAuth(authApi?: AuthApi) {
         return userData;
       } catch (err) {
         const errorMessage = axios.isAxiosError(err)
-          ? err.response?.data?.error || "Erreur lors de l'inscription"
+          ? err.response?.data?.error || err.response?.statusText || "Erreur lors de l'inscription"
           : "Erreur lors de l'inscription";
         setError(errorMessage);
         console.error('Error registering:', err);
@@ -91,7 +91,7 @@ export function useAuth(authApi?: AuthApi) {
         return userData;
       } catch (err) {
         const errorMessage = axios.isAxiosError(err)
-          ? err.response?.data?.error || 'Identifiants invalides'
+          ? err.response?.data?.error || err.response?.statusText || 'Identifiants invalides'
           : 'Identifiants invalides';
         setError(errorMessage);
         console.error('Error logging in:', err);
