@@ -198,7 +198,7 @@ class TestTrainingSession(unittest.TestCase):
         start_time = datetime(2023, 1, 1, 12, 0, 0)
         end_time = datetime(2023, 1, 1, 12, 5, 30)
 
-        mock_datetime.utcnow.side_effect = [start_time, end_time]
+        mock_datetime.now.side_effect = [start_time, end_time]
         mock_datetime.fromisoformat = datetime.fromisoformat
 
         session = TrainingSession(

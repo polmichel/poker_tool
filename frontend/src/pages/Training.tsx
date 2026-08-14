@@ -5,7 +5,6 @@ import {
   Paper,
   Button,
   Divider,
-  Grid,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -20,20 +19,17 @@ import {
   Stop as StopIcon,
   Replay as ReplayIcon,
   Settings as SettingsIcon,
-  BarChart as BarChartIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { TrainingModeSelector, TrainingQuestion } from '../components';
 import { useTraining, useRanges } from '../hooks';
-import { TrainingMode, Range, TrainingQuestion as TrainingQuestionType } from '../types';
+import { TrainingMode, Range } from '../types';
 
 const Training: React.FC = () => {
   const navigate = useNavigate();
   const {
-    sessions,
     currentSession,
     currentQuestion,
-    loading,
     error,
     score,
     isSessionActive,

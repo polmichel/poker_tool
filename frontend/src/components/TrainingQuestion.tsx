@@ -3,8 +3,6 @@ import { Box, Paper, Typography, Button, Divider, Chip, LinearProgress } from '@
 import { TrainingQuestion as TrainingQuestionType, ActionType } from '../types';
 import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
 import { getActionLabel } from '../utils/helpers';
-import RangeGrid from './RangeGrid';
-import { generateRangeGrid } from '../utils/helpers';
 
 interface TrainingQuestionProps {
   question: TrainingQuestionType;
@@ -18,7 +16,7 @@ interface TrainingQuestionProps {
 const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
   question,
   onAnswer,
-  isLastQuestion = false,
+  isLastQuestion: _isLastQuestion = false,
   questionNumber,
   totalQuestions,
   timeLeft,

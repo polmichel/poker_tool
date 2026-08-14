@@ -41,11 +41,9 @@ import {
 const Stats: React.FC = () => {
   const {
     globalStats,
-    userStats,
     loading,
     error,
     fetchGlobalStats,
-    fetchUserStats,
     fetchTrainingHistory,
     fetchLeaderboard,
     exportStats,
@@ -60,6 +58,7 @@ const Stats: React.FC = () => {
     fetchGlobalStats();
     loadHistoryData();
     loadLeaderboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchGlobalStats]);
 
   // Charger les données de l'historique

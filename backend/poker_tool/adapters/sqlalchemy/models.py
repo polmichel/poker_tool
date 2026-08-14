@@ -2,12 +2,17 @@
 SQLAlchemy models for Poker Tool.
 These models are internal implementation details of the SQLAlchemy adapter.
 """
-from datetime import datetime
+from datetime import UTC, datetime
 
 from flask_sqlalchemy import SQLAlchemy
 
 # Create SQLAlchemy instance (will be initialized by the adapter)
 db = SQLAlchemy()
+
+
+def _utcnow_naive():
+    """Return current UTC time as a naive datetime (for SQLAlchemy defaults)."""
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class RangeModel(db.Model):
@@ -21,8 +26,8 @@ class RangeModel(db.Model):
     position = db.Column(db.String(20), default='undefined')
     hands = db.Column(db.JSON, default={})  # Dict[str, str] (hand_str -> action_str)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=_utcnow_naive)
+    updated_at = db.Column(db.DateTime, default=_utcnow_naive, onupdate=_utcnow_naive)
 
     def to_domain(self):
         """Convert to domain Range object."""
@@ -54,8 +59,8 @@ class UserModel(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=_utcnow_naive)
+    updated_at = db.Column(db.DateTime, default=_utcnow_naive, onupdate=_utcnow_naive)
 
     def to_domain(self):
         """Convert to domain User object."""
@@ -83,7 +88,7 @@ class TrainingSessionModel(db.Model):
     time_spent = db.Column(db.Integer, default=0)
     is_complete = db.Column(db.Boolean, default=False)
     details = db.Column(db.JSON, default={})  # Contains questions, start_time, etc.
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=_utcnow_naive)
 
     def to_domain(self):
         """Convert to domain TrainingSession object."""

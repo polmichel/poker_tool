@@ -2,7 +2,7 @@
 Immutable training session entity (Elegant Objects).
 """
 import random
-from datetime import datetime
+from datetime import UTC, datetime
 
 from ..range import Range
 from ..user import User
@@ -31,7 +31,7 @@ class TrainingSession:
         self._questions: list[TrainingQuestion] = []
         self._current_index = 0
         self._correct_answers = 0
-        self._start_time = datetime.utcnow()
+        self._start_time = datetime.now(UTC).replace(tzinfo=None)
         self._ended_at: datetime | None = None
 
         # Generate questions
@@ -89,7 +89,7 @@ class TrainingSession:
     @property
     def time_spent(self) -> int:
         """Time spent in seconds."""
-        end = self._ended_at or datetime.utcnow()
+        end = self._ended_at or datetime.now(UTC).replace(tzinfo=None)
         return int((end - self._start_time).total_seconds())
 
     @property
@@ -130,7 +130,7 @@ class TrainingSession:
             new_correct = self._correct_answers
 
         new_index = self._current_index + 1
-        ended_at = datetime.utcnow() if (
+        ended_at = datetime.now(UTC).replace(tzinfo=None) if (
             new_index >= len(self._questions) or new_index >= self._total_questions
         ) else None
         return self._clone(
@@ -141,7 +141,7 @@ class TrainingSession:
 
     def end(self) -> 'TrainingSession':
         """End the session (immutable)."""
-        return self._clone(ended_at=datetime.utcnow())
+        return self._clone(ended_at=datetime.now(UTC).replace(tzinfo=None))
 
     def to_dict(self) -> dict:
         """Serialize to dictionary."""

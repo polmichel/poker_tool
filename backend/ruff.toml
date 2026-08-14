@@ -4,6 +4,4 @@ line-length = 120
 [lint]
 select = ["E", "F", "W", "I", "UP", "BLE", "RUF"]
 ignore = [
-    "DTZ001",  # datetime without tzinfo — tests use naive datetimes intentionally
-    "DTZ003",  # datetime.utcnow() — deprecated but used throughout, separate cleanup
 ]

@@ -1,6 +1,6 @@
 // Fonctions utilitaires pour l'application
 
-import { RANKS, ACTION_COLORS, ActionType, Hand, RangeGridCell } from '../types';
+import { RANKS, ACTION_COLORS, ActionType, RangeGridCell } from '../types';
 
 // Générer une grille 13x13 pour une range donnée
 export function generateRangeGrid(rangeHands: Record<string, ActionType>): RangeGridCell[][] {

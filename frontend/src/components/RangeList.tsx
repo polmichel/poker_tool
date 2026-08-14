@@ -5,7 +5,6 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
-  ListItemSecondaryAction,
   IconButton,
   Typography,
   Paper,
@@ -21,13 +20,11 @@ import {
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
   Search as SearchIcon,
-  Add as AddIcon,
   ContentCopy as ContentCopyIcon,
   Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import { Range, RangeType, Position, ActionType } from '../types';
 import { RANGE_TYPES, POSITIONS, ACTION_LABELS, ACTION_COLORS } from '../utils/constants';
-import { getActionLabel } from '../utils/helpers';
 
 interface RangeListProps {
   ranges: Range[];

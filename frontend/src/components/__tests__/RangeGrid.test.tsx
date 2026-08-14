@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RangeGrid from '../RangeGrid';
-import { RangeGridCell, ActionType } from '../../types';
+import { RangeGridCell } from '../../types';
 
 // Mock des constantes
 jest.mock('../../utils/constants', () => ({

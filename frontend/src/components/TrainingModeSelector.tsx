@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography, Paper, ToggleButtonGroup, ToggleButton, Tooltip } from '@mui/material';
 import { TrainingMode } from '../types';
 import { TRAINING_MODES } from '../utils/constants';
-import { HelpOutline, Edit, CheckBox, AutoAwesome } from '@mui/icons-material';
+import { HelpOutline, Edit, CheckBox } from '@mui/icons-material';
 
 interface TrainingModeSelectorProps {
   selectedMode: TrainingMode;

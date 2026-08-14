@@ -59,7 +59,7 @@ describe('Helper Functions', () => {
 
   describe('generateRangeGrid', () => {
     it('converts hands object to grid', () => {
-      const hands = {
+      const hands: Record<string, ActionType> = {
         AA: 'open',
         AKs: 'raise',
         KK: 'open',
@@ -82,7 +82,7 @@ describe('Helper Functions', () => {
     });
 
     it('returns 13x13 grid for empty hands', () => {
-      const hands = {};
+      const hands: Record<string, ActionType> = {};
       const result = generateRangeGrid(hands);
       expect(result.length).toBe(13);
       expect(result[0].length).toBe(13);

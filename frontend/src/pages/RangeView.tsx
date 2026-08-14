@@ -17,8 +17,7 @@ import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
 const RangeView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { ranges, loading, error, selectedRange, setSelectedRange, fetchRange, deleteRange } =
-    useRanges();
+  const { loading, error, selectedRange, fetchRange, deleteRange } = useRanges();
 
   const [range, setRange] = useState<Range | null>(null);
 

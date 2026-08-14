@@ -18,23 +18,13 @@ import {
   Upload as UploadIcon,
   Download as DownloadIcon,
   ContentCopy as ContentCopyIcon,
-  Delete as DeleteIcon,
-  Search as SearchIcon,
 } from '@mui/icons-material';
 import { useRanges } from '../hooks';
 import { RangeList } from '../components';
 
 const ImportExport: React.FC = () => {
-  const {
-    ranges,
-    loading,
-    error,
-    selectedRange,
-    setSelectedRange,
-    fetchRanges,
-    importRange,
-    exportRange,
-  } = useRanges();
+  const { ranges, selectedRange, setSelectedRange, fetchRanges, importRange, exportRange } =
+    useRanges();
 
   const [activeTab, setActiveTab] = useState<'import' | 'export'>('import');
   const [format, setFormat] = useState<'json' | 'text' | 'csv'>('json');
