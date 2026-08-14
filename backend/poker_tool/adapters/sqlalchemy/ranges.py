@@ -1,0 +1,74 @@
+"""
+SQLAlchemy implementation of the :class:`Ranges` port (Elegant Objects).
+"""
+from typing import List, Optional
+from ...interfaces.ranges import Ranges
+from ...objects.range import Range
+from .models import db, RangeModel
+
+
+class SqlRanges(Ranges):
+    """SQLAlchemy implementation of the Ranges port."""
+
+    def __init__(self, app=None) -> None:
+        self.db = db
+        if app:
+            self.init_app(app)
+
+    def init_app(self, app) -> None:
+        """Initialize SQLAlchemy with a Flask app and create tables.
+
+        Only initializes once even if called from multiple Sql* adapters,
+        because the ``db`` instance is shared.
+        """
+        if not getattr(app, "_sqlalchemy_initialized", False):
+            self.db.init_app(app)
+            app._sqlalchemy_initialized = True
+        with app.app_context():
+            self.db.create_all()
+
+    def add(self, range_obj: Range) -> Range:
+        """Add a new range or update an existing one; return the stored range."""
+        hands_dict = {k: str(v) for k, v in range_obj.hands.items()}
+
+        if range_obj.id:
+            model = RangeModel.query.get(range_obj.id)
+            if model:
+                model.name = range_obj.name
+                model.description = range_obj.description
+                model.range_type = range_obj.type.name.lower()
+                model.position = range_obj.position.name
+                model.hands = hands_dict
+                model.user_id = range_obj.user_id
+        else:
+            model = RangeModel(
+                name=range_obj.name,
+                description=range_obj.description,
+                range_type=range_obj.type.name.lower(),
+                position=range_obj.position.name,
+                hands=hands_dict,
+                user_id=range_obj.user_id,
+            )
+            self.db.session.add(model)
+        self.db.session.commit()
+        return model.to_domain()
+
+    def range_by_id(self, range_id: int) -> Optional[Range]:
+        model = RangeModel.query.get(range_id)
+        return model.to_domain() if model else None
+
+    def all(self) -> List[Range]:
+        return [model.to_domain() for model in RangeModel.query.all()]
+
+    def remove(self, range_obj: Range) -> None:
+        if range_obj.id:
+            model = RangeModel.query.get(range_obj.id)
+            if model:
+                self.db.session.delete(model)
+                self.db.session.commit()
+
+    def ranges_by_user(self, user_id: int) -> List[Range]:
+        return [
+            model.to_domain()
+            for model in RangeModel.query.filter_by(user_id=user_id).all()
+        ]

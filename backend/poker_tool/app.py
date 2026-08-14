@@ -8,7 +8,9 @@ which concrete adapter to use.
 from flask import Flask
 from flask_cors import CORS
 from .config import Config
-from .adapters.sqlalchemy.storage import SqlAlchemyStorage
+from .adapters.sqlalchemy.users import SqlUsers
+from .adapters.sqlalchemy.ranges import SqlRanges
+from .adapters.sqlalchemy.training_sessions import SqlTrainingSessions
 from .adapters.jwt.auth import JwtAuth
 from .infrastructure.web.flask_app import FlaskApp
 
@@ -27,13 +29,17 @@ class PokerTool:
         self._configure_flask()
 
         # Create adapters (concrete implementations of the ports)
-        self.storage = SqlAlchemyStorage(self.app)
+        self.users = SqlUsers(self.app)
+        self.ranges = SqlRanges(self.app)
+        self.sessions = SqlTrainingSessions(self.app)
         self.auth = JwtAuth(self.app, self.config)
 
         # Create the web layer
         self.flask_app = FlaskApp(
             flask_app=self.app,
-            storage=self.storage,
+            users=self.users,
+            ranges=self.ranges,
+            sessions=self.sessions,
             auth=self.auth,
         )
 
@@ -50,7 +56,7 @@ class PokerTool:
     def run(self, host: str = "0.0.0.0", port: int = 5000, debug: bool = True) -> None:
         """Run the application."""
         with self.app.app_context():
-            self.storage.db.create_all()
+            self.users.db.create_all()
         self.app.run(host=host, port=port, debug=debug)
 
 

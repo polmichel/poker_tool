@@ -13,7 +13,9 @@ from unittest.mock import MagicMock, patch
 from flask import Flask
 from poker_tool.app import PokerTool
 from poker_tool.config import Config
-from poker_tool.interfaces.storage import Storage
+from poker_tool.interfaces.users import Users
+from poker_tool.interfaces.ranges import Ranges
+from poker_tool.interfaces.training_sessions import TrainingSessions
 from poker_tool.interfaces.auth import Auth
 
 
@@ -28,8 +30,12 @@ class TestAppComposition(unittest.TestCase):
         self.assertIsNotNone(app)
         self.assertIsNotNone(app.app)
         self.assertIsInstance(app.app, Flask)
-        self.assertIsNotNone(app.storage)
-        self.assertIsInstance(app.storage, Storage)
+        self.assertIsNotNone(app.users)
+        self.assertIsInstance(app.users, Users)
+        self.assertIsNotNone(app.ranges)
+        self.assertIsInstance(app.ranges, Ranges)
+        self.assertIsNotNone(app.sessions)
+        self.assertIsInstance(app.sessions, TrainingSessions)
         self.assertIsNotNone(app.auth)
         self.assertIsInstance(app.auth, Auth)
         self.assertIsNotNone(app.flask_app)
@@ -189,26 +195,32 @@ class TestObjectCreationFlow(unittest.TestCase):
 class TestInterfaceImplementations(unittest.TestCase):
     """Tests that interface implementations work correctly."""
 
-    def test_storage_interface_implementation(self):
-        """Test that SqlAlchemyStorage implements Storage correctly."""
-        from poker_tool.adapters.sqlalchemy.storage import SqlAlchemyStorage
-        from poker_tool.interfaces.storage import Storage
-        
-        # Verify inheritance
-        self.assertTrue(issubclass(SqlAlchemyStorage, Storage))
-        
-        # Verify all abstract methods are implemented
-        required_methods = [
-            'save', 'get', 'all', 'remove',
-            'ranges_by_user', 'sessions_by_user',
-            'user_by_email', 'user_by_username'
-        ]
-        
-        for method_name in required_methods:
-            self.assertTrue(
-                hasattr(SqlAlchemyStorage, method_name),
-                f"SqlAlchemyStorage should implement {method_name}"
-            )
+    def test_users_interface_implementation(self):
+        """Test that SqlUsers implements the Users port correctly."""
+        from poker_tool.adapters.sqlalchemy.users import SqlUsers
+        from poker_tool.interfaces.users import Users
+
+        self.assertTrue(issubclass(SqlUsers, Users))
+        for method_name in ['add', 'user_by_id', 'user_by_username', 'user_by_email', 'all']:
+            self.assertTrue(hasattr(SqlUsers, method_name), f"SqlUsers should implement {method_name}")
+
+    def test_ranges_interface_implementation(self):
+        """Test that SqlRanges implements the Ranges port correctly."""
+        from poker_tool.adapters.sqlalchemy.ranges import SqlRanges
+        from poker_tool.interfaces.ranges import Ranges
+
+        self.assertTrue(issubclass(SqlRanges, Ranges))
+        for method_name in ['add', 'range_by_id', 'all', 'remove', 'ranges_by_user']:
+            self.assertTrue(hasattr(SqlRanges, method_name), f"SqlRanges should implement {method_name}")
+
+    def test_training_sessions_interface_implementation(self):
+        """Test that SqlTrainingSessions implements the TrainingSessions port."""
+        from poker_tool.adapters.sqlalchemy.training_sessions import SqlTrainingSessions
+        from poker_tool.interfaces.training_sessions import TrainingSessions
+
+        self.assertTrue(issubclass(SqlTrainingSessions, TrainingSessions))
+        for method_name in ['add', 'session_by_id', 'all', 'sessions_by_user']:
+            self.assertTrue(hasattr(SqlTrainingSessions, method_name), f"SqlTrainingSessions should implement {method_name}")
 
     def test_auth_interface_implementation(self):
         """Test that JwtAuth implements Auth correctly."""

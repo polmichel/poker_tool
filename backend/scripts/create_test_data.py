@@ -22,20 +22,20 @@ def main() -> None:
 
     with app.app.app_context():
         # Create test user (idempotent).
-        user = app.storage.user_by_username("testuser")
+        user = app.users.user_by_username("testuser")
         if not user:
             user = app.auth.create_user(
                 username="testuser",
                 email="test@test.com",
                 password="password123",
             )
-            user = app.storage.save(user)
+            user = app.users.add(user)
             print(f"User created: ID={user.id}")
         else:
             print(f"User already exists: ID={user.id}")
 
         # Create test range (idempotent).
-        ranges = app.storage.ranges_by_user(user.id)
+        ranges = app.ranges.ranges_by_user(user.id)
         range_obj = next((r for r in ranges if r.name == "Test Range E2E"), None)
 
         if not range_obj:
@@ -56,12 +56,12 @@ def main() -> None:
                 },
                 "user_id": user.id,
             })
-            range_obj = app.storage.save(range_obj)
+            range_obj = app.ranges.add(range_obj)
             print(f"Range created: ID={range_obj.id}")
         else:
             print(f"Range already exists: ID={range_obj.id}")
 
-        all_ranges = app.storage.all(Range)
+        all_ranges = app.ranges.all()
         print(f"Total ranges: {len(all_ranges)}")
 
 
