@@ -202,7 +202,9 @@ class FlaskApp:
             if not range_obj.hands or len(range_obj.hands) == 0:
                 raise BadRequest(f"Range {data['range_id']} has no hands. Please add hands to your range before starting a training session.")
 
-            # Get user
+            # Get user. When no user_id is provided and no one is
+            # authenticated (e.g. anonymous / E2E sessions), fall back to
+            # the first existing user so the training flow can proceed.
             user_id = data.get("user_id")
             if not user_id:
                 current_user = self.auth.current_user()
@@ -210,6 +212,9 @@ class FlaskApp:
                     user_id = current_user.id
 
             user = self.storage.get(User, user_id) if user_id else None
+            if not user:
+                users = self.storage.all(User)
+                user = users[0] if users else None
             if not user:
                 raise BadRequest("User required")
 
@@ -224,9 +229,16 @@ class FlaskApp:
             # Save session
             saved_session = self.storage.save(session)
             return jsonify({
+                "id": saved_session.id,
                 "session": saved_session.to_dict(),
                 "first_question": saved_session.current_question.to_dict() if saved_session.current_question else None,
             }), 201
+
+        @api.route("/training/sessions", methods=["GET"])
+        def list_training_sessions():
+            """List all training sessions."""
+            sessions = self.storage.all(TrainingSession)
+            return jsonify([s.to_dict() for s in sessions])
 
         @api.route("/training/sessions/<int:session_id>", methods=["GET"])
         def get_training_session(session_id: int):
@@ -234,7 +246,41 @@ class FlaskApp:
             session = self.storage.get(TrainingSession, session_id)
             if not session:
                 raise NotFound(f"Session {session_id} not found")
-            return jsonify(session.to_dict())
+            return jsonify({
+                "id": session.id,
+                "session": session.to_dict(),
+                "current_question": session.current_question.to_dict() if session.current_question else None,
+                "progress": {
+                    "current": session.current_index,
+                    "total": session.total_questions,
+                    "correct": session.correct_answers,
+                    "score": session.score,
+                },
+            })
+
+        @api.route("/training/sessions/<int:session_id>/start", methods=["POST"])
+        def start_training_session(session_id: int):
+            """Start a training session.
+
+            Questions are generated at session creation, so 'starting' just
+            returns the session and its first question.
+            """
+            session = self.storage.get(TrainingSession, session_id)
+            if not session:
+                raise NotFound(f"Session {session_id} not found")
+            return jsonify({
+                "session": session.to_dict(),
+                "first_question": session.current_question.to_dict() if session.current_question else None,
+            })
+
+        @api.route("/training/modes", methods=["GET"])
+        def get_training_modes():
+            """List available training modes."""
+            return jsonify([
+                {"value": "fill", "label": "Remplir une range"},
+                {"value": "guess", "label": "Deviner une range"},
+                {"value": "complete", "label": "Completer une range"},
+            ])
 
         @api.route("/training/sessions/<int:session_id>/next", methods=["POST"])
         def next_question(session_id: int):

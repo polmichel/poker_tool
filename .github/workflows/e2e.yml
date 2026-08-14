@@ -46,9 +46,9 @@ jobs:
         # Create instance directory
         mkdir -p instance
         # Start Flask server in background
-        python3 -m poker_tool.app > /tmp/backend.log 2>&1 &
+        FLASK_ENV=production python3 -c "from poker_tool.app import PokerTool; PokerTool().run(debug=False)" > /tmp/backend.log 2>&1 &
         BACKEND_PID=$!
-        echo "Backend PID: $BACKEND_PID" >> $GITHUB_ENV
+        echo "Backend PID: $BACKEND_PID"
         
         # Wait for backend to be ready
         for i in {1..30}; do
@@ -61,44 +61,7 @@ jobs:
         done
         
         # Create test data
-        python3 -c "
-import sys
-sys.path.insert(0, '.')
-from poker_tool.app import PokerTool
-from poker_tool.adapters.sqlalchemy.storage import SqlAlchemyStorage
-from models.range import RangeModel, RangeType, Position
-from models.user import UserModel
-
-app = PokerTool()
-with app.app.app_context():
-    # Create test user
-    user = UserModel.query.filter_by(username='testuser').first()
-    if not user:
-        user = UserModel(username='testuser', email='test@test.com')
-        user.set_password('password123')
-        app.storage.db.session.add(user)
-        app.storage.db.session.commit()
-        print(f'User created: ID={user.id}')
-    
-    # Create test range with hands
-    range_obj = RangeModel.query.filter_by(name='Test Range E2E').first()
-    if not range_obj:
-        range_obj = RangeModel(
-            name='Test Range E2E',
-            description='Range de test pour E2E',
-            range_type=RangeType.PREFLOP,
-            position=Position.BTN,
-            hands={'AA': 'raise', 'KK': 'raise', 'QQ': 'raise', 'AKs': 'raise', 'JJ': 'call', 'TT': 'call', 'AQs': 'raise', 'KQs': 'call'},
-            user_id=user.id
-        )
-        app.storage.db.session.add(range_obj)
-        app.storage.db.session.commit()
-        print(f'Range created: ID={range_obj.id}')
-    
-    # Verify
-    all_ranges = RangeModel.query.all()
-    print(f'Total ranges: {len(all_ranges)}')
-        " > /tmp/create_test_data.log 2>&1
+        python3 scripts/create_test_data.py > /tmp/create_test_data.log 2>&1
 
     - name: Start frontend server
       working-directory: frontend
@@ -106,7 +69,7 @@ with app.app.app_context():
         # Start React dev server in background
         PORT=3000 BROWSER=none npm start > /tmp/frontend.log 2>&1 &
         FRONTEND_PID=$!
-        echo "Frontend PID: $FRONTEND_PID" >> $GITHUB_ENV
+        echo "Frontend PID: $FRONTEND_PID"
         
         # Wait for frontend to be ready
         for i in {1..30}; do
@@ -120,28 +83,28 @@ with app.app.app_context():
 
     - name: Run CI basic tests
       working-directory: frontend
-      run: npx playwright test tests/e2e/specs/ci-basic.spec.ts
+      run: npx playwright test --config tests/e2e ci-basic.spec.ts
       env:
         BASE_URL: http://localhost:3000
         CI: true
 
     - name: Run questionnaire tests
       working-directory: frontend
-      run: npx playwright test tests/e2e/specs/questionnaire.spec.ts
+      run: npx playwright test --config tests/e2e questionnaire.spec.ts
       env:
         BASE_URL: http://localhost:3000
         CI: true
 
     - name: Run create range tests
       working-directory: frontend
-      run: npx playwright test tests/e2e/specs/create-range.spec.ts
+      run: npx playwright test --config tests/e2e create-range.spec.ts
       env:
         BASE_URL: http://localhost:3000
         CI: true
 
     - name: Run smoke tests
       working-directory: frontend
-      run: npx playwright test tests/e2e/specs/smoke.spec.ts
+      run: npx playwright test --config tests/e2e smoke.spec.ts
       env:
         BASE_URL: http://localhost:3000
         CI: true
@@ -150,7 +113,7 @@ with app.app.app_context():
       if: always()
       run: |
         # Stop backend
-        pkill -f "python3 -m poker_tool.app" || true
+        pkill -f "poker_tool.app" || true
         # Stop frontend
         pkill -f "npm start" || true
         pkill -f "node.*react-scripts" || true

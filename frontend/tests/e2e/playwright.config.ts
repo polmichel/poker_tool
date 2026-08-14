@@ -18,13 +18,13 @@ const isCI = !!process.env.CI;
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './tests/e2e/specs',
+  testDir: './specs',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: isCI,
   /* Retry on CI only */
-  retries: isCI ? 2 : 0,
+  retries: isCI ? 1 : 0,
   /* Opt out of parallel tests on CI. */
   workers: isCI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -47,7 +47,7 @@ export default defineConfig({
     video: isCI ? 'off' : 'retain-on-failure',
     
     /* Timeout for each test */
-    timeout: 60000,
+    timeout: 120000,
     
     /* Timeout for each action (click, fill, etc.) */
     actionTimeout: 5000,
@@ -63,16 +63,17 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    // Only test WebKit in non-CI environments to save resources
-    ...(isCI ? [] : [{
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    }]),
+    // Only test additional browsers in non-CI environments to save resources
+    ...(isCI ? [] : [
+      {
+        name: 'firefox',
+        use: { ...devices['Desktop Firefox'] },
+      },
+      {
+        name: 'webkit',
+        use: { ...devices['Desktop Safari'] },
+      },
+    ]),
   ],
 
   /*

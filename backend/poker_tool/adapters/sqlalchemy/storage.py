@@ -201,6 +201,7 @@ class SqlAlchemyStorage(Storage):
                 model.details = {
                     "start_time": session._start_time.isoformat(),
                     "ended_at": session._ended_at.isoformat() if session._ended_at else None,
+                    "questions": [q.to_dict() for q in session._questions],
                 }
                 model.updated_at = Any  # Will be set by SQLAlchemy
         else:
@@ -218,6 +219,7 @@ class SqlAlchemyStorage(Storage):
                 details={
                     "start_time": session._start_time.isoformat(),
                     "ended_at": session._ended_at.isoformat() if session._ended_at else None,
+                    "questions": [q.to_dict() for q in session._questions],
                 },
             )
             self.db.session.add(model)

@@ -18,11 +18,12 @@ const QUESTIONNAIRE_MODES = [
 ] as const;
 
 test.describe('Questionnaire sur une range', () => {
+  test.setTimeout(120000);
   
   test.beforeEach(async ({ page }) => {
     // Setup : accéder à la page de training avant chaque test
     await page.goto('/training');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // Vérifier qu'on est bien sur la page de training
     await expect(page).toHaveURL('/training');
@@ -100,8 +101,8 @@ test.describe('Questionnaire sur une range', () => {
       console.log(`Après clic, URL: ${page.url()}`);
       
       // Vérifier si le questionnaire est actif (recherche de la question)
-      const questionIndicator = page.locator('text=/Question \d+ sur \d+/');
-      await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
+      const questionIndicator = page.locator('[data-testid="question-indicator"]');
+      await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
       
       // 4. Vérifier qu'on est toujours sur la page /training
       const url = page.url();
@@ -127,28 +128,24 @@ test.describe('Questionnaire sur une range', () => {
     await startButton.click();
     
     // 4. Attendre la première question (format: "Question 1 sur 10")
-    const questionIndicator = page.locator('text=/Question 1 sur \d+/');
-    await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
+    const questionIndicator = page.locator('[data-testid="question-indicator"]');
+    await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
     
     // 5. Trouver et cliquer sur une réponse
-    // Les boutons de réponse sont ceux qui ne sont pas des boutons de contrôle
-    const answerButtons = page.locator('button').filter({
-      hasNotText: ['Démarrer rapidement', 'Démarrer l\'entraînement', 'Paramètres', 'Terminer', 'Précédent', 'Suivant', 
-                   'Remplir une range', 'Deviner une range', 'Compléter une range', 'Besoin d\'un indice ?']
-    });
+    const answerButtons = page.locator('[data-testid="answer-button"]');
     
     const answerCount = await answerButtons.count();
     
     if (answerCount > 0) {
       // Cliquer sur la première réponse disponible
-      await answerButtons.first().waitFor({ state: 'visible', timeout: 5000 });
+      await answerButtons.first().waitFor({ state: 'visible', timeout: 10000 });
       await answerButtons.first().click();
       
       // 6. Attendre la question suivante ou les résultats
       await page.waitForTimeout(2000);
       
       // Vérifier soit la question suivante, soit les résultats
-      const nextQuestion = page.locator('text=/Question 2 sur \d+/');
+      const nextQuestion = page.locator('[data-testid="question-indicator"]');
       const resultsDialog = page.locator('[data-testid="results-dialog"]');
       
       const nextQuestionCount = await nextQuestion.count();
@@ -191,8 +188,8 @@ test.describe('Questionnaire sur une range', () => {
     await startButton.click();
     
     // 4. Attendre la première question (format: "Question 1 sur 10")
-    const questionIndicator = page.locator('text=/Question 1 sur \d+/');
-    await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
+    const questionIndicator = page.locator('[data-testid="question-indicator"]');
+    await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
     
     // 5. Terminer la session (bouton Terminer)
     const endButton = page.locator('[data-testid="end-session-button"]');

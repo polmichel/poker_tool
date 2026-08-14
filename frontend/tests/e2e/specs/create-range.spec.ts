@@ -15,7 +15,7 @@ test.describe('Création d\'une range', () => {
   test.beforeEach(async ({ page }) => {
     // Setup : accéder à la page des ranges avant chaque test
     await page.goto('/ranges');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('Accéder à la page de création de range', async ({ page }) => {
@@ -139,7 +139,7 @@ test.describe('Création d\'une range', () => {
     
     // 2. Aller sur la page /ranges pour voir la liste
     await page.goto('/ranges');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     
     // 3. Vérifier que la range apparaît dans la liste
     const rangeName = page.locator(`text="${uniqueRangeName}"`);

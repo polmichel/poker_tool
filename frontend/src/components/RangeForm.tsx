@@ -107,7 +107,7 @@ const RangeForm: React.FC<RangeFormProps> = ({
           <TextField
             label="Nom"
             value={name}
-            data-testid="range-name-input"
+            inputProps={{ 'data-testid': 'range-name-input' }}
             onChange={(e) => setName(e.target.value)}
             error={!!errors.name}
             helperText={errors.name}
@@ -120,7 +120,7 @@ const RangeForm: React.FC<RangeFormProps> = ({
           <TextField
             label="Description"
             value={description}
-            data-testid="range-description-input"
+            inputProps={{ 'data-testid': 'range-description-input' }}
             onChange={(e) => setDescription(e.target.value)}
             multiline
             rows={3}

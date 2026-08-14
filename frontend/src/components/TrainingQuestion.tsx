@@ -69,6 +69,7 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
                   variant={selectedAnswer === action ? 'contained' : 'outlined'}
                   onClick={() => handleAnswer(action)}
                   disabled={!!selectedAnswer}
+                  data-testid="answer-button"
                   sx={{
                     backgroundColor: selectedAnswer === action 
                       ? ACTION_COLORS[action as ActionType] 
@@ -142,6 +143,7 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
                   variant={selectedAnswer === action ? 'contained' : 'outlined'}
                   onClick={() => handleAnswer(action)}
                   disabled={!!selectedAnswer}
+                  data-testid="answer-button"
                   sx={{
                     backgroundColor: selectedAnswer === action 
                       ? ACTION_COLORS[action as ActionType] 
@@ -182,7 +184,7 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
     >
       {/* Barre de progression */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
+        <Typography variant="body2" color="text.secondary" gutterBottom data-testid="question-indicator">
           Question {questionNumber} sur {totalQuestions}
         </Typography>
         <LinearProgress
