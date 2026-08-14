@@ -5,3 +5,5 @@ export { default as RangeEditor } from './RangeEditor';
 export { default as Training } from './Training';
 export { default as Stats } from './Stats';
 export { default as ImportExport } from './ImportExport';
+export { default as Login } from './Login';
+export { default as Register } from './Register';

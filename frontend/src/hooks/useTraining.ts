@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import { api } from '../utils/api';
 import { TrainingSession, TrainingMode, TrainingQuestion, Range } from '../types';
 
 // URL de base pour l'API
@@ -27,7 +27,7 @@ export function useTraining() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/training/sessions`);
+      const response = await api.get('/training/sessions');
       setSessions(response.data);
     } catch (err) {
       setError('Erreur lors du chargement des sessions d\'entraînement');
@@ -43,7 +43,7 @@ export function useTraining() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/training/sessions/${id}`);
+      const response = await api.get(`/training/sessions/${id}`);
       const sessionData = response.data;
       setCurrentSession(sessionData.session);
       setCurrentQuestion(sessionData.current_question);
@@ -75,7 +75,7 @@ export function useTraining() {
       // POST /training/sessions creates the session AND returns the first
       // question (questions are generated at creation), so no separate
       // /start call is needed.
-      const createResponse = await axios.post(`${API_BASE_URL}/training/sessions`, {
+      const createResponse = await api.post('/training/sessions', {
         mode,
         range_id: rangeId,
         user_id: userId,
@@ -112,8 +112,7 @@ export function useTraining() {
     setError(null);
     
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/training/sessions/${sessionId}/next`,
+      const response = await api.post(`/training/sessions/${sessionId}/next`,
         { answer }
       );
       
@@ -174,7 +173,7 @@ export function useTraining() {
     setError(null);
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/training/sessions/${sessionId}/end`);
+      const response = await api.post(`/training/sessions/${sessionId}/end`);
       setIsSessionActive(false);
       setCurrentSession(response.data.session);
       setCurrentQuestion(null);
@@ -198,7 +197,7 @@ export function useTraining() {
       // POST /training/sessions creates the session AND returns the first
       // question (questions are generated at creation), so no separate
       // /start call is needed.
-      const createResponse = await axios.post(`${API_BASE_URL}/training/sessions`, {
+      const createResponse = await api.post('/training/sessions', {
         mode,
         range_id: rangeId,
         user_id: userId,
@@ -235,7 +234,7 @@ export function useTraining() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/training/modes`);
+      const response = await api.get('/training/modes');
       return response.data;
     } catch (err) {
       setError('Erreur lors du chargement des modes d\'entraînement');

@@ -62,7 +62,7 @@ class TestJwtAuth(unittest.TestCase):
         token = auth.generate_token(user)
         
         self.assertEqual(token, "mock_token")
-        mock_create_token.assert_called_once_with(identity=1)
+        mock_create_token.assert_called_once_with(identity='1')
 
     @patch('poker_tool.adapters.jwt.auth.JWTManager')
     @patch('poker_tool.adapters.jwt.auth.decode_token')

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { api } from '../utils/api';
 import { User, AuthResponse } from '../types';
 
 // URL de base pour l'API
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Hook personnalisé pour gérer l'authentification
 export function useAuth() {
@@ -22,11 +22,7 @@ export function useAuth() {
       const storedToken = localStorage.getItem('poker_tool_token');
       if (storedToken) {
         setToken(storedToken);
-        const response = await axios.get(`${API_BASE_URL}/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${storedToken}`,
-          },
-        });
+        const response = await api.get('/auth/me');
         setUser(response.data);
         setIsAuthenticated(true);
       }
@@ -47,14 +43,14 @@ export function useAuth() {
     setError(null);
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/register`, {
+      const response = await api.post('/auth/register', {
         username,
         email,
         password,
       });
       
       // Connecter automatiquement après l'inscription
-      const loginResponse = await axios.post(`${API_BASE_URL}/auth/login`, {
+      const loginResponse = await api.post('/auth/login', {
         username,
         password,
       });
@@ -84,7 +80,7 @@ export function useAuth() {
     setError(null);
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+      const response = await api.post('/auth/login', {
         username,
         password,
       });
@@ -127,14 +123,9 @@ export function useAuth() {
         throw new Error('User ID not found');
       }
       
-      const response = await axios.put(
-        `${API_BASE_URL}/auth/me`,
+      const response = await api.put('/auth/me',
         userData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+
       );
       
       setUser(response.data);

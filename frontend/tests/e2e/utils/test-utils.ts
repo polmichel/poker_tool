@@ -3,6 +3,42 @@
  */
 
 import { Page, Locator, expect } from '@playwright/test';
+import axios from 'axios';
+
+const API_URL = process.env.API_URL || 'http://localhost:5000/api';
+
+/**
+ * Authenticate a page so it can access protected routes.
+ *
+ * Logs in as 'testuser' (created by global-setup) and stores the JWT in
+ * localStorage so the ProtectedRoute lets the page through.
+ */
+export async function authenticatePage(page: Page): Promise<void> {
+  let token: string;
+  try {
+    const response = await axios.post(`${API_URL}/auth/login`, {
+      username: 'testuser',
+      password: 'password123',
+    });
+    token = response.data.access_token;
+  } catch {
+    // If login fails (e.g. user not yet created), register then login.
+    await axios.post(`${API_URL}/auth/register`, {
+      username: 'testuser',
+      email: 'test@test.com',
+      password: 'password123',
+    });
+    const response = await axios.post(`${API_URL}/auth/login`, {
+      username: 'testuser',
+      password: 'password123',
+    });
+    token = response.data.access_token;
+  }
+
+  await page.addInitScript((t) => {
+    localStorage.setItem('poker_tool_token', t);
+  }, token);
+}
 
 /**
  * Navigation utilities

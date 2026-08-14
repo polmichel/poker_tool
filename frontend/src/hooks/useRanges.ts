@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import { api } from '../utils/api';
 import { Range, ActionType } from '../types';
 
 // URL de base pour l'API
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 
 // Hook personnalisé pour gérer les ranges
 export function useRanges() {
@@ -18,7 +18,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/ranges/`);
+      const response = await api.get('/ranges/');
       setRanges(response.data);
     } catch (err) {
       setError('Erreur lors du chargement des ranges');
@@ -34,7 +34,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/ranges/${id}`);
+      const response = await api.get(`/ranges/${id}`);
       setSelectedRange(response.data);
       return response.data;
     } catch (err) {
@@ -52,7 +52,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/ranges/`, rangeData);
+      const response = await api.post('/ranges/', rangeData);
       setRanges(prev => [...prev, response.data]);
       return response.data;
     } catch (err) {
@@ -70,7 +70,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      const response = await axios.put(`${API_BASE_URL}/ranges/${id}`, rangeData);
+      const response = await api.put(`/ranges/${id}`, rangeData);
       setRanges(prev => prev.map(r => r.id === id ? response.data : r));
       if (selectedRange?.id === id) {
         setSelectedRange(response.data);
@@ -91,7 +91,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      await axios.delete(`${API_BASE_URL}/ranges/${id}`);
+      await api.delete(`/ranges/${id}`);
       setRanges(prev => prev.filter(r => r.id !== id));
       if (selectedRange?.id === id) {
         setSelectedRange(null);
@@ -116,8 +116,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      const response = await axios.put(
-        `${API_BASE_URL}/ranges/${rangeId}/hands/${handStr}`,
+      const response = await api.put(`/ranges/${rangeId}/hands/${handStr}`,
         { action }
       );
       setRanges(prev => prev.map(r => r.id === rangeId ? response.data : r));
@@ -140,8 +139,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      const response = await axios.delete(
-        `${API_BASE_URL}/ranges/${rangeId}/hands/${handStr}`
+      const response = await api.delete(`/ranges/${rangeId}/hands/${handStr}`
       );
       setRanges(prev => prev.map(r => r.id === rangeId ? response.data : r));
       if (selectedRange?.id === rangeId) {
@@ -163,8 +161,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/ranges/export/${rangeId}?format=${format}`
+      const response = await api.get(`/ranges/export/${rangeId}?format=${format}`
       );
       return response.data;
     } catch (err) {
@@ -182,8 +179,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/ranges/import`,
+      const response = await api.post('/ranges/import',
         { content, format }
       );
       setRanges(prev => [...prev, response.data]);
@@ -203,7 +199,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/ranges/${rangeId}/stats`);
+      const response = await api.get(`/ranges/${rangeId}/stats`);
       return response.data;
     } catch (err) {
       setError(`Erreur lors du chargement des statistiques de la range ${rangeId}`);
@@ -220,7 +216,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/ranges/${rangeId}/grid`);
+      const response = await api.get(`/ranges/${rangeId}/grid`);
       return response.data;
     } catch (err) {
       setError(`Erreur lors du chargement de la grille de la range ${rangeId}`);
@@ -237,7 +233,7 @@ export function useRanges() {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/ranges/default`);
+      const response = await api.get('/ranges/default');
       return response.data;
     } catch (err) {
       setError('Erreur lors du chargement des ranges par défaut');
