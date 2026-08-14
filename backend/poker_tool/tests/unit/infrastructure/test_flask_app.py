@@ -148,6 +148,78 @@ class TestFlaskApp(unittest.TestCase):
             response = client.post('/api/ranges', json={})
             self.assertEqual(response.status_code, 400)
 
+    def test_get_global_stats_route(self):
+        """Test GET /api/stats/global delegates to the GlobalStats use case."""
+        self.global_stats.compute.return_value = {
+            'total_ranges': 2,
+            'total_users': 1,
+            'total_sessions': 3,
+            'total_hands': 5,
+            'avg_score': 4.5,
+            'most_common_action': 'RAISE',
+        }
+        self._make_app()
+
+        with self.app.test_client() as client:
+            response = client.get('/api/stats/global')
+            self.assertEqual(response.status_code, 200)
+            data = response.get_json()
+            self.assertEqual(data['total_ranges'], 2)
+            self.assertEqual(data['total_sessions'], 3)
+            self.assertEqual(data['avg_score'], 4.5)
+            self.assertEqual(data['most_common_action'], 'RAISE')
+        self.global_stats.compute.assert_called_once_with()
+
+    def test_get_global_stats_route_error(self):
+        """Test GET /api/stats/global returns 500 when the use case fails.
+
+        This is the backend side of the "Erreur lors du chargement des
+        statistiques globales" message shown on the home page: a use-case
+        failure surfaces as a 500 the frontend turns into that error.
+        TESTING mode would re-raise the exception instead, so this case
+        disables exception propagation to match production behavior.
+        """
+        self.global_stats.compute.side_effect = RuntimeError('db down')
+        self._make_app()
+        self.app.config['PROPAGATE_EXCEPTIONS'] = False
+
+        with self.app.test_client() as client:
+            response = client.get('/api/stats/global')
+            self.assertEqual(response.status_code, 500)
+        self.global_stats.compute.assert_called_once_with()
+
+    def test_get_user_stats_route(self):
+        """Test GET /api/stats/user/<id> delegates to the UserStats use case."""
+        self.user_stats.compute.return_value = {
+            'user_id': 1,
+            'total_sessions': 2,
+            'avg_score': 3.0,
+            'total_time_spent': 120,
+            'best_score': 5.0,
+            'most_played_range': 'R1',
+        }
+        self._make_app()
+
+        with self.app.test_client() as client:
+            response = client.get('/api/stats/user/1')
+            self.assertEqual(response.status_code, 200)
+            data = response.get_json()
+            self.assertEqual(data['user_id'], 1)
+            self.assertEqual(data['total_sessions'], 2)
+        self.user_stats.compute.assert_called_once_with(1)
+
+    def test_get_user_stats_route_not_found(self):
+        """Test GET /api/stats/user/<id> returns 404 for an unknown user."""
+        from poker_tool.use_cases.user_stats import UserNotFound
+
+        self.user_stats.compute.side_effect = UserNotFound('User 999 not found')
+        self._make_app()
+
+        with self.app.test_client() as client:
+            response = client.get('/api/stats/user/999')
+            self.assertEqual(response.status_code, 404)
+        self.user_stats.compute.assert_called_once_with(999)
+
 
 if __name__ == '__main__':
     unittest.main()
