@@ -3,7 +3,7 @@ Main application composer (Elegant Objects).
 
 This is the composition root: it constructs every object and wires its
 dependencies. Nothing else in the codebase reads the environment or decides
-which concrete adapter to use.
+which concrete adapter or use case to use.
 """
 from flask import Flask
 from flask_cors import CORS
@@ -12,6 +12,16 @@ from .adapters.sqlalchemy.users import SqlUsers
 from .adapters.sqlalchemy.ranges import SqlRanges
 from .adapters.sqlalchemy.training_sessions import SqlTrainingSessions
 from .adapters.jwt.auth import JwtAuth
+from .use_cases.register_user import RegisterUser
+from .use_cases.login_user import LoginUser
+from .use_cases.current_user import CurrentUser
+from .use_cases.create_range import CreateRange
+from .use_cases.update_range import UpdateRange
+from .use_cases.start_training_session import StartTrainingSession
+from .use_cases.answer_question import AnswerQuestion
+from .use_cases.end_training_session import EndTrainingSession
+from .use_cases.global_stats import GlobalStats
+from .use_cases.user_stats import UserStats
 from .infrastructure.web.flask_app import FlaskApp
 
 
@@ -34,13 +44,37 @@ class PokerTool:
         self.sessions = SqlTrainingSessions(self.app)
         self.auth = JwtAuth(self.app, self.config)
 
-        # Create the web layer
+        # Create use cases (each receives its dependencies via constructor)
+        self.register_user = RegisterUser(self.users, self.auth)
+        self.login_user = LoginUser(self.users, self.auth)
+        self.current_user = CurrentUser(self.users, self.auth)
+        self.create_range = CreateRange(self.ranges, self.auth)
+        self.update_range = UpdateRange(self.ranges)
+        self.start_training = StartTrainingSession(
+            self.ranges, self.users, self.sessions, self.auth,
+        )
+        self.answer_question = AnswerQuestion(self.sessions)
+        self.end_training = EndTrainingSession(self.sessions)
+        self.global_stats = GlobalStats(self.ranges, self.users, self.sessions)
+        self.user_stats = UserStats(self.users, self.ranges, self.sessions)
+
+        # Create the web layer (thin controllers delegating to use cases)
         self.flask_app = FlaskApp(
             flask_app=self.app,
             users=self.users,
             ranges=self.ranges,
             sessions=self.sessions,
             auth=self.auth,
+            register_user=self.register_user,
+            login_user=self.login_user,
+            current_user=self.current_user,
+            create_range=self.create_range,
+            update_range=self.update_range,
+            start_training=self.start_training,
+            answer_question=self.answer_question,
+            end_training=self.end_training,
+            global_stats=self.global_stats,
+            user_stats=self.user_stats,
         )
 
     def _configure_flask(self) -> None:

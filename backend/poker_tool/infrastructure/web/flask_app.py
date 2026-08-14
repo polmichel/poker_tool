@@ -1,9 +1,8 @@
 """
 Flask application with routes (Elegant Objects).
 
-This is the infrastructure layer — it only composes objects and delegates to
-the injected ports (``Users``, ``Ranges``, ``TrainingSessions``, ``Auth``).
-No business logic lives here.
+This is the infrastructure layer — it only translates HTTP into use-case
+calls and use-case results back into HTTP. No business logic lives here.
 """
 from flask import Flask, Blueprint, jsonify, request
 from werkzeug.exceptions import BadRequest, NotFound
@@ -15,6 +14,19 @@ from ...interfaces.auth import Auth
 from ...objects.range import Range
 from ...objects.user import User
 from ...objects.training.session import TrainingSession
+from ...use_cases.register_user import RegisterUser, UserAlreadyExists
+from ...use_cases.login_user import LoginUser, InvalidCredentials
+from ...use_cases.current_user import CurrentUser
+from ...use_cases.create_range import CreateRange
+from ...use_cases.update_range import UpdateRange, RangeNotFound as UpdateRangeNotFound
+from ...use_cases.start_training_session import (
+    StartTrainingSession, RangeNotFound as StartRangeNotFound,
+    RangeHasNoHands, UserRequired,
+)
+from ...use_cases.answer_question import AnswerQuestion, SessionNotFound as AnswerSessionNotFound
+from ...use_cases.end_training_session import EndTrainingSession, SessionNotFound as EndSessionNotFound
+from ...use_cases.global_stats import GlobalStats
+from ...use_cases.user_stats import UserStats, UserNotFound
 
 
 class FlaskApp:
@@ -27,13 +39,33 @@ class FlaskApp:
         ranges: Ranges,
         sessions: TrainingSessions,
         auth: Auth,
+        register_user: RegisterUser,
+        login_user: LoginUser,
+        current_user: CurrentUser,
+        create_range: CreateRange,
+        update_range: UpdateRange,
+        start_training: StartTrainingSession,
+        answer_question: AnswerQuestion,
+        end_training: EndTrainingSession,
+        global_stats: GlobalStats,
+        user_stats: UserStats,
     ):
-        """Initialize the Flask app with its dependencies (DI)."""
+        """Initialize the Flask app with its use cases (DI)."""
         self.app = flask_app
         self.users = users
         self.ranges = ranges
         self.sessions = sessions
         self.auth = auth
+        self._register_user = register_user
+        self._login_user = login_user
+        self._current_user = current_user
+        self._create_range = create_range
+        self._update_range = update_range
+        self._start_training = start_training
+        self._answer_question = answer_question
+        self._end_training = end_training
+        self._global_stats = global_stats
+        self._user_stats = user_stats
         self._register_routes()
 
     def _register_routes(self) -> None:
@@ -49,13 +81,11 @@ class FlaskApp:
 
         @api.route("/ranges", methods=["GET"])
         def get_ranges():
-            """Get all ranges."""
             ranges = self.ranges.all()
             return jsonify([r.to_dict() for r in ranges])
 
         @api.route("/ranges/<int:range_id>", methods=["GET"])
         def get_range(range_id: int):
-            """Get a specific range by ID."""
             range_obj = self.ranges.range_by_id(range_id)
             if not range_obj:
                 raise NotFound(f"Range {range_id} not found")
@@ -63,95 +93,59 @@ class FlaskApp:
 
         @api.route("/ranges", methods=["POST"])
         def create_range():
-            """Create a new range."""
             data = request.get_json()
             if not data or "name" not in data:
                 raise BadRequest("Missing name")
-
-            # Get user from auth
-            user_id = data.get("user_id")
-            if not user_id:
-                current_user = self.auth.current_user()
-                if current_user:
-                    user_id = current_user.id
-
-            # Create range from dictionary
-            range_obj = Range.from_dict({
-                **data,
-                "user_id": user_id,
-            })
-
-            # Save range
-            saved_range = self.ranges.add(range_obj)
+            saved_range = self._create_range.create(data)
             return jsonify(saved_range.to_dict()), 201
 
         @api.route("/ranges/<int:range_id>", methods=["PUT"])
         def update_range(range_id: int):
-            """Update an existing range."""
             data = request.get_json()
             if not data:
                 raise BadRequest("Missing data")
-
-            range_obj = self.ranges.range_by_id(range_id)
-            if not range_obj:
+            try:
+                saved_range = self._update_range.update(range_id, data)
+            except UpdateRangeNotFound:
                 raise NotFound(f"Range {range_id} not found")
-
-            # Create updated range (immutable)
-            updated_range = Range.from_dict({
-                **range_obj.to_dict(),
-                **data,
-            })
-
-            saved_range = self.ranges.add(updated_range)
             return jsonify(saved_range.to_dict())
 
         @api.route("/ranges/<int:range_id>", methods=["DELETE"])
         def delete_range(range_id: int):
-            """Delete a range."""
             range_obj = self.ranges.range_by_id(range_id)
             if not range_obj:
                 raise NotFound(f"Range {range_id} not found")
-
             self.ranges.remove(range_obj)
             return jsonify({"message": f"Range {range_id} deleted"}), 200
 
         @api.route("/ranges/user/<int:user_id>", methods=["GET"])
         def get_user_ranges(user_id: int):
-            """Get all ranges for a user."""
             ranges = self.ranges.ranges_by_user(user_id)
             return jsonify([r.to_dict() for r in ranges])
 
         @api.route("/ranges/<int:range_id>/grid", methods=["GET"])
         def get_range_grid(range_id: int):
-            """Get the grid representation of a range."""
             range_obj = self.ranges.range_by_id(range_id)
             if not range_obj:
                 raise NotFound(f"Range {range_id} not found")
-
-            grid = range_obj.grid()
-            return jsonify({"grid": grid})
+            return jsonify({"grid": range_obj.grid()})
 
         @api.route("/ranges/<int:range_id>/stats", methods=["GET"])
         def get_range_stats(range_id: int):
-            """Get statistics for a range."""
             range_obj = self.ranges.range_by_id(range_id)
             if not range_obj:
                 raise NotFound(f"Range {range_id} not found")
-
-            stats = range_obj.statistics()
-            return jsonify(stats)
+            return jsonify(range_obj.statistics())
 
         # ==================== USER ROUTES ====================
 
         @api.route("/users", methods=["GET"])
         def get_users():
-            """Get all users."""
             users = self.users.all()
             return jsonify([u.to_dict() for u in users])
 
         @api.route("/users/<int:user_id>", methods=["GET"])
         def get_user(user_id: int):
-            """Get a specific user by ID."""
             user = self.users.user_by_id(user_id)
             if not user:
                 raise NotFound(f"User {user_id} not found")
@@ -159,100 +153,62 @@ class FlaskApp:
 
         @api.route("/users", methods=["POST"])
         def create_user():
-            """Create a new user."""
             data = request.get_json()
             if not data or "username" not in data or "email" not in data or "password" not in data:
                 raise BadRequest("Missing required fields: username, email, password")
-
-            # Create user with hashed password
             user = self.auth.create_user(
                 username=data["username"],
                 email=data["email"],
                 password=data["password"],
             )
-
-            # Save user
             saved_user = self.users.add(user)
             return jsonify(saved_user.to_dict()), 201
 
         @api.route("/users/login", methods=["POST"])
         def login():
-            """Authenticate a user and return a token."""
             data = request.get_json()
             if not data or "username" not in data or "password" not in data:
                 raise BadRequest("Missing username or password")
-
-            # Get user by username
-            user = self.users.user_by_username(data["username"])
-            if not user:
-                raise NotFound("User not found")
-
-            # Check password
-            if not self.auth.check_password(data["password"], user.password_hash):
+            try:
+                result = self._login_user.login(data["username"], data["password"])
+            except InvalidCredentials as e:
+                if "not found" in str(e).lower():
+                    raise NotFound("User not found")
                 raise BadRequest("Invalid password")
-
-            # Generate token
-            token = self.auth.generate_token(user)
-            return jsonify({
-                "token": token,
-                "user": user.to_dict(),
-            })
+            return jsonify({"token": result.token, "user": result.user.to_dict()})
 
         # ==================== AUTH ROUTES ====================
 
         @api.route("/auth/register", methods=["POST"])
         def auth_register():
-            """Register a new user and return a token."""
             data = request.get_json()
             if not data or "username" not in data or "email" not in data or "password" not in data:
                 raise BadRequest("Missing required fields: username, email, password")
-
-            if self.users.user_by_username(data["username"]):
-                raise BadRequest("Username already exists")
-            if self.users.user_by_email(data["email"]):
-                raise BadRequest("Email already exists")
-
-            user = self.auth.create_user(
-                username=data["username"],
-                email=data["email"],
-                password=data["password"],
-            )
-            saved_user = self.users.add(user)
-            token = self.auth.generate_token(saved_user)
-            return jsonify({"access_token": token, "user": saved_user.to_dict()}), 201
+            try:
+                result = self._register_user.register(
+                    data["username"], data["email"], data["password"],
+                )
+            except UserAlreadyExists as e:
+                raise BadRequest(str(e))
+            return jsonify({"access_token": result.token, "user": result.user.to_dict()}), 201
 
         @api.route("/auth/login", methods=["POST"])
         def auth_login():
-            """Authenticate a user and return a token."""
             data = request.get_json()
             if not data or "username" not in data or "password" not in data:
                 raise BadRequest("Missing username or password")
-
-            user = self.users.user_by_username(data["username"])
-            if not user:
-                raise NotFound("User not found")
-
-            if not self.auth.check_password(data["password"], user.password_hash):
+            try:
+                result = self._login_user.login(data["username"], data["password"])
+            except InvalidCredentials as e:
+                if "not found" in str(e).lower():
+                    raise NotFound("User not found")
                 raise BadRequest("Invalid password")
-
-            token = self.auth.generate_token(user)
-            return jsonify({"access_token": token, "user": user.to_dict()})
+            return jsonify({"access_token": result.token, "user": result.user.to_dict()})
 
         @api.route("/auth/me", methods=["GET"])
         @jwt_required()
         def auth_me():
-            """Return the current authenticated user."""
-            user_id = get_jwt_identity()
-            try:
-                user_id = int(user_id) if user_id else None
-            except (TypeError, ValueError):
-                pass
-            user = self.users.user_by_id(user_id) if user_id else None
-            if not user:
-                # Fall back to the first user if the identity resolves but the
-                # user is not found (e.g. anonymous / E2E sessions).
-                users = self.users.all()
-                user = users[0] if users else None
+            user = self._current_user.user()
             if not user:
                 raise NotFound("User not found")
             return jsonify(user.to_dict())
@@ -261,61 +217,36 @@ class FlaskApp:
 
         @api.route("/training/sessions", methods=["POST"])
         def create_training_session():
-            """Create a new training session."""
             data = request.get_json()
             if not data or "mode" not in data or "range_id" not in data:
                 raise BadRequest("Missing required fields: mode, range_id")
-
-            # Get range
-            range_obj = self.ranges.range_by_id(data["range_id"])
-            if not range_obj:
+            try:
+                result = self._start_training.start(
+                    mode=data["mode"],
+                    range_id=data["range_id"],
+                    total_questions=data.get("total_questions", 10),
+                    user_id=data.get("user_id"),
+                )
+            except StartRangeNotFound:
                 raise NotFound(f"Range {data['range_id']} not found")
-
-            # Check if range has hands
-            if not range_obj.hands or len(range_obj.hands) == 0:
-                raise BadRequest(f"Range {data['range_id']} has no hands. Please add hands to your range before starting a training session.")
-
-            # Get user. When no user_id is provided and no one is
-            # authenticated (e.g. anonymous / E2E sessions), fall back to
-            # the first existing user so the training flow can proceed.
-            user_id = data.get("user_id")
-            if not user_id:
-                current_user = self.auth.current_user()
-                if current_user:
-                    user_id = current_user.id
-
-            user = self.users.user_by_id(user_id) if user_id else None
-            if not user:
-                users = self.users.all()
-                user = users[0] if users else None
-            if not user:
+            except RangeHasNoHands as e:
+                raise BadRequest(str(e))
+            except UserRequired:
                 raise BadRequest("User required")
-
-            # Create training session
-            session = TrainingSession(
-                user=user,
-                range_obj=range_obj,
-                mode=data["mode"],
-                total_questions=data.get("total_questions", 10),
-            )
-
-            # Save session
-            saved_session = self.sessions.add(session)
+            session = result.session
             return jsonify({
-                "id": saved_session.id,
-                "session": saved_session.to_dict(),
-                "first_question": saved_session.current_question.to_dict() if saved_session.current_question else None,
+                "id": session.id,
+                "session": session.to_dict(),
+                "first_question": session.current_question.to_dict() if session.current_question else None,
             }), 201
 
         @api.route("/training/sessions", methods=["GET"])
         def list_training_sessions():
-            """List all training sessions."""
             sessions = self.sessions.all()
             return jsonify([s.to_dict() for s in sessions])
 
         @api.route("/training/sessions/<int:session_id>", methods=["GET"])
         def get_training_session(session_id: int):
-            """Get a training session by ID."""
             session = self.sessions.session_by_id(session_id)
             if not session:
                 raise NotFound(f"Session {session_id} not found")
@@ -333,11 +264,6 @@ class FlaskApp:
 
         @api.route("/training/sessions/<int:session_id>/start", methods=["POST"])
         def start_training_session(session_id: int):
-            """Start a training session.
-
-            Questions are generated at session creation, so 'starting' just
-            returns the session and its first question.
-            """
             session = self.sessions.session_by_id(session_id)
             if not session:
                 raise NotFound(f"Session {session_id} not found")
@@ -348,7 +274,6 @@ class FlaskApp:
 
         @api.route("/training/modes", methods=["GET"])
         def get_training_modes():
-            """List available training modes."""
             return jsonify([
                 {"value": "fill", "label": "Remplir une range"},
                 {"value": "guess", "label": "Deviner une range"},
@@ -357,56 +282,25 @@ class FlaskApp:
 
         @api.route("/training/sessions/<int:session_id>/next", methods=["POST"])
         def next_question(session_id: int):
-            """Submit an answer and get the next question."""
             data = request.get_json()
             if not data or "answer" not in data:
                 raise BadRequest("Missing answer")
-
-            session = self.sessions.session_by_id(session_id)
-            if not session:
+            try:
+                result = self._answer_question.answer(session_id, data["answer"])
+            except AnswerSessionNotFound:
                 raise NotFound(f"Session {session_id} not found")
-
-            # Answer the current question (immutable)
-            new_session = session.answer(data["answer"])
-            saved_session = self.sessions.add(new_session)
-
-            response = {
-                "is_correct": new_session.current_index > session.current_index and
-                            new_session.correct_answers > session.correct_answers,
-                "correct_answer": session.current_question.correct_answer if session.current_question else None,
-                "session_complete": new_session.is_complete,
-                "progress": {
-                    "current": new_session.current_index,
-                    "total": new_session.total_questions,
-                    "correct": new_session.correct_answers,
-                    "score": new_session.score,
-                },
-            }
-
-            if new_session.current_question:
-                response["next_question"] = new_session.current_question.to_dict()
-
-            return jsonify(response)
+            return jsonify(result.response)
 
         @api.route("/training/sessions/<int:session_id>/end", methods=["POST"])
         def end_training_session(session_id: int):
-            """End a training session."""
-            session = self.sessions.session_by_id(session_id)
-            if not session:
+            try:
+                result = self._end_training.end(session_id)
+            except EndSessionNotFound:
                 raise NotFound(f"Session {session_id} not found")
-
-            # End the session (immutable)
-            ended_session = session.end()
-            saved_session = self.sessions.add(ended_session)
-
-            return jsonify({
-                "message": "Session ended",
-                "session": saved_session.to_dict(),
-            })
+            return jsonify({"message": "Session ended", "session": result.session.to_dict()})
 
         @api.route("/training/sessions/user/<int:user_id>", methods=["GET"])
         def get_user_sessions(user_id: int):
-            """Get all training sessions for a user."""
             sessions = self.sessions.sessions_by_user(user_id)
             return jsonify([s.to_dict() for s in sessions])
 
@@ -414,58 +308,14 @@ class FlaskApp:
 
         @api.route("/stats/global", methods=["GET"])
         def get_global_stats():
-            """Get global statistics."""
-            ranges = self.ranges.all()
-            users = self.users.all()
-            sessions = self.sessions.all()
-
-            # Calculate global stats
-            total_hands = sum(len(r.hands) for r in ranges)
-            total_sessions = len(sessions)
-            avg_score = sum(s.score for s in sessions) / len(sessions) if sessions else 0.0
-
-            # Find most common action
-            action_counts = {}
-            for r in ranges:
-                for action in r.hands.values():
-                    action_name = action.type.name
-                    action_counts[action_name] = action_counts.get(action_name, 0) + 1
-
-            most_common_action = max(action_counts.items(), key=lambda x: x[1])[0] if action_counts else "UNDEFINED"
-
-            return jsonify({
-                "total_ranges": len(ranges),
-                "total_users": len(users),
-                "total_sessions": total_sessions,
-                "total_hands": total_hands,
-                "avg_score": round(avg_score, 2),
-                "most_common_action": most_common_action,
-            })
+            return jsonify(self._global_stats.compute())
 
         @api.route("/stats/user/<int:user_id>", methods=["GET"])
         def get_user_stats(user_id: int):
-            """Get statistics for a specific user."""
-            user = self.users.user_by_id(user_id)
-            if not user:
+            try:
+                return jsonify(self._user_stats.compute(user_id))
+            except UserNotFound:
                 raise NotFound(f"User {user_id} not found")
-
-            sessions = self.sessions.sessions_by_user(user_id)
-            ranges = self.ranges.ranges_by_user(user_id)
-
-            total_sessions = len(sessions)
-            avg_score = sum(s.score for s in sessions) / len(sessions) if sessions else 0.0
-            total_time_spent = sum(s.time_spent for s in sessions)
-            best_score = max((s.score for s in sessions), default=0.0)
-            most_played_range = max(ranges, key=lambda r: len(r.hands)).name if ranges else ""
-
-            return jsonify({
-                "user_id": user_id,
-                "total_sessions": total_sessions,
-                "avg_score": round(avg_score, 2),
-                "total_time_spent": total_time_spent,
-                "best_score": round(best_score, 2),
-                "most_played_range": most_played_range,
-            })
 
         # Register the API blueprint
         self.app.register_blueprint(api)
