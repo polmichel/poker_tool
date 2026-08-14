@@ -38,15 +38,17 @@ source venv/bin/activate  # Sur Linux/Mac
 # ou
 venv\Scripts\activate     # Sur Windows
 
-# Installer les dépendances
+# Installer les dépendances (runtime + tests)
 pip install -r requirements.txt
 
-# Démarrer le serveur Flask
-export FLASK_APP=app.py
-flask run --host=0.0.0.0 --port=5000
+# Démarrer le serveur (architecture Elegant Objects dans poker_tool/)
+python -m poker_tool.main
 ```
 
 Le backend sera accessible à : **http://localhost:5000/api**
+
+La configuration (clés secrètes, base de données, CORS) est lue depuis
+l'environnement via `poker_tool.config.Config` ; voir `backend/.env.example`.
 
 #### 3️⃣ Configurer le Frontend (React)
 ```bash
@@ -67,20 +69,18 @@ Le frontend sera accessible à : **http://localhost:3000**
 
 ```
 poker_tool/
-├── backend/                  # API Flask (Python)
-│   ├── app.py               # Point d'entrée de l'API
-│   ├── database.py          # Configuration de la base de données (SQLAlchemy)
-│   ├── requirements.txt     # Dépendances Python
-│   ├── models/              # Modèles de données
-│   │   ├── __init__.py
-│   │   ├── hand.py          # Modèle pour les mains de poker
-│   │   ├── range.py         # Modèle pour les ranges
-│   │   └── scenario.py      # Modèle pour les scénarios
-│   └── routes/              # Routes de l'API
-│       ├── __init__.py
-│       ├── ranges.py        # Routes pour les ranges
-│       ├── training.py      # Routes pour l'entraînement
-│       └── stats.py         # Routes pour les statistiques
+├── backend/                  # API Flask (Python, architecture Elegant Objects)
+│   ├── main.py               # Point d'entrée (python -m poker_tool.main)
+│   ├── requirements.txt       # Dépendances Python (runtime + tests)
+│   ├── .env.example          # Configuration par variable d'environnement
+│   └── poker_tool/           # Package unique
+│       ├── config.py        # Configuration lue depuis l'environnement
+│       ├── app.py            # Racine de composition (DI)
+│       ├── objects/         # Objets domaine purs (user, range, hand, training, stats...)
+│       ├── interfaces/      # Ports abstraits (Storage, Auth)
+│       ├── adapters/        # Implémentations concrètes (SQLAlchemy, JWT)
+│       ├── infrastructure/ # Couche technique (routes Flask)
+│       └── tests/           # Tests unitaires (fakes) + intégration
 │
 ├── frontend/                # Application React + TypeScript
 │   ├── public/              # Fichiers statiques

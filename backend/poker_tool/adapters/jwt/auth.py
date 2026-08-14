@@ -12,16 +12,26 @@ from ...objects.user import User
 class JwtAuth(Auth):
     """JWT implementation of Auth interface."""
 
-    def __init__(self, app: Flask):
-        """Initialize the JWT auth adapter."""
-        self.app = app
-        self.jwt = JWTManager(app)
-        self._configure_jwt()
+    def __init__(self, app: Flask, config=None) -> None:
+        """Initialize the JWT auth adapter.
 
-    def _configure_jwt(self) -> None:
-        """Configure JWT settings."""
-        self.app.config["JWT_SECRET_KEY"] = "poker_tool_jwt_secret_key"
-        self.app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
+        The JWT secret and token lifetime are taken from the injected
+        ``Config`` instead of being hard-coded.
+        """
+        self.app = app
+        # Config is optional only to preserve backwards compatibility with
+        # ad-hoc usages; the composition root always provides one.
+        self.jwt = JWTManager(app)
+        self._configure_jwt(config)
+
+    def _configure_jwt(self, config=None) -> None:
+        """Configure JWT settings from the injected Config."""
+        if config is not None:
+            self.app.config["JWT_SECRET_KEY"] = config.jwt_secret_key
+            self.app.config["JWT_ACCESS_TOKEN_EXPIRES"] = config.jwt_access_token_expires_seconds
+        else:
+            self.app.config["JWT_SECRET_KEY"] = "poker_tool_dev_jwt_secret_key"
+            self.app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600
 
     def create_user(self, username: str, email: str, password: str) -> User:
         """Create a new user with hashed password."""
