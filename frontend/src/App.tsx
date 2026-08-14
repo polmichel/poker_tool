@@ -43,6 +43,8 @@ import {
   Training,
   Stats,
   ImportExport,
+  Login,
+  Register,
 } from './pages';
 import { THEME_COLORS } from './utils/constants';
 
@@ -118,6 +120,22 @@ const menuItems = [
   { text: 'Statistiques', icon: <BarChartIcon />, path: '/stats' },
   { text: 'Importer/Exporter', icon: <ImportExportIcon />, path: '/import-export' },
 ];
+
+// Composant pour proteger les routes nécessitant une authentification
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <Typography>Chargement...</Typography>
+      </Box>
+    );
+  }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+};
 
 // Composant pour le layout principal
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -339,14 +357,16 @@ const App: React.FC = () => {
     <ThemeProvider theme={darkTheme}>
       <MainLayout>
           <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/" element={<Home />} />
-            <Route path="/ranges" element={<Ranges />} />
-            <Route path="/ranges/new" element={<RangeEditor />} />
-            <Route path="/ranges/:id/view" element={<RangeView />} />
-            <Route path="/ranges/:id/edit" element={<RangeEditor />} />
-            <Route path="/training" element={<Training />} />
-            <Route path="/stats" element={<Stats />} />
-            <Route path="/import-export" element={<ImportExport />} />
+            <Route path="/ranges" element={<ProtectedRoute><Ranges /></ProtectedRoute>} />
+            <Route path="/ranges/new" element={<ProtectedRoute><RangeEditor /></ProtectedRoute>} />
+            <Route path="/ranges/:id/view" element={<ProtectedRoute><RangeView /></ProtectedRoute>} />
+            <Route path="/ranges/:id/edit" element={<ProtectedRoute><RangeEditor /></ProtectedRoute>} />
+            <Route path="/training" element={<ProtectedRoute><Training /></ProtectedRoute>} />
+            <Route path="/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
+            <Route path="/import-export" element={<ProtectedRoute><ImportExport /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </MainLayout>

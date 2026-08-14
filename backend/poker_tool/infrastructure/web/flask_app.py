@@ -4,6 +4,7 @@ This is the infrastructure layer - it only composes objects and delegates to the
 """
 from flask import Flask, Blueprint, jsonify, request
 from werkzeug.exceptions import BadRequest, NotFound
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from ...interfaces.storage import Storage
 from ...interfaces.auth import Auth
 from ...objects.range import Range
@@ -183,6 +184,65 @@ class FlaskApp:
                 "token": token,
                 "user": user.to_dict(),
             })
+
+        # ==================== AUTH ROUTES ====================
+
+        @api.route("/auth/register", methods=["POST"])
+        def auth_register():
+            """Register a new user and return a token."""
+            data = request.get_json()
+            if not data or "username" not in data or "email" not in data or "password" not in data:
+                raise BadRequest("Missing required fields: username, email, password")
+
+            if self.storage.user_by_username(data["username"]):
+                raise BadRequest("Username already exists")
+            if self.storage.user_by_email(data["email"]):
+                raise BadRequest("Email already exists")
+
+            user = self.auth.create_user(
+                username=data["username"],
+                email=data["email"],
+                password=data["password"],
+            )
+            saved_user = self.storage.save(user)
+            token = self.auth.generate_token(saved_user)
+            return jsonify({"access_token": token, "user": saved_user.to_dict()}), 201
+
+        @api.route("/auth/login", methods=["POST"])
+        def auth_login():
+            """Authenticate a user and return a token."""
+            data = request.get_json()
+            if not data or "username" not in data or "password" not in data:
+                raise BadRequest("Missing username or password")
+
+            user = self.storage.user_by_username(data["username"])
+            if not user:
+                raise NotFound("User not found")
+
+            if not self.auth.check_password(data["password"], user.password_hash):
+                raise BadRequest("Invalid password")
+
+            token = self.auth.generate_token(user)
+            return jsonify({"access_token": token, "user": user.to_dict()})
+
+        @api.route("/auth/me", methods=["GET"])
+        @jwt_required()
+        def auth_me():
+            """Return the current authenticated user."""
+            user_id = get_jwt_identity()
+            try:
+                user_id = int(user_id) if user_id else None
+            except (TypeError, ValueError):
+                pass
+            user = self.storage.get(User, user_id) if user_id else None
+            if not user:
+                # Fall back to the first user if the identity resolves but the
+                # user is not found (e.g. anonymous / E2E sessions).
+                users = self.storage.all(User)
+                user = users[0] if users else None
+            if not user:
+                raise NotFound("User not found")
+            return jsonify(user.to_dict())
 
         # ==================== TRAINING ROUTES ====================
 
