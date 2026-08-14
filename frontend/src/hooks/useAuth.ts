@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { AuthApi } from '../api';
 import { User } from '../types';
@@ -7,7 +7,14 @@ import { User } from '../types';
 // L'état interne (user, token, error) reste privé : l'UI n'a accès qu'aux
 // intentions (register, login, logout, fetchCurrentUser, updateUser) — pas aux
 // setters, conformément au principe d'encapsulation (Elegant Objects).
-export function useAuth(authApi: AuthApi = new AuthApi()) {
+export function useAuth(authApi?: AuthApi) {
+  // Keep a stable AuthApi instance across renders. A default parameter
+  // (authApi = new AuthApi()) would create a new instance on every render,
+  // which re-triggers every useCallback/useEffect that depends on it and
+  // causes infinite re-render loops. useRef avoids that.
+  const authApiRef = useRef<AuthApi>(authApi ?? new AuthApi());
+  const api = authApiRef.current;
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +30,7 @@ export function useAuth(authApi: AuthApi = new AuthApi()) {
       const storedToken = localStorage.getItem('poker_tool_token');
       if (storedToken) {
         setToken(storedToken);
-        const currentUser = await authApi.me();
+        const currentUser = await api.me();
         setUser(currentUser);
         setIsAuthenticated(true);
       }
@@ -36,7 +43,7 @@ export function useAuth(authApi: AuthApi = new AuthApi()) {
     } finally {
       setLoading(false);
     }
-  }, [authApi]);
+  }, [api]);
 
   // Inscrire un nouvel utilisateur
   const register = useCallback(async (username: string, email: string, password: string) => {
@@ -44,9 +51,9 @@ export function useAuth(authApi: AuthApi = new AuthApi()) {
     setError(null);
 
     try {
-      await authApi.register(username, email, password);
+      await api.register(username, email, password);
       // Connecter automatiquement après l'inscription
-      const { access_token, user: userData } = await authApi.login(username, password);
+      const { access_token, user: userData } = await api.login(username, password);
       localStorage.setItem('poker_tool_token', access_token);
       setToken(access_token);
       setUser(userData);
@@ -63,7 +70,7 @@ export function useAuth(authApi: AuthApi = new AuthApi()) {
     } finally {
       setLoading(false);
     }
-  }, [authApi]);
+  }, [api]);
 
   // Connecter un utilisateur
   const login = useCallback(async (username: string, password: string) => {
@@ -71,7 +78,7 @@ export function useAuth(authApi: AuthApi = new AuthApi()) {
     setError(null);
 
     try {
-      const { access_token, user: userData } = await authApi.login(username, password);
+      const { access_token, user: userData } = await api.login(username, password);
       localStorage.setItem('poker_tool_token', access_token);
       setToken(access_token);
       setUser(userData);
@@ -88,7 +95,7 @@ export function useAuth(authApi: AuthApi = new AuthApi()) {
     } finally {
       setLoading(false);
     }
-  }, [authApi]);
+  }, [api]);
 
   // Déconnecter l'utilisateur
   const logout = useCallback(() => {
@@ -109,7 +116,7 @@ export function useAuth(authApi: AuthApi = new AuthApi()) {
         throw new Error('User ID not found');
       }
 
-      const response = await authApi.me();
+      const response = await api.me();
       setUser(response);
       return response;
     } catch (err) {
@@ -119,7 +126,7 @@ export function useAuth(authApi: AuthApi = new AuthApi()) {
     } finally {
       setLoading(false);
     }
-  }, [user, token, authApi]);
+  }, [user, token, api]);
 
   // Initialiser le hook
   useEffect(() => {
