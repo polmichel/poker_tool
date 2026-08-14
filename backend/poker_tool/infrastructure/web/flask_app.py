@@ -1,25 +1,38 @@
 """
 Flask application with routes (Elegant Objects).
-This is the infrastructure layer - it only composes objects and delegates to them.
+
+This is the infrastructure layer — it only composes objects and delegates to
+the injected ports (``Users``, ``Ranges``, ``TrainingSessions``, ``Auth``).
+No business logic lives here.
 """
 from flask import Flask, Blueprint, jsonify, request
 from werkzeug.exceptions import BadRequest, NotFound
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ...interfaces.storage import Storage
+from ...interfaces.users import Users
+from ...interfaces.ranges import Ranges
+from ...interfaces.training_sessions import TrainingSessions
 from ...interfaces.auth import Auth
 from ...objects.range import Range
 from ...objects.user import User
 from ...objects.training.session import TrainingSession
-from ...objects.training.question import TrainingQuestion
 
 
 class FlaskApp:
-    """Flask application with routes."""
+    """Flask application with thin HTTP controllers."""
 
-    def __init__(self, flask_app: Flask, storage: Storage, auth: Auth):
-        """Initialize the Flask app with dependencies."""
+    def __init__(
+        self,
+        flask_app: Flask,
+        users: Users,
+        ranges: Ranges,
+        sessions: TrainingSessions,
+        auth: Auth,
+    ):
+        """Initialize the Flask app with its dependencies (DI)."""
         self.app = flask_app
-        self.storage = storage
+        self.users = users
+        self.ranges = ranges
+        self.sessions = sessions
         self.auth = auth
         self._register_routes()
 
@@ -37,13 +50,13 @@ class FlaskApp:
         @api.route("/ranges", methods=["GET"])
         def get_ranges():
             """Get all ranges."""
-            ranges = self.storage.all(Range)
+            ranges = self.ranges.all()
             return jsonify([r.to_dict() for r in ranges])
 
         @api.route("/ranges/<int:range_id>", methods=["GET"])
         def get_range(range_id: int):
             """Get a specific range by ID."""
-            range_obj = self.storage.get(Range, range_id)
+            range_obj = self.ranges.range_by_id(range_id)
             if not range_obj:
                 raise NotFound(f"Range {range_id} not found")
             return jsonify(range_obj.to_dict())
@@ -69,7 +82,7 @@ class FlaskApp:
             })
 
             # Save range
-            saved_range = self.storage.save(range_obj)
+            saved_range = self.ranges.add(range_obj)
             return jsonify(saved_range.to_dict()), 201
 
         @api.route("/ranges/<int:range_id>", methods=["PUT"])
@@ -79,7 +92,7 @@ class FlaskApp:
             if not data:
                 raise BadRequest("Missing data")
 
-            range_obj = self.storage.get(Range, range_id)
+            range_obj = self.ranges.range_by_id(range_id)
             if not range_obj:
                 raise NotFound(f"Range {range_id} not found")
 
@@ -89,29 +102,29 @@ class FlaskApp:
                 **data,
             })
 
-            saved_range = self.storage.save(updated_range)
+            saved_range = self.ranges.add(updated_range)
             return jsonify(saved_range.to_dict())
 
         @api.route("/ranges/<int:range_id>", methods=["DELETE"])
         def delete_range(range_id: int):
             """Delete a range."""
-            range_obj = self.storage.get(Range, range_id)
+            range_obj = self.ranges.range_by_id(range_id)
             if not range_obj:
                 raise NotFound(f"Range {range_id} not found")
 
-            self.storage.remove(range_obj)
+            self.ranges.remove(range_obj)
             return jsonify({"message": f"Range {range_id} deleted"}), 200
 
         @api.route("/ranges/user/<int:user_id>", methods=["GET"])
         def get_user_ranges(user_id: int):
             """Get all ranges for a user."""
-            ranges = self.storage.ranges_by_user(user_id)
+            ranges = self.ranges.ranges_by_user(user_id)
             return jsonify([r.to_dict() for r in ranges])
 
         @api.route("/ranges/<int:range_id>/grid", methods=["GET"])
         def get_range_grid(range_id: int):
             """Get the grid representation of a range."""
-            range_obj = self.storage.get(Range, range_id)
+            range_obj = self.ranges.range_by_id(range_id)
             if not range_obj:
                 raise NotFound(f"Range {range_id} not found")
 
@@ -121,7 +134,7 @@ class FlaskApp:
         @api.route("/ranges/<int:range_id>/stats", methods=["GET"])
         def get_range_stats(range_id: int):
             """Get statistics for a range."""
-            range_obj = self.storage.get(Range, range_id)
+            range_obj = self.ranges.range_by_id(range_id)
             if not range_obj:
                 raise NotFound(f"Range {range_id} not found")
 
@@ -133,13 +146,13 @@ class FlaskApp:
         @api.route("/users", methods=["GET"])
         def get_users():
             """Get all users."""
-            users = self.storage.all(User)
+            users = self.users.all()
             return jsonify([u.to_dict() for u in users])
 
         @api.route("/users/<int:user_id>", methods=["GET"])
         def get_user(user_id: int):
             """Get a specific user by ID."""
-            user = self.storage.get(User, user_id)
+            user = self.users.user_by_id(user_id)
             if not user:
                 raise NotFound(f"User {user_id} not found")
             return jsonify(user.to_dict())
@@ -159,7 +172,7 @@ class FlaskApp:
             )
 
             # Save user
-            saved_user = self.storage.save(user)
+            saved_user = self.users.add(user)
             return jsonify(saved_user.to_dict()), 201
 
         @api.route("/users/login", methods=["POST"])
@@ -170,7 +183,7 @@ class FlaskApp:
                 raise BadRequest("Missing username or password")
 
             # Get user by username
-            user = self.storage.user_by_username(data["username"])
+            user = self.users.user_by_username(data["username"])
             if not user:
                 raise NotFound("User not found")
 
@@ -194,9 +207,9 @@ class FlaskApp:
             if not data or "username" not in data or "email" not in data or "password" not in data:
                 raise BadRequest("Missing required fields: username, email, password")
 
-            if self.storage.user_by_username(data["username"]):
+            if self.users.user_by_username(data["username"]):
                 raise BadRequest("Username already exists")
-            if self.storage.user_by_email(data["email"]):
+            if self.users.user_by_email(data["email"]):
                 raise BadRequest("Email already exists")
 
             user = self.auth.create_user(
@@ -204,7 +217,7 @@ class FlaskApp:
                 email=data["email"],
                 password=data["password"],
             )
-            saved_user = self.storage.save(user)
+            saved_user = self.users.add(user)
             token = self.auth.generate_token(saved_user)
             return jsonify({"access_token": token, "user": saved_user.to_dict()}), 201
 
@@ -215,7 +228,7 @@ class FlaskApp:
             if not data or "username" not in data or "password" not in data:
                 raise BadRequest("Missing username or password")
 
-            user = self.storage.user_by_username(data["username"])
+            user = self.users.user_by_username(data["username"])
             if not user:
                 raise NotFound("User not found")
 
@@ -234,11 +247,11 @@ class FlaskApp:
                 user_id = int(user_id) if user_id else None
             except (TypeError, ValueError):
                 pass
-            user = self.storage.get(User, user_id) if user_id else None
+            user = self.users.user_by_id(user_id) if user_id else None
             if not user:
                 # Fall back to the first user if the identity resolves but the
                 # user is not found (e.g. anonymous / E2E sessions).
-                users = self.storage.all(User)
+                users = self.users.all()
                 user = users[0] if users else None
             if not user:
                 raise NotFound("User not found")
@@ -254,7 +267,7 @@ class FlaskApp:
                 raise BadRequest("Missing required fields: mode, range_id")
 
             # Get range
-            range_obj = self.storage.get(Range, data["range_id"])
+            range_obj = self.ranges.range_by_id(data["range_id"])
             if not range_obj:
                 raise NotFound(f"Range {data['range_id']} not found")
 
@@ -271,9 +284,9 @@ class FlaskApp:
                 if current_user:
                     user_id = current_user.id
 
-            user = self.storage.get(User, user_id) if user_id else None
+            user = self.users.user_by_id(user_id) if user_id else None
             if not user:
-                users = self.storage.all(User)
+                users = self.users.all()
                 user = users[0] if users else None
             if not user:
                 raise BadRequest("User required")
@@ -287,7 +300,7 @@ class FlaskApp:
             )
 
             # Save session
-            saved_session = self.storage.save(session)
+            saved_session = self.sessions.add(session)
             return jsonify({
                 "id": saved_session.id,
                 "session": saved_session.to_dict(),
@@ -297,13 +310,13 @@ class FlaskApp:
         @api.route("/training/sessions", methods=["GET"])
         def list_training_sessions():
             """List all training sessions."""
-            sessions = self.storage.all(TrainingSession)
+            sessions = self.sessions.all()
             return jsonify([s.to_dict() for s in sessions])
 
         @api.route("/training/sessions/<int:session_id>", methods=["GET"])
         def get_training_session(session_id: int):
             """Get a training session by ID."""
-            session = self.storage.get(TrainingSession, session_id)
+            session = self.sessions.session_by_id(session_id)
             if not session:
                 raise NotFound(f"Session {session_id} not found")
             return jsonify({
@@ -325,7 +338,7 @@ class FlaskApp:
             Questions are generated at session creation, so 'starting' just
             returns the session and its first question.
             """
-            session = self.storage.get(TrainingSession, session_id)
+            session = self.sessions.session_by_id(session_id)
             if not session:
                 raise NotFound(f"Session {session_id} not found")
             return jsonify({
@@ -349,13 +362,13 @@ class FlaskApp:
             if not data or "answer" not in data:
                 raise BadRequest("Missing answer")
 
-            session = self.storage.get(TrainingSession, session_id)
+            session = self.sessions.session_by_id(session_id)
             if not session:
                 raise NotFound(f"Session {session_id} not found")
 
             # Answer the current question (immutable)
             new_session = session.answer(data["answer"])
-            saved_session = self.storage.save(new_session)
+            saved_session = self.sessions.add(new_session)
 
             response = {
                 "is_correct": new_session.current_index > session.current_index and
@@ -378,13 +391,13 @@ class FlaskApp:
         @api.route("/training/sessions/<int:session_id>/end", methods=["POST"])
         def end_training_session(session_id: int):
             """End a training session."""
-            session = self.storage.get(TrainingSession, session_id)
+            session = self.sessions.session_by_id(session_id)
             if not session:
                 raise NotFound(f"Session {session_id} not found")
 
             # End the session (immutable)
             ended_session = session.end()
-            saved_session = self.storage.save(ended_session)
+            saved_session = self.sessions.add(ended_session)
 
             return jsonify({
                 "message": "Session ended",
@@ -394,7 +407,7 @@ class FlaskApp:
         @api.route("/training/sessions/user/<int:user_id>", methods=["GET"])
         def get_user_sessions(user_id: int):
             """Get all training sessions for a user."""
-            sessions = self.storage.sessions_by_user(user_id)
+            sessions = self.sessions.sessions_by_user(user_id)
             return jsonify([s.to_dict() for s in sessions])
 
         # ==================== STATS ROUTES ====================
@@ -402,9 +415,9 @@ class FlaskApp:
         @api.route("/stats/global", methods=["GET"])
         def get_global_stats():
             """Get global statistics."""
-            ranges = self.storage.all(Range)
-            users = self.storage.all(User)
-            sessions = self.storage.all(TrainingSession)
+            ranges = self.ranges.all()
+            users = self.users.all()
+            sessions = self.sessions.all()
 
             # Calculate global stats
             total_hands = sum(len(r.hands) for r in ranges)
@@ -432,12 +445,12 @@ class FlaskApp:
         @api.route("/stats/user/<int:user_id>", methods=["GET"])
         def get_user_stats(user_id: int):
             """Get statistics for a specific user."""
-            user = self.storage.get(User, user_id)
+            user = self.users.user_by_id(user_id)
             if not user:
                 raise NotFound(f"User {user_id} not found")
 
-            sessions = self.storage.sessions_by_user(user_id)
-            ranges = self.storage.ranges_by_user(user_id)
+            sessions = self.sessions.sessions_by_user(user_id)
+            ranges = self.ranges.ranges_by_user(user_id)
 
             total_sessions = len(sessions)
             avg_score = sum(s.score for s in sessions) / len(sessions) if sessions else 0.0
