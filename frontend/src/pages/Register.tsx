@@ -130,10 +130,7 @@ const Register: React.FC = () => {
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
@@ -156,12 +153,7 @@ const Register: React.FC = () => {
 
         <Divider sx={{ my: 2 }}>ou</Divider>
 
-        <Button
-          fullWidth
-          variant="outlined"
-          size="large"
-          onClick={() => navigate('/login')}
-        >
+        <Button fullWidth variant="outlined" size="large" onClick={() => navigate('/login')}>
           J'ai déjà un compte
         </Button>
       </Paper>

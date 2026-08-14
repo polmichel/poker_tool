@@ -34,9 +34,7 @@ const RangeStats: React.FC<RangeStatsProps> = ({ range }) => {
     }));
 
   // Couleurs pour le graphique
-  const COLORS = Object.values(ACTION_COLORS).filter(
-    (color) => color !== '#FFFFFF'
-  );
+  const COLORS = Object.values(ACTION_COLORS).filter((color) => color !== '#FFFFFF');
 
   return (
     <Paper sx={{ p: 2 }}>
@@ -48,26 +46,14 @@ const RangeStats: React.FC<RangeStatsProps> = ({ range }) => {
 
       {/* Résumé */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
-        <Chip
-          label={`Total: ${stats.total} mains`}
-          color="primary"
-          variant="outlined"
-        />
+        <Chip label={`Total: ${stats.total} mains`} color="primary" variant="outlined" />
         <Chip
           label={`Couverture: ${formatPercentage(stats.percentage)}`}
           color="secondary"
           variant="outlined"
         />
-        <Chip
-          label={`Type: ${range.range_type}`}
-          color="info"
-          variant="outlined"
-        />
-        <Chip
-          label={`Position: ${range.position}`}
-          color="success"
-          variant="outlined"
-        />
+        <Chip label={`Type: ${range.range_type}`} color="info" variant="outlined" />
+        <Chip label={`Position: ${range.position}`} color="success" variant="outlined" />
       </Box>
 
       {/* Graphique en secteurs */}
@@ -89,10 +75,7 @@ const RangeStats: React.FC<RangeStatsProps> = ({ range }) => {
               label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
             >
               {pieData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
             <RechartsTooltip
@@ -133,9 +116,7 @@ const RangeStats: React.FC<RangeStatsProps> = ({ range }) => {
                     </Box>
                   </TableCell>
                   <TableCell align="right">{count}</TableCell>
-                  <TableCell align="right">
-                    {formatPercentage(count / stats.total)}
-                  </TableCell>
+                  <TableCell align="right">{formatPercentage(count / stats.total)}</TableCell>
                 </TableRow>
               ))}
           </TableBody>

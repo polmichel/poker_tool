@@ -27,13 +27,62 @@ const App: React.FC = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/" element={<Home />} />
-          <Route path="/ranges" element={<ProtectedRoute><Ranges /></ProtectedRoute>} />
-          <Route path="/ranges/new" element={<ProtectedRoute><RangeEditor /></ProtectedRoute>} />
-          <Route path="/ranges/:id/view" element={<ProtectedRoute><RangeView /></ProtectedRoute>} />
-          <Route path="/ranges/:id/edit" element={<ProtectedRoute><RangeEditor /></ProtectedRoute>} />
-          <Route path="/training" element={<ProtectedRoute><Training /></ProtectedRoute>} />
-          <Route path="/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
-          <Route path="/import-export" element={<ProtectedRoute><ImportExport /></ProtectedRoute>} />
+          <Route
+            path="/ranges"
+            element={
+              <ProtectedRoute>
+                <Ranges />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ranges/new"
+            element={
+              <ProtectedRoute>
+                <RangeEditor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ranges/:id/view"
+            element={
+              <ProtectedRoute>
+                <RangeView />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ranges/:id/edit"
+            element={
+              <ProtectedRoute>
+                <RangeEditor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training"
+            element={
+              <ProtectedRoute>
+                <Training />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/stats"
+            element={
+              <ProtectedRoute>
+                <Stats />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/import-export"
+            element={
+              <ProtectedRoute>
+                <ImportExport />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppShell>

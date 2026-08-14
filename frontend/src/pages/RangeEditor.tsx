@@ -62,36 +62,47 @@ const RangeEditor: React.FC = () => {
   }, [selectedRange]);
 
   // Gérer le clic sur une cellule de la grille
-  const handleCellClick = useCallback((hand: string, currentAction: ActionType) => {
-    // Trouver la position de la main dans la grille
-    const newGrid = [...grid];
-    let found = false;
-    
-    for (let i = 0; i < newGrid.length && !found; i++) {
-      for (let j = 0; j < newGrid[i].length; j++) {
-        if (newGrid[i][j].hand === hand) {
-          // Passer à l'action suivante
-          const actions: ActionType[] = ['fold', 'open', 'call', 'raise', 'all_in', 'check', 'undefined'];
-          const currentIndex = actions.indexOf(currentAction);
-          const nextIndex = (currentIndex + 1) % actions.length;
-          const newAction = actions[nextIndex];
-          newGrid[i][j].action = newAction;
-          // ✅ FIX: Mettre à jour la couleur avec ACTION_COLORS
-          newGrid[i][j].color = ACTION_COLORS[newAction] || '#FFFFFF';
-          found = true;
-          break;
+  const handleCellClick = useCallback(
+    (hand: string, currentAction: ActionType) => {
+      // Trouver la position de la main dans la grille
+      const newGrid = [...grid];
+      let found = false;
+
+      for (let i = 0; i < newGrid.length && !found; i++) {
+        for (let j = 0; j < newGrid[i].length; j++) {
+          if (newGrid[i][j].hand === hand) {
+            // Passer à l'action suivante
+            const actions: ActionType[] = [
+              'fold',
+              'open',
+              'call',
+              'raise',
+              'all_in',
+              'check',
+              'undefined',
+            ];
+            const currentIndex = actions.indexOf(currentAction);
+            const nextIndex = (currentIndex + 1) % actions.length;
+            const newAction = actions[nextIndex];
+            newGrid[i][j].action = newAction;
+            // ✅ FIX: Mettre à jour la couleur avec ACTION_COLORS
+            newGrid[i][j].color = ACTION_COLORS[newAction] || '#FFFFFF';
+            found = true;
+            break;
+          }
         }
       }
-    }
-    
-    if (found) {
-      // Sauvegarder dans l'historique
-      const newHistory = [...history.slice(0, historyIndex + 1), newGrid];
-      setHistory(newHistory);
-      setHistoryIndex(newHistory.length - 1);
-      setGrid(newGrid);
-    }
-  }, [grid, history, historyIndex]);
+
+      if (found) {
+        // Sauvegarder dans l'historique
+        const newHistory = [...history.slice(0, historyIndex + 1), newGrid];
+        setHistory(newHistory);
+        setHistoryIndex(newHistory.length - 1);
+        setGrid(newGrid);
+      }
+    },
+    [grid, history, historyIndex],
+  );
 
   // Annuler la dernière modification
   const handleUndo = useCallback(() => {
@@ -112,10 +123,10 @@ const RangeEditor: React.FC = () => {
   // Sauvegarder la range
   const handleSave = useCallback(async () => {
     if (!range || !id) return;
-    
+
     const hands = gridToHands(grid);
     const updatedRange = range.id ? await updateRange(range.id, { hands }) : null;
-    
+
     if (updatedRange) {
       setRange(updatedRange);
       setSelectedRange(updatedRange);
@@ -128,7 +139,7 @@ const RangeEditor: React.FC = () => {
   // Supprimer la range
   const handleDelete = useCallback(async () => {
     if (!range || !id) return;
-    
+
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer la range "${range.name}" ?`)) {
       if (range.id) await deleteRange(range.id);
       navigate('/ranges');
@@ -138,7 +149,7 @@ const RangeEditor: React.FC = () => {
   // Dupliquer la range
   const handleDuplicate = useCallback(() => {
     if (!range) return;
-    
+
     navigate('/ranges/new', {
       state: {
         duplicateFrom: range,
@@ -198,7 +209,7 @@ const RangeEditor: React.FC = () => {
             {range.description}
           </Typography>
         </Box>
-        
+
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Annuler">
             <Button
@@ -211,7 +222,7 @@ const RangeEditor: React.FC = () => {
               Annuler
             </Button>
           </Tooltip>
-          
+
           <Tooltip title="Rétablir">
             <Button
               variant="outlined"
@@ -223,7 +234,7 @@ const RangeEditor: React.FC = () => {
               Rétablir
             </Button>
           </Tooltip>
-          
+
           <Tooltip title="Sauvegarder">
             <Button
               variant="contained"
@@ -235,13 +246,13 @@ const RangeEditor: React.FC = () => {
               Sauvegarder
             </Button>
           </Tooltip>
-          
+
           <Tooltip title="Dupliquer">
             <IconButton onClick={handleDuplicate}>
               <ContentCopyIcon />
             </IconButton>
           </Tooltip>
-          
+
           <Tooltip title="Supprimer">
             <IconButton onClick={handleDelete} color="error">
               <DeleteIcon />
@@ -262,7 +273,10 @@ const RangeEditor: React.FC = () => {
             size="small"
             sx={{
               backgroundColor: ACTION_COLORS[action as ActionType] || 'grey.500',
-              color: (action === 'open' || action === 'raise' || action === 'all_in' || action === 'bet') ? 'white' : 'black',
+              color:
+                action === 'open' || action === 'raise' || action === 'all_in' || action === 'bet'
+                  ? 'white'
+                  : 'black',
             }}
           />
         ))}
@@ -274,12 +288,7 @@ const RangeEditor: React.FC = () => {
           Grille de la Range
         </Typography>
         <Box sx={{ overflow: 'auto' }}>
-          <RangeGrid
-            grid={grid}
-            onCellClick={handleCellClick}
-            editable={true}
-            cellSize={40}
-          />
+          <RangeGrid grid={grid} onCellClick={handleCellClick} editable={true} cellSize={40} />
         </Box>
       </Paper>
 

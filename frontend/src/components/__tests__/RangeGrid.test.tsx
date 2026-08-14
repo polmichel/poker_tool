@@ -48,25 +48,13 @@ describe('RangeGrid Component', () => {
   });
 
   it('renders without crashing', () => {
-    render(
-      <RangeGrid
-        grid={mockGrid}
-        onCellClick={mockOnCellClick}
-        editable={true}
-      />
-    );
+    render(<RangeGrid grid={mockGrid} onCellClick={mockOnCellClick} editable={true} />);
     expect(screen.getByText('AA')).toBeInTheDocument();
     expect(screen.getByText('KK')).toBeInTheDocument();
   });
 
   it('displays all hands from the grid', () => {
-    render(
-      <RangeGrid
-        grid={mockGrid}
-        onCellClick={mockOnCellClick}
-        showLabels={true}
-      />
-    );
+    render(<RangeGrid grid={mockGrid} onCellClick={mockOnCellClick} showLabels={true} />);
     expect(screen.getByText('AA')).toBeInTheDocument();
     expect(screen.getByText('AKs')).toBeInTheDocument();
     expect(screen.getByText('KK')).toBeInTheDocument();
@@ -74,55 +62,28 @@ describe('RangeGrid Component', () => {
   });
 
   it('calls onCellClick when a cell is clicked', () => {
-    render(
-      <RangeGrid
-        grid={mockGrid}
-        onCellClick={mockOnCellClick}
-        editable={true}
-      />
-    );
+    render(<RangeGrid grid={mockGrid} onCellClick={mockOnCellClick} editable={true} />);
     fireEvent.click(screen.getByText('AA'));
     expect(mockOnCellClick).toHaveBeenCalledWith('AA', 'open');
   });
 
   it('does not call onCellClick when not editable', () => {
-    render(
-      <RangeGrid
-        grid={mockGrid}
-        onCellClick={mockOnCellClick}
-        editable={false}
-      />
-    );
+    render(<RangeGrid grid={mockGrid} onCellClick={mockOnCellClick} editable={false} />);
     fireEvent.click(screen.getByText('AA'));
     expect(mockOnCellClick).not.toHaveBeenCalled();
   });
 
   it('renders with correct cell colors', () => {
-    render(
-      <RangeGrid
-        grid={mockGrid}
-        onCellClick={mockOnCellClick}
-      />
-    );
+    render(<RangeGrid grid={mockGrid} onCellClick={mockOnCellClick} />);
     // jsdom does not reliably compute MUI Emotion `sx` background colors, so
     // assert on the tooltip/aria-label which encodes the cell's action (and
     // thus its color mapping) instead of the computed style.
-    expect(
-      screen.getByLabelText('Main: AA | Action: Ouvrir')
-    ).toBeInTheDocument();
-    expect(
-      screen.getByLabelText('Main: AKs | Action: Relancer')
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Main: AA | Action: Ouvrir')).toBeInTheDocument();
+    expect(screen.getByLabelText('Main: AKs | Action: Relancer')).toBeInTheDocument();
   });
 
   it('renders row and column labels when showLabels is true', () => {
-    render(
-      <RangeGrid
-        grid={mockGrid}
-        onCellClick={mockOnCellClick}
-        showLabels={true}
-      />
-    );
+    render(<RangeGrid grid={mockGrid} onCellClick={mockOnCellClick} showLabels={true} />);
     // Row and column labels both render single letters, so there are
     // multiple matches per letter.
     expect(screen.getAllByText('A').length).toBeGreaterThan(0);
@@ -130,13 +91,7 @@ describe('RangeGrid Component', () => {
   });
 
   it('does not render context menu when not editable', () => {
-    render(
-      <RangeGrid
-        grid={mockGrid}
-        onCellClick={mockOnCellClick}
-        editable={false}
-      />
-    );
+    render(<RangeGrid grid={mockGrid} onCellClick={mockOnCellClick} editable={false} />);
     // Right-click should not open menu
     const aaCell = screen.getByText('AA');
     fireEvent.contextMenu(aaCell);

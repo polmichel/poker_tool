@@ -4,9 +4,8 @@ Create a range (use case).
 Encapsulates: resolving the user (from auth or explicit id) and persisting
 the range. Dependencies (Ranges port, Auth port) are injected.
 """
-from typing import Optional
-from ..interfaces.ranges import Ranges
 from ..interfaces.auth import Auth
+from ..interfaces.ranges import Ranges
 from ..objects.range import Range
 
 

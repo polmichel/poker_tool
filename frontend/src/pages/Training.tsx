@@ -71,7 +71,9 @@ const Training: React.FC = () => {
 
     // Vérifier que la range a au moins une main
     if (!selectedRange.hands || Object.keys(selectedRange.hands).length === 0) {
-      alert('La range sélectionnée ne contient aucune main. Veuillez ajouter des mains à votre range avant de démarrer l\'entraînement.');
+      alert(
+        "La range sélectionnée ne contient aucune main. Veuillez ajouter des mains à votre range avant de démarrer l'entraînement.",
+      );
       return;
     }
 
@@ -84,7 +86,7 @@ const Training: React.FC = () => {
   // Démarrer rapidement avec des paramètres par défaut
   const handleQuickStart = useCallback(async () => {
     if (ranges.length === 0) {
-      alert('Aucune range disponible. Veuillez en créer une d\'abord.');
+      alert("Aucune range disponible. Veuillez en créer une d'abord.");
       return;
     }
 
@@ -97,19 +99,22 @@ const Training: React.FC = () => {
   }, [selectedMode, ranges, quickStart, setIsSessionActive]);
 
   // Soumettre une réponse
-  const handleAnswer = useCallback(async (answer: string) => {
-    if (!currentSession || !currentSession.id) return;
+  const handleAnswer = useCallback(
+    async (answer: string) => {
+      if (!currentSession || !currentSession.id) return;
 
-    const result = await nextQuestion(currentSession.id, answer);
-    
-    if (result) {
-      // Si la session est terminée
-      if (result.sessionComplete) {
-        setIsSessionActive(false);
-        setOpenResultsDialog(true);
+      const result = await nextQuestion(currentSession.id, answer);
+
+      if (result) {
+        // Si la session est terminée
+        if (result.sessionComplete) {
+          setIsSessionActive(false);
+          setOpenResultsDialog(true);
+        }
       }
-    }
-  }, [currentSession, nextQuestion, setIsSessionActive]);
+    },
+    [currentSession, nextQuestion, setIsSessionActive],
+  );
 
   // Terminer la session
   const handleEndSession = useCallback(async () => {
@@ -161,7 +166,7 @@ const Training: React.FC = () => {
         <Typography variant="h4" component="h1">
           Entraînement
         </Typography>
-        
+
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Paramètres">
             <Button
@@ -173,7 +178,7 @@ const Training: React.FC = () => {
               Paramètres
             </Button>
           </Tooltip>
-          
+
           <Tooltip title="Démarrer rapidement">
             <Button
               variant="contained"
@@ -209,7 +214,7 @@ const Training: React.FC = () => {
           <Typography variant="subtitle1" gutterBottom>
             Sélectionner une Range
           </Typography>
-          
+
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {ranges.map((range) => (
               <Chip
@@ -222,10 +227,11 @@ const Training: React.FC = () => {
               />
             ))}
           </Box>
-          
+
           {ranges.length === 0 && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Aucune range disponible. <Button onClick={() => navigate('/ranges/new')} color="primary">
+              Aucune range disponible.{' '}
+              <Button onClick={() => navigate('/ranges/new')} color="primary">
                 Créer une range
               </Button>
             </Typography>
@@ -237,25 +243,32 @@ const Training: React.FC = () => {
       {isSessionActive && currentQuestion && (
         <Box sx={{ mb: 3 }}>
           <Paper sx={{ p: 2, mb: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-              <Typography variant="h6">
-                Session en cours
-              </Typography>
+            <Box
+              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}
+            >
+              <Typography variant="h6">Session en cours</Typography>
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Chip label={`Score: ${Math.round(score)}%`} color="primary" />
-                <Chip label={`Temps: ${Math.floor(timeSpent / 60)}m ${timeSpent % 60}s`} color="secondary" />
+                <Chip
+                  label={`Temps: ${Math.floor(timeSpent / 60)}m ${timeSpent % 60}s`}
+                  color="secondary"
+                />
               </Box>
             </Box>
-            
+
             <LinearProgress
               variant="determinate"
               value={score}
               sx={{ height: 8, borderRadius: 4, mb: 2 }}
             />
-            
+
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Tooltip title="Terminer la session">
-                <IconButton onClick={handleEndSession} color="error" data-testid="end-session-button">
+                <IconButton
+                  onClick={handleEndSession}
+                  color="error"
+                  data-testid="end-session-button"
+                >
                   <StopIcon />
                 </IconButton>
               </Tooltip>
@@ -282,11 +295,7 @@ const Training: React.FC = () => {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             La range sélectionnée ne contient pas assez de mains pour générer des questions.
           </Typography>
-          <Button
-            variant="contained"
-            onClick={handleResetSession}
-            color="inherit"
-          >
+          <Button variant="contained" onClick={handleResetSession} color="inherit">
             Retour
           </Button>
         </Paper>
@@ -301,7 +310,7 @@ const Training: React.FC = () => {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             Sélectionnez un mode et une range, puis cliquez sur "Démarrer"
           </Typography>
-          
+
           <Button
             variant="contained"
             startIcon={<PlayArrowIcon />}
@@ -344,7 +353,13 @@ const Training: React.FC = () => {
       </Dialog>
 
       {/* Dialogue des résultats */}
-      <Dialog open={openResultsDialog} onClose={handleCloseResults} maxWidth="sm" fullWidth data-testid="results-dialog">
+      <Dialog
+        open={openResultsDialog}
+        onClose={handleCloseResults}
+        maxWidth="sm"
+        fullWidth
+        data-testid="results-dialog"
+      >
         <DialogTitle>Résultats de la Session</DialogTitle>
         <DialogContent>
           <Box sx={{ p: 2, textAlign: 'center' }}>
@@ -354,9 +369,9 @@ const Training: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               Score final
             </Typography>
-            
+
             <Divider sx={{ my: 2 }} />
-            
+
             <Box sx={{ display: 'flex', justifyContent: 'space-around', mb: 2 }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">
@@ -379,7 +394,7 @@ const Training: React.FC = () => {
                 </Typography>
               </Box>
             </Box>
-            
+
             <LinearProgress
               variant="determinate"
               value={score}

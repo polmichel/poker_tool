@@ -1,14 +1,15 @@
 """
 Unit tests for the Users port (interface contract).
 """
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 from abc import ABC
+
 from poker_tool.interfaces.users import Users
 
 

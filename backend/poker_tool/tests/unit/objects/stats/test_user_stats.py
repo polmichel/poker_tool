@@ -2,6 +2,7 @@
 Unit tests for UserStats value object.
 """
 import unittest
+
 from poker_tool.objects.stats.user_stats import UserStats
 
 
@@ -18,7 +19,7 @@ class TestUserStats(unittest.TestCase):
             best_score=95.0,
             most_played_range="BTN Range",
         )
-        
+
         self.assertEqual(stats.user_id, 1)
         self.assertEqual(stats.total_sessions, 10)
         self.assertEqual(stats.avg_score, 75.5)
@@ -29,7 +30,7 @@ class TestUserStats(unittest.TestCase):
     def test_user_stats_creation_minimal(self):
         """Test UserStats creation with minimal parameters."""
         stats = UserStats(user_id=1)
-        
+
         self.assertEqual(stats.user_id, 1)
         self.assertEqual(stats.total_sessions, 0)
         self.assertEqual(stats.avg_score, 0.0)
@@ -47,9 +48,9 @@ class TestUserStats(unittest.TestCase):
             best_score=95.0,
             most_played_range="BTN Range",
         )
-        
+
         stats_dict = stats.to_dict()
-        
+
         self.assertEqual(stats_dict["user_id"], 1)
         self.assertEqual(stats_dict["total_sessions"], 10)
         self.assertEqual(stats_dict["avg_score"], 75.5)
@@ -67,9 +68,9 @@ class TestUserStats(unittest.TestCase):
             "best_score": 95.0,
             "most_played_range": "BTN Range",
         }
-        
+
         stats = UserStats.from_dict(data)
-        
+
         self.assertEqual(stats.user_id, 1)
         self.assertEqual(stats.total_sessions, 10)
         self.assertEqual(stats.avg_score, 75.5)
@@ -80,9 +81,9 @@ class TestUserStats(unittest.TestCase):
     def test_user_stats_from_dict_with_missing_values(self):
         """Test creation from dictionary with missing values."""
         data = {"user_id": 1, "total_sessions": 10}
-        
+
         stats = UserStats.from_dict(data)
-        
+
         self.assertEqual(stats.user_id, 1)
         self.assertEqual(stats.total_sessions, 10)
         self.assertEqual(stats.avg_score, 0.0)
@@ -116,7 +117,7 @@ class TestUserStats(unittest.TestCase):
             best_score=95.0,
             most_played_range="BTN Range",
         )
-        
+
         self.assertEqual(stats1, stats2)
         self.assertNotEqual(stats1, stats3)
         self.assertNotEqual(stats1, "not stats")
@@ -139,7 +140,7 @@ class TestUserStats(unittest.TestCase):
             best_score=95.0,
             most_played_range="BTN Range",
         )
-        
+
         # Should be able to use in sets
         stats_set = {stats1, stats2}
         self.assertEqual(len(stats_set), 1)

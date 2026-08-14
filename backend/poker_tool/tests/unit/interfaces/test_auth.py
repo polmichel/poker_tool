@@ -1,14 +1,15 @@
 """
 Unit tests for Auth interface.
 """
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 from abc import ABC
+
 from poker_tool.interfaces.auth import Auth
 
 
@@ -29,7 +30,7 @@ class TestAuthInterface(unittest.TestCase):
             'generate_token',
             'verify_token',
         ]
-        
+
         for method_name in required_methods:
             self.assertTrue(
                 hasattr(Auth, method_name),

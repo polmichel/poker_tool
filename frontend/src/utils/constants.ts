@@ -2,13 +2,13 @@
 
 // Couleurs des actions (même ordre que dans le backend)
 export const ACTION_COLORS = {
-  open: '#4CAF50',     // Vert
-  call: '#2196F3',     // Bleu
-  raise: '#FF9800',    // Orange
-  all_in: '#F44336',   // Rouge
-  fold: '#9E9E9E',     // Gris
-  check: '#FFEB3B',    // Jaune
-  bet: '#9C27B0',      // Violet
+  open: '#4CAF50', // Vert
+  call: '#2196F3', // Bleu
+  raise: '#FF9800', // Orange
+  all_in: '#F44336', // Rouge
+  fold: '#9E9E9E', // Gris
+  check: '#FFEB3B', // Jaune
+  bet: '#9C27B0', // Violet
   undefined: '#607D8B', // Gris-bleu (visible sur fond clair et foncé)
 };
 
@@ -93,7 +93,7 @@ export const THEME_COLORS = {
 // Tailles pour la grille
 export const GRID_CONFIG = {
   cellSize: 40, // Taille d'une cellule en pixels
-  gridGap: 2,   // Espacement entre les cellules
+  gridGap: 2, // Espacement entre les cellules
   handFontSize: 10, // Taille de la police pour les mains
 };
 
@@ -101,8 +101,8 @@ export const GRID_CONFIG = {
 export const ERROR_MESSAGES = {
   INVALID_HAND: 'Main invalide. Utilisez une notation comme "AKs", "TT", ou "JTo".',
   RANGE_NOT_FOUND: 'Range non trouvée.',
-  SESSION_NOT_FOUND: 'Session d\'entraînement non trouvée.',
-  NO_RANGES: 'Aucune range disponible. Veuillez en créer une d\'abord.',
+  SESSION_NOT_FOUND: "Session d'entraînement non trouvée.",
+  NO_RANGES: "Aucune range disponible. Veuillez en créer une d'abord.",
   AUTH_REQUIRED: 'Authentification requise.',
   INVALID_CREDENTIALS: 'Identifiants invalides.',
 };
@@ -112,7 +112,7 @@ export const SUCCESS_MESSAGES = {
   RANGE_CREATED: 'Range créée avec succès !',
   RANGE_UPDATED: 'Range mise à jour avec succès !',
   RANGE_DELETED: 'Range supprimée avec succès !',
-  TRAINING_COMPLETED: 'Session d\'entraînement terminée !',
+  TRAINING_COMPLETED: "Session d'entraînement terminée !",
   LOGIN_SUCCESS: 'Connexion réussie !',
   REGISTER_SUCCESS: 'Inscription réussie !',
 };

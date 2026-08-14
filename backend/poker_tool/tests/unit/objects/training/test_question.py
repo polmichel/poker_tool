@@ -2,6 +2,7 @@
 Unit tests for TrainingQuestion value object.
 """
 import unittest
+
 from poker_tool.objects.training.question import TrainingQuestion
 
 
@@ -18,7 +19,7 @@ class TestTrainingQuestion(unittest.TestCase):
     def test_is_correct(self):
         """Test is_correct method."""
         question = TrainingQuestion("AKs", "What should you do?", "raise")
-        
+
         self.assertTrue(question.is_correct("raise"))
         self.assertTrue(question.is_correct("RAISE"))
         self.assertFalse(question.is_correct("fold"))
@@ -28,7 +29,7 @@ class TestTrainingQuestion(unittest.TestCase):
         """Test serialization to dictionary."""
         question = TrainingQuestion("AKs", "What should you do?", "raise")
         question_dict = question.to_dict()
-        
+
         self.assertEqual(question_dict["hand"], "AKs")
         self.assertEqual(question_dict["question"], "What should you do?")
         self.assertEqual(question_dict["correct_answer"], "raise")
@@ -41,7 +42,7 @@ class TestTrainingQuestion(unittest.TestCase):
             "correct_answer": "raise",
         }
         question = TrainingQuestion.from_dict(data)
-        
+
         self.assertEqual(question.hand, "AKs")
         self.assertEqual(question.question, "What should you do?")
         self.assertEqual(question.correct_answer, "raise")
@@ -51,7 +52,7 @@ class TestTrainingQuestion(unittest.TestCase):
         question1 = TrainingQuestion("AKs", "What should you do?", "raise")
         question2 = TrainingQuestion("AKs", "What should you do?", "raise")
         question3 = TrainingQuestion("AKo", "What should you do?", "raise")
-        
+
         self.assertEqual(question1, question2)
         self.assertNotEqual(question1, question3)
         self.assertNotEqual(question1, "not a question")
@@ -60,7 +61,7 @@ class TestTrainingQuestion(unittest.TestCase):
         """Test hash for use in sets/dicts."""
         question1 = TrainingQuestion("AKs", "What should you do?", "raise")
         question2 = TrainingQuestion("AKs", "What should you do?", "raise")
-        
+
         # Should be able to use in sets
         question_set = {question1, question2}
         self.assertEqual(len(question_set), 1)

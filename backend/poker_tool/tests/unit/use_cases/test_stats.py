@@ -2,16 +2,13 @@
 Unit tests for the GlobalStats and UserStats use cases (in-memory fakes).
 """
 import unittest
-from unittest.mock import patch
-from poker_tool.use_cases.global_stats import GlobalStats
-from poker_tool.use_cases.user_stats import UserStats, UserNotFound
-from poker_tool.use_cases.register_user import RegisterUser
+
 from poker_tool.use_cases.create_range import CreateRange
-from poker_tool.objects.range_type import RangeType
-from poker_tool.objects.position import Position
-from poker_tool.objects.action import Action, ActionType
-from poker_tool.objects.training.session import TrainingSession
-from .fakes import FakeUsers, FakeRanges, FakeSessions, FakeAuth
+from poker_tool.use_cases.global_stats import GlobalStats
+from poker_tool.use_cases.register_user import RegisterUser
+from poker_tool.use_cases.user_stats import UserNotFound, UserStats
+
+from .fakes import FakeAuth, FakeRanges, FakeSessions, FakeUsers
 
 
 class TestGlobalStats(unittest.TestCase):

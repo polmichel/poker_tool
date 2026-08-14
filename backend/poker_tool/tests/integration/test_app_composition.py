@@ -2,21 +2,23 @@
 Integration tests for application composition.
 Tests that all components work together correctly.
 """
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
+
 from flask import Flask
+
 from poker_tool.app import PokerTool
 from poker_tool.config import Config
-from poker_tool.interfaces.users import Users
+from poker_tool.interfaces.auth import Auth
 from poker_tool.interfaces.ranges import Ranges
 from poker_tool.interfaces.training_sessions import TrainingSessions
-from poker_tool.interfaces.auth import Auth
+from poker_tool.interfaces.users import Users
 
 
 class TestAppComposition(unittest.TestCase):
@@ -26,7 +28,7 @@ class TestAppComposition(unittest.TestCase):
         """Test that PokerTool can be created successfully."""
         # This test verifies that all dependencies can be composed together
         app = PokerTool()
-        
+
         self.assertIsNotNone(app)
         self.assertIsNotNone(app.app)
         self.assertIsInstance(app.app, Flask)
@@ -78,11 +80,11 @@ class TestAppComposition(unittest.TestCase):
     def test_cors_configuration(self, mock_cors):
         """Test that CORS is configured from the injected Config."""
         app = PokerTool()
-        
+
         # Check that CORS was initialized
         mock_cors.assert_called_once()
         # Check the arguments passed to CORS
-        cors_instance = mock_cors.call_args[0][0]  # First argument is the Flask app
+        mock_cors.call_args[0][0]  # First argument is the Flask app
         resources_arg = mock_cors.call_args[1].get('resources')
         self.assertEqual(resources_arg, {r"/*": {"origins": app.config.cors_origins}})
 
@@ -92,35 +94,35 @@ class TestObjectCreationFlow(unittest.TestCase):
 
     def test_range_creation_flow(self):
         """Test creating a Range through the domain layer."""
+        from poker_tool.objects.action import Action, ActionType
+        from poker_tool.objects.position import Position
         from poker_tool.objects.range import Range
         from poker_tool.objects.range_type import RangeType
-        from poker_tool.objects.position import Position
-        from poker_tool.objects.action import Action, ActionType
-        
+
         # Create a range
         range_obj = Range(
             name="Test Range",
             description="A test range",
             range_type=RangeType.PREFLOP,
             position=Position.BTN,
-            hands={"AKs": Action(ActionType.RAISE)}, 
+            hands={"AKs": Action(ActionType.RAISE)},
             user_id=1,
         )
-        
+
         self.assertEqual(range_obj.name, "Test Range")
         self.assertEqual(range_obj.type, RangeType.PREFLOP)
         self.assertEqual(range_obj.position, Position.BTN)
-        
+
         # Test immutability - with_hand
         new_range = range_obj.with_hand("TT", Action(ActionType.OPEN))
         self.assertEqual(len(new_range.hands), 2)
         self.assertEqual(len(range_obj.hands), 1)  # Original unchanged
-        
+
         # Test serialization
         range_dict = range_obj.to_dict()
         self.assertIn("name", range_dict)
         self.assertIn("range_type", range_dict)
-        
+
         # Test deserialization
         reconstructed = Range.from_dict(range_dict)
         self.assertEqual(reconstructed.name, range_obj.name)
@@ -128,7 +130,7 @@ class TestObjectCreationFlow(unittest.TestCase):
     def test_user_creation_flow(self):
         """Test creating a User through the domain layer."""
         from poker_tool.objects.user import User
-        
+
         # Create a user
         user = User(
             username="testuser",
@@ -136,15 +138,15 @@ class TestObjectCreationFlow(unittest.TestCase):
             password_hash="hashed_password",
             user_id=1,
         )
-        
+
         self.assertEqual(user.username, "testuser")
         self.assertEqual(user.email, "test@example.com")
-        
+
         # Test serialization
         user_dict = user.to_dict()
         self.assertIn("username", user_dict)
         self.assertIn("email", user_dict)
-        
+
         # Test deserialization
         reconstructed = User.from_dict(user_dict)
         self.assertEqual(reconstructed.username, user.username)
@@ -152,13 +154,14 @@ class TestObjectCreationFlow(unittest.TestCase):
     def test_training_session_flow(self):
         """Test creating a TrainingSession."""
         from unittest.mock import patch
-        from poker_tool.objects.user import User
+
+        from poker_tool.objects.action import Action, ActionType
+        from poker_tool.objects.position import Position
         from poker_tool.objects.range import Range
         from poker_tool.objects.range_type import RangeType
-        from poker_tool.objects.position import Position
-        from poker_tool.objects.action import Action, ActionType
         from poker_tool.objects.training.session import TrainingSession
-        
+        from poker_tool.objects.user import User
+
         # Create dependencies
         user = User("testuser", "test@example.com", user_id=1)
         range_obj = Range(
@@ -168,11 +171,11 @@ class TestObjectCreationFlow(unittest.TestCase):
             hands={"AKs": Action(ActionType.RAISE), "TT": Action(ActionType.OPEN)},
             range_id=1,
         )
-        
+
         # Mock random to avoid randomness in tests
         with patch('poker_tool.objects.training.session.random.sample') as mock_sample:
             mock_sample.return_value = ["AKs", "TT"]
-            
+
             # Create session
             session = TrainingSession(
                 user=user,
@@ -181,11 +184,11 @@ class TestObjectCreationFlow(unittest.TestCase):
                 total_questions=2,
                 session_id=1,
             )
-            
+
             self.assertEqual(session.user, user)
             self.assertEqual(session.range, range_obj)
             self.assertEqual(session.mode, "fill")
-            
+
             # Answer a question
             new_session = session.answer("raise")
             self.assertEqual(new_session.current_index, 1)
@@ -220,22 +223,25 @@ class TestInterfaceImplementations(unittest.TestCase):
 
         self.assertTrue(issubclass(SqlTrainingSessions, TrainingSessions))
         for method_name in ['add', 'session_by_id', 'all', 'sessions_by_user']:
-            self.assertTrue(hasattr(SqlTrainingSessions, method_name), f"SqlTrainingSessions should implement {method_name}")
+            self.assertTrue(
+                hasattr(SqlTrainingSessions, method_name),
+                f"SqlTrainingSessions should implement {method_name}"
+            )
 
     def test_auth_interface_implementation(self):
         """Test that JwtAuth implements Auth correctly."""
         from poker_tool.adapters.jwt.auth import JwtAuth
         from poker_tool.interfaces.auth import Auth
-        
+
         # Verify inheritance
         self.assertTrue(issubclass(JwtAuth, Auth))
-        
+
         # Verify all abstract methods are implemented
         required_methods = [
             'create_user', 'authenticate', 'current_user',
             'generate_token', 'verify_token'
         ]
-        
+
         for method_name in required_methods:
             self.assertTrue(
                 hasattr(JwtAuth, method_name),

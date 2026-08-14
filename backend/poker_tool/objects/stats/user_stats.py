@@ -1,7 +1,6 @@
 """
 Immutable user stats value object (Elegant Objects).
 """
-from typing import Dict
 
 
 class UserStats:
@@ -53,7 +52,7 @@ class UserStats:
         """Most played range name."""
         return self._most_played_range
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             "user_id": self._user_id,
@@ -65,7 +64,7 @@ class UserStats:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'UserStats':
+    def from_dict(cls, data: dict) -> 'UserStats':
         """Create from dictionary."""
         return cls(
             user_id=data.get("user_id", 0),

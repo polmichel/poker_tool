@@ -5,9 +5,9 @@ Encapsulates: turning a JWT identity into a real User, with the fallback to
 the first existing user for anonymous / E2E sessions. Dependencies (Users
 port, Auth port) are injected.
 """
-from typing import Optional
-from ..interfaces.users import Users
+
 from ..interfaces.auth import Auth
+from ..interfaces.users import Users
 from ..objects.user import User
 
 
@@ -18,7 +18,7 @@ class CurrentUser:
         self._users = users
         self._auth = auth
 
-    def user(self) -> Optional[User]:
+    def user(self) -> User | None:
         """Return the current user, or the first existing user as fallback."""
         current = self._auth.current_user()
         if current:

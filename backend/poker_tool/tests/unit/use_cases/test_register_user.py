@@ -2,8 +2,10 @@
 Unit tests for the RegisterUser use case (with in-memory fakes, no mocks).
 """
 import unittest
+
 from poker_tool.use_cases.register_user import RegisterUser, UserAlreadyExists
-from .fakes import FakeUsers, FakeAuth
+
+from .fakes import FakeAuth, FakeUsers
 
 
 class TestRegisterUser(unittest.TestCase):

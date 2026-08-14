@@ -1,15 +1,17 @@
 """
 Unit tests for the SqlRanges adapter.
 """
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 from unittest.mock import MagicMock, patch
+
 from flask import Flask
+
 from poker_tool.adapters.sqlalchemy.ranges import SqlRanges
 from poker_tool.interfaces.ranges import Ranges
 
@@ -25,7 +27,7 @@ class TestSqlRanges(unittest.TestCase):
         """Test SqlRanges creation initializes the db."""
         mock_app = MagicMock(spec=Flask)
         with patch('poker_tool.adapters.sqlalchemy.ranges.db') as mock_db:
-            ranges = SqlRanges(mock_app)
+            SqlRanges(mock_app)
             mock_db.init_app.assert_called_once_with(mock_app)
             mock_db.create_all.assert_called_once()
 

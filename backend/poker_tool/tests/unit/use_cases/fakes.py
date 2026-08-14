@@ -5,20 +5,20 @@ These are NOT mocks — they are real, minimal implementations of the ports
 that store data in memory. They let use cases be tested with real behavior
 and zero coupling to SQLAlchemy/Flask.
 """
-from typing import List, Optional, Dict
-from poker_tool.interfaces.users import Users
+
 from poker_tool.interfaces.ranges import Ranges
 from poker_tool.interfaces.training_sessions import TrainingSessions
-from poker_tool.objects.user import User
+from poker_tool.interfaces.users import Users
 from poker_tool.objects.range import Range
 from poker_tool.objects.training.session import TrainingSession
+from poker_tool.objects.user import User
 
 
 class FakeUsers(Users):
     """In-memory Users implementation."""
 
     def __init__(self) -> None:
-        self._users: Dict[int, User] = {}
+        self._users: dict[int, User] = {}
         self._next_id = 1
 
     def add(self, user: User) -> User:
@@ -34,16 +34,16 @@ class FakeUsers(Users):
         self._users[uid] = stored
         return stored
 
-    def user_by_id(self, user_id: int) -> Optional[User]:
+    def user_by_id(self, user_id: int) -> User | None:
         return self._users.get(user_id)
 
-    def user_by_username(self, username: str) -> Optional[User]:
+    def user_by_username(self, username: str) -> User | None:
         return next((u for u in self._users.values() if u.username == username), None)
 
-    def user_by_email(self, email: str) -> Optional[User]:
+    def user_by_email(self, email: str) -> User | None:
         return next((u for u in self._users.values() if u.email == email), None)
 
-    def all(self) -> List[User]:
+    def all(self) -> list[User]:
         return list(self._users.values())
 
 
@@ -51,7 +51,7 @@ class FakeRanges(Ranges):
     """In-memory Ranges implementation."""
 
     def __init__(self) -> None:
-        self._ranges: Dict[int, Range] = {}
+        self._ranges: dict[int, Range] = {}
         self._next_id = 1
 
     def add(self, range_obj: Range) -> Range:
@@ -62,17 +62,17 @@ class FakeRanges(Ranges):
         self._ranges[rid] = stored
         return stored
 
-    def range_by_id(self, range_id: int) -> Optional[Range]:
+    def range_by_id(self, range_id: int) -> Range | None:
         return self._ranges.get(range_id)
 
-    def all(self) -> List[Range]:
+    def all(self) -> list[Range]:
         return list(self._ranges.values())
 
     def remove(self, range_obj: Range) -> None:
         if range_obj.id and range_obj.id in self._ranges:
             del self._ranges[range_obj.id]
 
-    def ranges_by_user(self, user_id: int) -> List[Range]:
+    def ranges_by_user(self, user_id: int) -> list[Range]:
         return [r for r in self._ranges.values() if r.user_id == user_id]
 
 
@@ -80,7 +80,7 @@ class FakeSessions(TrainingSessions):
     """In-memory TrainingSessions implementation."""
 
     def __init__(self) -> None:
-        self._sessions: Dict[int, TrainingSession] = {}
+        self._sessions: dict[int, TrainingSession] = {}
         self._next_id = 1
 
     def add(self, session: TrainingSession) -> TrainingSession:
@@ -103,13 +103,13 @@ class FakeSessions(TrainingSessions):
         self._sessions[sid] = stored
         return stored
 
-    def session_by_id(self, session_id: int) -> Optional[TrainingSession]:
+    def session_by_id(self, session_id: int) -> TrainingSession | None:
         return self._sessions.get(session_id)
 
-    def all(self) -> List[TrainingSession]:
+    def all(self) -> list[TrainingSession]:
         return list(self._sessions.values())
 
-    def sessions_by_user(self, user_id: int) -> List[TrainingSession]:
+    def sessions_by_user(self, user_id: int) -> list[TrainingSession]:
         return [s for s in self._sessions.values() if s.user.id == user_id]
 
 
@@ -117,12 +117,12 @@ class FakeAuth:
     """In-memory Auth implementation (only what use cases need)."""
 
     def __init__(self) -> None:
-        self._current: Optional[User] = None
+        self._current: User | None = None
 
-    def set_current_user(self, user: Optional[User]) -> None:
+    def set_current_user(self, user: User | None) -> None:
         self._current = user
 
-    def current_user(self) -> Optional[User]:
+    def current_user(self) -> User | None:
         return self._current
 
     def create_user(self, username: str, email: str, password: str) -> User:

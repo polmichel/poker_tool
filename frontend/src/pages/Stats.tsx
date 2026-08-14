@@ -79,18 +79,18 @@ const Stats: React.FC = () => {
   }, [fetchLeaderboard]);
 
   // Changer d'onglet
-  const handleTabChange = useCallback((
-    event: React.SyntheticEvent,
-    newValue: 'overview' | 'history' | 'leaderboard'
-  ) => {
-    setActiveTab(newValue);
-    
-    if (newValue === 'history') {
-      loadHistoryData();
-    } else if (newValue === 'leaderboard') {
-      loadLeaderboardData();
-    }
-  }, [loadHistoryData, loadLeaderboardData]);
+  const handleTabChange = useCallback(
+    (event: React.SyntheticEvent, newValue: 'overview' | 'history' | 'leaderboard') => {
+      setActiveTab(newValue);
+
+      if (newValue === 'history') {
+        loadHistoryData();
+      } else if (newValue === 'leaderboard') {
+        loadLeaderboardData();
+      }
+    },
+    [loadHistoryData, loadLeaderboardData],
+  );
 
   // Exporter les statistiques
   const handleExportStats = useCallback(async () => {
@@ -178,7 +178,7 @@ const Stats: React.FC = () => {
         <Typography variant="h4" component="h1">
           Statistiques
         </Typography>
-        
+
         <Tooltip title="Exporter les statistiques">
           <Button
             variant="outlined"
@@ -196,7 +196,12 @@ const Stats: React.FC = () => {
         <Tabs value={activeTab} onChange={handleTabChange} centered>
           <Tab label="Aperçu" value="overview" icon={<BarChartIcon />} iconPosition="start" />
           <Tab label="Historique" value="history" icon={<TimelineIcon />} iconPosition="start" />
-          <Tab label="Classement" value="leaderboard" icon={<LeaderboardIcon />} iconPosition="start" />
+          <Tab
+            label="Classement"
+            value="leaderboard"
+            icon={<LeaderboardIcon />}
+            iconPosition="start"
+          />
         </Tabs>
       </Paper>
 
@@ -322,10 +327,15 @@ const Stats: React.FC = () => {
           {activeTab === 'history' && (
             <Box>
               <Paper sx={{ p: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">
-                    Historique des Sessions
-                  </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2,
+                  }}
+                >
+                  <Typography variant="h6">Historique des Sessions</Typography>
                   <IconButton onClick={loadHistoryData}>
                     <RechartsTooltip />
                   </IconButton>
@@ -351,18 +361,10 @@ const Stats: React.FC = () => {
                       <TableBody>
                         {historyData.map((session, index) => (
                           <TableRow key={index}>
-                            <TableCell>
-                              {new Date(session.created_at).toLocaleString()}
-                            </TableCell>
-                            <TableCell>
-                              {session.range?.name || 'Inconnue'}
-                            </TableCell>
-                            <TableCell>
-                              {session.mode}
-                            </TableCell>
-                            <TableCell align="right">
-                              {Math.round(session.score)}%
-                            </TableCell>
+                            <TableCell>{new Date(session.created_at).toLocaleString()}</TableCell>
+                            <TableCell>{session.range?.name || 'Inconnue'}</TableCell>
+                            <TableCell>{session.mode}</TableCell>
+                            <TableCell align="right">{Math.round(session.score)}%</TableCell>
                             <TableCell align="right">
                               {session.correct_answers}/{session.total_questions}
                             </TableCell>
@@ -383,10 +385,15 @@ const Stats: React.FC = () => {
           {activeTab === 'leaderboard' && (
             <Box>
               <Paper sx={{ p: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">
-                    Classement
-                  </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2,
+                  }}
+                >
+                  <Typography variant="h6">Classement</Typography>
                   <IconButton onClick={loadLeaderboardData}>
                     <RechartsTooltip />
                   </IconButton>
@@ -412,13 +419,9 @@ const Stats: React.FC = () => {
                         {leaderboardData.map((user, index) => (
                           <TableRow key={user.user?.id || index}>
                             <TableCell>{index + 1}</TableCell>
-                            <TableCell>
-                              {user.user?.username || 'Anonyme'}
-                            </TableCell>
+                            <TableCell>{user.user?.username || 'Anonyme'}</TableCell>
                             <TableCell align="right">{user.total_sessions}</TableCell>
-                            <TableCell align="right">
-                              {Math.round(user.avg_score)}%
-                            </TableCell>
+                            <TableCell align="right">{Math.round(user.avg_score)}%</TableCell>
                             <TableCell align="right">
                               {Math.floor(user.total_time_spent / 60)}m
                             </TableCell>

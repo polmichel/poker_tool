@@ -31,7 +31,7 @@ api.interceptors.response.use(
       localStorage.removeItem('poker_tool_token');
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export { API_BASE_URL };

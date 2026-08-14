@@ -1,10 +1,16 @@
 """
 JWT implementation of the Auth interface (Elegant Objects).
 """
-from typing import Optional
+
 from flask import Flask
-from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required, decode_token
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    decode_token,
+    get_jwt_identity,
+)
+from werkzeug.security import check_password_hash, generate_password_hash
+
 from ...interfaces.auth import Auth
 from ...objects.user import User
 
@@ -43,13 +49,13 @@ class JwtAuth(Auth):
         )
         return user
 
-    def authenticate(self, username: str, password: str) -> Optional[User]:
+    def authenticate(self, username: str, password: str) -> User | None:
         """Authenticate a user (to be used with storage)."""
         # This method is a placeholder - actual authentication happens in the route
         # with the help of storage to fetch the user
         return None
 
-    def current_user(self) -> Optional[User]:
+    def current_user(self) -> User | None:
         """Get the current authenticated user from JWT."""
         try:
             user_id = get_jwt_identity()
@@ -60,7 +66,7 @@ class JwtAuth(Auth):
                 except (TypeError, ValueError):
                     pass
                 return User(username="", email="", user_id=user_id)
-        except Exception:
+        except Exception:  # noqa: BLE001 - JWT errors are expected; return None
             return None
 
     def generate_token(self, user: User) -> str:
@@ -69,7 +75,7 @@ class JwtAuth(Auth):
             return create_access_token(identity=str(user.id))
         raise ValueError("Cannot generate token for user without ID")
 
-    def verify_token(self, token: str) -> Optional[User]:
+    def verify_token(self, token: str) -> User | None:
         """Verify a JWT token and return the user."""
         try:
             # This is a simplified implementation
@@ -81,7 +87,7 @@ class JwtAuth(Auth):
             except (TypeError, ValueError):
                 pass
             return User(username="", email="", user_id=user_id)
-        except Exception:
+        except Exception:  # noqa: BLE001 - token decode errors are expected
             return None
 
     def hash_password(self, password: str) -> str:

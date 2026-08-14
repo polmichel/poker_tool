@@ -43,27 +43,30 @@ const ImportExport: React.FC = () => {
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
 
   // Changer d'onglet
-  const handleTabChange = useCallback((
-    event: React.SyntheticEvent,
-    newValue: 'import' | 'export'
-  ) => {
-    setActiveTab(newValue);
-    setImportError(null);
-    setImportSuccess(null);
-  }, []);
+  const handleTabChange = useCallback(
+    (event: React.SyntheticEvent, newValue: 'import' | 'export') => {
+      setActiveTab(newValue);
+      setImportError(null);
+      setImportSuccess(null);
+    },
+    [],
+  );
 
   // Changer de format
-  const handleFormatChange = useCallback((
-    event: React.SyntheticEvent,
-    newValue: 'json' | 'text' | 'csv'
-  ) => {
-    setFormat(newValue);
-  }, []);
+  const handleFormatChange = useCallback(
+    (event: React.SyntheticEvent, newValue: 'json' | 'text' | 'csv') => {
+      setFormat(newValue);
+    },
+    [],
+  );
 
   // Sélectionner une range
-  const handleRangeSelect = useCallback((range: any) => {
-    setSelectedRange(range);
-  }, [setSelectedRange]);
+  const handleRangeSelect = useCallback(
+    (range: any) => {
+      setSelectedRange(range);
+    },
+    [setSelectedRange],
+  );
 
   // Importer une range
   const handleImport = useCallback(async () => {
@@ -79,7 +82,7 @@ const ImportExport: React.FC = () => {
       setContent('');
       fetchRanges();
     } catch (err) {
-      setImportError('Erreur lors de l\'import. Vérifiez le format du contenu.');
+      setImportError("Erreur lors de l'import. Vérifiez le format du contenu.");
       setImportSuccess(null);
     }
   }, [content, format, importRange, fetchRanges]);
@@ -92,7 +95,7 @@ const ImportExport: React.FC = () => {
     }
 
     try {
-      const result = await exportRange(selectedRange.id!, format) as any;
+      const result = (await exportRange(selectedRange.id!, format)) as any;
       if (result) {
         // Télécharger le fichier
         let contentToDownload: string;
@@ -127,7 +130,7 @@ const ImportExport: React.FC = () => {
         setImportError(null);
       }
     } catch (err) {
-      setImportError('Erreur lors de l\'export.');
+      setImportError("Erreur lors de l'export.");
       setImportSuccess(null);
     }
   }, [selectedRange, format, exportRange]);
@@ -140,7 +143,7 @@ const ImportExport: React.FC = () => {
     }
 
     try {
-      const result = await exportRange(selectedRange.id!, format) as any;
+      const result = (await exportRange(selectedRange.id!, format)) as any;
       if (result) {
         let contentToCopy: string;
 
@@ -235,7 +238,7 @@ JJ,raise`;
                 <Typography variant="h6" gutterBottom>
                   Importer une Range
                 </Typography>
-                
+
                 <Divider sx={{ my: 2 }} />
 
                 {/* Sélection du format */}
@@ -244,11 +247,7 @@ JJ,raise`;
                     Format
                   </Typography>
                   <Paper sx={{ p: 1 }}>
-                    <Tabs
-                      value={format}
-                      onChange={handleFormatChange}
-                      variant="fullWidth"
-                    >
+                    <Tabs value={format} onChange={handleFormatChange} variant="fullWidth">
                       <Tab label="JSON" value="json" />
                       <Tab label="Texte" value="text" />
                       <Tab label="CSV" value="csv" />
@@ -307,10 +306,15 @@ JJ,raise`;
                   <Typography variant="body2" color="text.secondary">
                     Exemple de format {format} :
                   </Typography>
-                  <Paper sx={{ p: 1, mt: 1, backgroundColor: 'background.paper', fontFamily: 'monospace' }}>
-                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                      {getExampleContent()}
-                    </pre>
+                  <Paper
+                    sx={{
+                      p: 1,
+                      mt: 1,
+                      backgroundColor: 'background.paper',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{getExampleContent()}</pre>
                   </Paper>
                 </Box>
               </Paper>
@@ -322,11 +326,11 @@ JJ,raise`;
                 <Typography variant="h6" gutterBottom>
                   Instructions
                 </Typography>
-                
+
                 <Divider sx={{ my: 2 }} />
 
                 <Typography variant="body1" paragraph>
-                  <strong>Importer une range</strong> vous permet d'ajouter une range existante 
+                  <strong>Importer une range</strong> vous permet d'ajouter une range existante
                   depuis un fichier ou du texte copié.
                 </Typography>
 
@@ -336,10 +340,12 @@ JJ,raise`;
 
                 <Box component="ul" sx={{ pl: 2, mb: 2 }}>
                   <Typography component="li" variant="body2">
-                    <strong>JSON</strong> : Format structuré avec toutes les informations de la range.
+                    <strong>JSON</strong> : Format structuré avec toutes les informations de la
+                    range.
                   </Typography>
                   <Typography component="li" variant="body2">
-                    <strong>Texte</strong> : Une main par ligne au format "main:action" (ex: "AA:open").
+                    <strong>Texte</strong> : Une main par ligne au format "main:action" (ex:
+                    "AA:open").
                   </Typography>
                   <Typography component="li" variant="body2">
                     <strong>CSV</strong> : Format tableau avec en-tête "hand,action".
@@ -347,7 +353,7 @@ JJ,raise`;
                 </Box>
 
                 <Typography variant="body2" color="text.secondary">
-                  Vous pouvez importer des ranges depuis d'autres outils comme Equilab ou PokerStove 
+                  Vous pouvez importer des ranges depuis d'autres outils comme Equilab ou PokerStove
                   en adaptant le format.
                 </Typography>
               </Paper>
@@ -363,7 +369,7 @@ JJ,raise`;
                 <Typography variant="h6" gutterBottom>
                   Exporter une Range
                 </Typography>
-                
+
                 <Divider sx={{ my: 2 }} />
 
                 {/* Sélection du format */}
@@ -372,11 +378,7 @@ JJ,raise`;
                     Format
                   </Typography>
                   <Paper sx={{ p: 1 }}>
-                    <Tabs
-                      value={format}
-                      onChange={handleFormatChange}
-                      variant="fullWidth"
-                    >
+                    <Tabs value={format} onChange={handleFormatChange} variant="fullWidth">
                       <Tab label="JSON" value="json" />
                       <Tab label="Texte" value="text" />
                       <Tab label="CSV" value="csv" />
@@ -408,7 +410,7 @@ JJ,raise`;
                       Copier
                     </Button>
                   </Tooltip>
-                  
+
                   <Button
                     variant="contained"
                     startIcon={<DownloadIcon />}
@@ -445,12 +447,12 @@ JJ,raise`;
                 <Typography variant="h6" gutterBottom>
                   Instructions
                 </Typography>
-                
+
                 <Divider sx={{ my: 2 }} />
 
                 <Typography variant="body1" paragraph>
-                  <strong>Exporter une range</strong> vous permet de sauvegarder une range 
-                  dans différents formats pour une utilisation ultérieure ou pour la partager.
+                  <strong>Exporter une range</strong> vous permet de sauvegarder une range dans
+                  différents formats pour une utilisation ultérieure ou pour la partager.
                 </Typography>
 
                 <Typography variant="body2" paragraph>
@@ -459,15 +461,17 @@ JJ,raise`;
 
                 <Box component="ul" sx={{ pl: 2, mb: 2 }}>
                   <Typography component="li" variant="body2">
-                    <strong>Télécharger</strong> : Enregistre la range dans un fichier sur votre appareil.
+                    <strong>Télécharger</strong> : Enregistre la range dans un fichier sur votre
+                    appareil.
                   </Typography>
                   <Typography component="li" variant="body2">
-                    <strong>Copier</strong> : Copie la range dans le presse-papiers pour la coller ailleurs.
+                    <strong>Copier</strong> : Copie la range dans le presse-papiers pour la coller
+                    ailleurs.
                   </Typography>
                 </Box>
 
                 <Typography variant="body2" color="text.secondary">
-                  Les ranges exportées peuvent être réimportées plus tard ou partagées avec d'autres 
+                  Les ranges exportées peuvent être réimportées plus tard ou partagées avec d'autres
                   utilisateurs de Poker Tool.
                 </Typography>
               </Paper>

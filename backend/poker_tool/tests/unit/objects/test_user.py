@@ -2,6 +2,7 @@
 Unit tests for User entity.
 """
 import unittest
+
 from poker_tool.objects.user import User
 
 
@@ -29,7 +30,7 @@ class TestUser(unittest.TestCase):
         user1 = User("testuser", "test@example.com", user_id=1)
         user2 = User("testuser", "test@example.com", user_id=1)
         user3 = User("otheruser", "other@example.com", user_id=2)
-        
+
         self.assertEqual(user1, user2)
         self.assertNotEqual(user1, user3)
         self.assertNotEqual(user1, "not a user")
@@ -38,7 +39,7 @@ class TestUser(unittest.TestCase):
         """Test hash for use in sets/dicts."""
         user1 = User("testuser", "test@example.com", user_id=1)
         user2 = User("testuser", "test@example.com", user_id=1)
-        
+
         # Should be able to use in sets
         user_set = {user1, user2}
         self.assertEqual(len(user_set), 1)
@@ -47,7 +48,7 @@ class TestUser(unittest.TestCase):
         """Test serialization to dictionary."""
         user = User("testuser", "test@example.com", "hashed_password", 1)
         user_dict = user.to_dict()
-        
+
         self.assertEqual(user_dict["id"], 1)
         self.assertEqual(user_dict["username"], "testuser")
         self.assertEqual(user_dict["email"], "test@example.com")
@@ -62,7 +63,7 @@ class TestUser(unittest.TestCase):
             "password_hash": "hashed_password",
         }
         user = User.from_dict(data)
-        
+
         self.assertEqual(user.id, 1)
         self.assertEqual(user.username, "testuser")
         self.assertEqual(user.email, "test@example.com")
@@ -72,7 +73,7 @@ class TestUser(unittest.TestCase):
         """Test creation from dictionary with minimal data."""
         data = {"username": "testuser", "email": "test@example.com"}
         user = User.from_dict(data)
-        
+
         self.assertIsNone(user.id)
         self.assertEqual(user.username, "testuser")
         self.assertEqual(user.email, "test@example.com")

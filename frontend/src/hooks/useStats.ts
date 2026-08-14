@@ -31,38 +31,44 @@ export function useStats(statsApi?: StatsApi) {
   }, [api]);
 
   // Charger les statistiques d'un utilisateur
-  const fetchUserStats = useCallback(async (userId: number) => {
-    setLoading(true);
-    setError(null);
+  const fetchUserStats = useCallback(
+    async (userId: number) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const data = await api.byUser(userId);
-      setUserStats(data);
-      return data;
-    } catch (err) {
-      setError(`Erreur lors du chargement des statistiques de l'utilisateur ${userId}`);
-      console.error(`Error fetching user stats for ${userId}:`, err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [api]);
+      try {
+        const data = await api.byUser(userId);
+        setUserStats(data);
+        return data;
+      } catch (err) {
+        setError(`Erreur lors du chargement des statistiques de l'utilisateur ${userId}`);
+        console.error(`Error fetching user stats for ${userId}:`, err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [api],
+  );
 
   // Charger les statistiques d'une range
-  const fetchRangeStats = useCallback(async (rangeId: number) => {
-    setLoading(true);
-    setError(null);
+  const fetchRangeStats = useCallback(
+    async (rangeId: number) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      return await api.byRange(rangeId);
-    } catch (err) {
-      setError(`Erreur lors du chargement des statistiques de la range ${rangeId}`);
-      console.error(`Error fetching range stats for ${rangeId}:`, err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [api]);
+      try {
+        return await api.byRange(rangeId);
+      } catch (err) {
+        setError(`Erreur lors du chargement des statistiques de la range ${rangeId}`);
+        console.error(`Error fetching range stats for ${rangeId}:`, err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [api],
+  );
 
   // Charger l'historique des sessions
   const fetchTrainingHistory = useCallback(async () => {
@@ -72,7 +78,7 @@ export function useStats(statsApi?: StatsApi) {
     try {
       return await api.history();
     } catch (err) {
-      setError('Erreur lors du chargement de l\'historique des sessions');
+      setError("Erreur lors du chargement de l'historique des sessions");
       console.error('Error fetching training history:', err);
       return null;
     } finally {
@@ -97,36 +103,42 @@ export function useStats(statsApi?: StatsApi) {
   }, [api]);
 
   // Charger la progression pour une range
-  const fetchRangeProgress = useCallback(async (rangeId: number) => {
-    setLoading(true);
-    setError(null);
+  const fetchRangeProgress = useCallback(
+    async (rangeId: number) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      return await api.rangeProgress(rangeId);
-    } catch (err) {
-      setError(`Erreur lors du chargement de la progression de la range ${rangeId}`);
-      console.error(`Error fetching range progress for ${rangeId}:`, err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [api]);
+      try {
+        return await api.rangeProgress(rangeId);
+      } catch (err) {
+        setError(`Erreur lors du chargement de la progression de la range ${rangeId}`);
+        console.error(`Error fetching range progress for ${rangeId}:`, err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [api],
+  );
 
   // Exporter les statistiques
-  const exportStats = useCallback(async (format: 'json' | 'csv' = 'json') => {
-    setLoading(true);
-    setError(null);
+  const exportStats = useCallback(
+    async (format: 'json' | 'csv' = 'json') => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      return await api.export(format);
-    } catch (err) {
-      setError('Erreur lors de l\'export des statistiques');
-      console.error('Error exporting stats:', err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [api]);
+      try {
+        return await api.export(format);
+      } catch (err) {
+        setError("Erreur lors de l'export des statistiques");
+        console.error('Error exporting stats:', err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [api],
+  );
 
   // Sauvegarder toutes les données
   const backupAllData = useCallback(async () => {

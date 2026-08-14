@@ -1,9 +1,9 @@
 """
 Immutable range entity (Elegant Objects).
 """
-from typing import Dict, Optional, List
-from .hand import Hand, RANKS
+
 from .action import Action, ActionType
+from .hand import RANKS
 from .position import Position
 from .range_type import RangeType
 
@@ -17,9 +17,9 @@ class Range:
         description: str = "",
         range_type: RangeType = RangeType.PREFLOP,
         position: Position = Position.UNDEFINED,
-        hands: Optional[Dict[str, Action]] = None,
-        user_id: Optional[int] = None,
-        range_id: Optional[int] = None,
+        hands: dict[str, Action] | None = None,
+        user_id: int | None = None,
+        range_id: int | None = None,
     ):
         self._name = name
         self._description = description
@@ -30,7 +30,7 @@ class Range:
         self._id = range_id
 
     @property
-    def id(self) -> Optional[int]:
+    def id(self) -> int | None:
         """Range ID."""
         return self._id
 
@@ -55,12 +55,12 @@ class Range:
         return self._position
 
     @property
-    def hands(self) -> Dict[str, Action]:
+    def hands(self) -> dict[str, Action]:
         """Hands with their actions."""
         return self._hands
 
     @property
-    def user_id(self) -> Optional[int]:
+    def user_id(self) -> int | None:
         """User ID."""
         return self._user_id
 
@@ -92,14 +92,14 @@ class Range:
             range_id=self._id,
         )
 
-    def grid(self) -> List[List[Dict]]:
+    def grid(self) -> list[list[dict]]:
         """Generate 13x13 grid representation."""
         grid = []
         for i, rank1 in enumerate(RANKS):
             row = []
             for j, rank2 in enumerate(RANKS):
                 if i <= j:
-                    hand_str = f"{rank1}{rank2}s" if i == j else f"{rank1}{rank2}s"
+                    hand_str = f"{rank1}{rank2}s"
                 else:
                     hand_str = f"{rank2}{rank1}o"
                 action = self._hands.get(hand_str, Action(ActionType.UNDEFINED))
@@ -111,7 +111,7 @@ class Range:
             grid.append(row)
         return grid
 
-    def statistics(self) -> Dict:
+    def statistics(self) -> dict:
         """Calculate range statistics."""
         by_action = {}
         for action in self._hands.values():
@@ -121,7 +121,7 @@ class Range:
             "by_action": by_action,
         }
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             "id": self._id,
@@ -134,7 +134,7 @@ class Range:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'Range':
+    def from_dict(cls, data: dict) -> 'Range':
         """Create from dictionary."""
         hands = {
             hand_str: Action(ActionType[action.upper()])

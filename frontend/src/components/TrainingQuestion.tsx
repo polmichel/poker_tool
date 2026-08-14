@@ -1,13 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  Divider,
-  Chip,
-  LinearProgress,
-} from '@mui/material';
+import { Box, Paper, Typography, Button, Divider, Chip, LinearProgress } from '@mui/material';
 import { TrainingQuestion as TrainingQuestionType, ActionType } from '../types';
 import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
 import { getActionLabel } from '../utils/helpers';
@@ -40,10 +32,13 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
     setShowHint(false);
   }, [question]);
 
-  const handleAnswer = useCallback((answer: string) => {
-    setSelectedAnswer(answer);
-    onAnswer(answer);
-  }, [onAnswer]);
+  const handleAnswer = useCallback(
+    (answer: string) => {
+      setSelectedAnswer(answer);
+      onAnswer(answer);
+    },
+    [onAnswer],
+  );
 
   const handleShowHint = useCallback(() => {
     setShowHint(true);
@@ -60,7 +55,7 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
             <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
               Sélectionnez l'action pour la main : <strong>{question.hand}</strong>
             </Typography>
-            
+
             {/* Boutons pour les actions */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
               {Object.entries(ACTION_LABELS).map(([action, label]) => (
@@ -71,13 +66,15 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
                   disabled={!!selectedAnswer}
                   data-testid="answer-button"
                   sx={{
-                    backgroundColor: selectedAnswer === action 
-                      ? ACTION_COLORS[action as ActionType] 
-                      : 'transparent',
+                    backgroundColor:
+                      selectedAnswer === action
+                        ? ACTION_COLORS[action as ActionType]
+                        : 'transparent',
                     borderColor: ACTION_COLORS[action as ActionType],
-                    color: selectedAnswer === action || action === 'undefined' 
-                      ? 'white' 
-                      : ACTION_COLORS[action as ActionType],
+                    color:
+                      selectedAnswer === action || action === 'undefined'
+                        ? 'white'
+                        : ACTION_COLORS[action as ActionType],
                     '&:hover': {
                       backgroundColor: ACTION_COLORS[action as ActionType],
                       color: 'white',
@@ -100,7 +97,7 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
             <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
               La main <strong>{question.hand}</strong> fait-elle partie de cette range ?
             </Typography>
-            
+
             {/* Boutons Oui/Non */}
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
               <Button
@@ -134,7 +131,7 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
             <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
               Quelle est l'action pour la main : <strong>{question.hand}</strong>
             </Typography>
-            
+
             {/* Boutons pour les actions */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
               {Object.entries(ACTION_LABELS).map(([action, label]) => (
@@ -145,13 +142,15 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
                   disabled={!!selectedAnswer}
                   data-testid="answer-button"
                   sx={{
-                    backgroundColor: selectedAnswer === action 
-                      ? ACTION_COLORS[action as ActionType] 
-                      : 'transparent',
+                    backgroundColor:
+                      selectedAnswer === action
+                        ? ACTION_COLORS[action as ActionType]
+                        : 'transparent',
                     borderColor: ACTION_COLORS[action as ActionType],
-                    color: selectedAnswer === action || action === 'undefined' 
-                      ? 'white' 
-                      : ACTION_COLORS[action as ActionType],
+                    color:
+                      selectedAnswer === action || action === 'undefined'
+                        ? 'white'
+                        : ACTION_COLORS[action as ActionType],
                     '&:hover': {
                       backgroundColor: ACTION_COLORS[action as ActionType],
                       color: 'white',
@@ -166,11 +165,7 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
         );
 
       default:
-        return (
-          <Typography variant="body1">
-            Type de question inconnu.
-          </Typography>
-        );
+        return <Typography variant="body1">Type de question inconnu.</Typography>;
     }
   };
 
@@ -184,7 +179,12 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
     >
       {/* Barre de progression */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="body2" color="text.secondary" gutterBottom data-testid="question-indicator">
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          gutterBottom
+          data-testid="question-indicator"
+        >
           Question {questionNumber} sur {totalQuestions}
         </Typography>
         <LinearProgress
@@ -220,13 +220,7 @@ const TrainingQuestion: React.FC<TrainingQuestionProps> = ({
 
       {/* Bouton pour afficher l'indice (si pas encore montré) */}
       {!showHint && !selectedAnswer && (
-        <Button
-          variant="text"
-          onClick={handleShowHint}
-          color="info"
-          size="small"
-          sx={{ mt: 1 }}
-        >
+        <Button variant="text" onClick={handleShowHint} color="info" size="small" sx={{ mt: 1 }}>
           Besoin d'un indice ?
         </Button>
       )}

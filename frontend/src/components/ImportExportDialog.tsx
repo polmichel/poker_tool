@@ -35,41 +35,41 @@ const ImportExportDialog: React.FC<ImportExportDialogProps> = ({
   const [content, setContent] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
-  const handleTabChange = useCallback((
-    event: React.SyntheticEvent,
-    newValue: 'import' | 'export'
-  ) => {
-    setActiveTab(newValue);
-    setError(null);
-  }, []);
+  const handleTabChange = useCallback(
+    (event: React.SyntheticEvent, newValue: 'import' | 'export') => {
+      setActiveTab(newValue);
+      setError(null);
+    },
+    [],
+  );
 
-  const handleFormatChange = useCallback((
-    event: React.SyntheticEvent,
-    newValue: 'json' | 'text' | 'csv'
-  ) => {
-    setFormat(newValue);
-  }, []);
+  const handleFormatChange = useCallback(
+    (event: React.SyntheticEvent, newValue: 'json' | 'text' | 'csv') => {
+      setFormat(newValue);
+    },
+    [],
+  );
 
   const handleImport = useCallback(() => {
     if (!content.trim()) {
       setError('Veuillez entrer du contenu à importer.');
       return;
     }
-    
+
     try {
       onImport(content, format);
       onClose();
     } catch (err) {
-      setError('Erreur lors de l\'import. Vérifiez le format du contenu.');
+      setError("Erreur lors de l'import. Vérifiez le format du contenu.");
     }
   }, [content, format, onImport, onClose]);
 
   const handleExport = useCallback(() => {
     if (!rangeToExport) {
-      setError('Aucune range sélectionnée pour l\'export.');
+      setError("Aucune range sélectionnée pour l'export.");
       return;
     }
-    
+
     onExport(rangeToExport, format);
     onClose();
   }, [rangeToExport, format, onExport, onClose]);
@@ -120,11 +120,7 @@ QQ,raise`;
       <DialogContent>
         {/* Onglets Import/Export */}
         <Paper sx={{ mb: 2 }}>
-          <Tabs
-            value={activeTab}
-            onChange={handleTabChange}
-            centered
-          >
+          <Tabs value={activeTab} onChange={handleTabChange} centered>
             <Tab label="Importer" value="import" />
             <Tab label="Exporter" value="export" />
           </Tabs>
@@ -135,11 +131,7 @@ QQ,raise`;
           <Typography variant="subtitle2" gutterBottom>
             Format
           </Typography>
-          <Tabs
-            value={format}
-            onChange={handleFormatChange}
-            variant="fullWidth"
-          >
+          <Tabs value={format} onChange={handleFormatChange} variant="fullWidth">
             <Tab label="JSON" value="json" />
             <Tab label="Texte" value="text" />
             <Tab label="CSV" value="csv" />
@@ -178,7 +170,7 @@ QQ,raise`;
                   Format sélectionné : <strong>{format.toUpperCase()}</strong>
                 </>
               ) : (
-                'Aucune range sélectionnée pour l\'export.'
+                "Aucune range sélectionnée pour l'export."
               )}
             </Typography>
             {rangeToExport && (

@@ -1,14 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Divider,
-  IconButton,
-  Tooltip,
-  Chip,
-} from '@mui/material';
+import { Box, Typography, Paper, Button, Divider, IconButton, Tooltip, Chip } from '@mui/material';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -26,15 +17,8 @@ import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
 const RangeView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const {
-    ranges,
-    loading,
-    error,
-    selectedRange,
-    setSelectedRange,
-    fetchRange,
-    deleteRange,
-  } = useRanges();
+  const { ranges, loading, error, selectedRange, setSelectedRange, fetchRange, deleteRange } =
+    useRanges();
 
   const [range, setRange] = useState<Range | null>(null);
 
@@ -67,7 +51,7 @@ const RangeView: React.FC = () => {
   // Supprimer la range
   const handleDelete = useCallback(async () => {
     if (!range) return;
-    
+
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer la range "${range.name}" ?`)) {
       await deleteRange(range.id!);
       navigate('/ranges');
@@ -77,7 +61,7 @@ const RangeView: React.FC = () => {
   // Dupliquer la range
   const handleDuplicate = useCallback(() => {
     if (!range) return;
-    
+
     navigate('/ranges/new', {
       state: {
         duplicateFrom: range,
@@ -155,7 +139,7 @@ const RangeView: React.FC = () => {
             {range.name}
           </Typography>
         </Box>
-        
+
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Exporter">
             <Button
@@ -168,7 +152,7 @@ const RangeView: React.FC = () => {
               Exporter
             </Button>
           </Tooltip>
-          
+
           <Tooltip title="Dupliquer">
             <Button
               variant="outlined"
@@ -180,7 +164,7 @@ const RangeView: React.FC = () => {
               Dupliquer
             </Button>
           </Tooltip>
-          
+
           <Tooltip title="Modifier">
             <Button
               variant="contained"
@@ -192,7 +176,7 @@ const RangeView: React.FC = () => {
               Modifier
             </Button>
           </Tooltip>
-          
+
           <Tooltip title="Supprimer">
             <IconButton onClick={handleDelete} color="error">
               <DeleteIcon />
@@ -208,14 +192,20 @@ const RangeView: React.FC = () => {
         <Typography variant="body1" paragraph>
           {range.description}
         </Typography>
-        
+
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
           <Chip label={`Type: ${range.range_type}`} color="primary" variant="outlined" />
           <Chip label={`Position: ${range.position}`} color="secondary" variant="outlined" />
-          <Chip label={`Créée: ${new Date(range.created_at || '').toLocaleDateString()}`} 
-                color="info" variant="outlined" />
-          <Chip label={`Mise à jour: ${new Date(range.updated_at || '').toLocaleDateString()}`} 
-                color="success" variant="outlined" />
+          <Chip
+            label={`Créée: ${new Date(range.created_at || '').toLocaleDateString()}`}
+            color="info"
+            variant="outlined"
+          />
+          <Chip
+            label={`Mise à jour: ${new Date(range.updated_at || '').toLocaleDateString()}`}
+            color="success"
+            variant="outlined"
+          />
         </Box>
 
         {/* Statistiques rapides */}
@@ -228,7 +218,10 @@ const RangeView: React.FC = () => {
               size="small"
               sx={{
                 backgroundColor: ACTION_COLORS[action as ActionType] || 'grey.500',
-                color: (action === 'open' || action === 'raise' || action === 'all_in' || action === 'bet') ? 'white' : 'black',
+                color:
+                  action === 'open' || action === 'raise' || action === 'all_in' || action === 'bet'
+                    ? 'white'
+                    : 'black',
               }}
             />
           ))}
@@ -243,11 +236,7 @@ const RangeView: React.FC = () => {
           Grille de la Range
         </Typography>
         <Box sx={{ overflow: 'auto' }}>
-          <RangeGrid
-            grid={generateRangeGrid(range.hands)}
-            editable={false}
-            cellSize={40}
-          />
+          <RangeGrid grid={generateRangeGrid(range.hands)} editable={false} cellSize={40} />
         </Box>
       </Paper>
 

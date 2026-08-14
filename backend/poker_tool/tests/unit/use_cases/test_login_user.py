@@ -2,9 +2,11 @@
 Unit tests for the LoginUser use case (with in-memory fakes, no mocks).
 """
 import unittest
-from poker_tool.use_cases.login_user import LoginUser, InvalidCredentials
+
+from poker_tool.use_cases.login_user import InvalidCredentials, LoginUser
 from poker_tool.use_cases.register_user import RegisterUser
-from .fakes import FakeUsers, FakeAuth
+
+from .fakes import FakeAuth, FakeUsers
 
 
 class TestLoginUser(unittest.TestCase):

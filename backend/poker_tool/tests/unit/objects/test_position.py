@@ -2,6 +2,7 @@
 Unit tests for Position value object.
 """
 import unittest
+
 from poker_tool.objects.position import Position
 
 
@@ -29,7 +30,7 @@ class TestPosition(unittest.TestCase):
             Position.BB: "BB",
             Position.UNDEFINED: "Non défini",
         }
-        
+
         for position, expected_label in labels.items():
             self.assertEqual(position.label, expected_label)
 
@@ -44,7 +45,7 @@ class TestPosition(unittest.TestCase):
             Position.BB: "#9C27B0",
             Position.UNDEFINED: "#607D8B",
         }
-        
+
         for position, expected_color in colors.items():
             self.assertEqual(position.color, expected_color)
 
@@ -53,13 +54,13 @@ class TestPosition(unittest.TestCase):
         # Valid position strings
         position = Position.from_string("UTG")
         self.assertEqual(position, Position.UTG)
-        
+
         position = Position.from_string("utg")
         self.assertEqual(position, Position.UTG)
-        
+
         position = Position.from_string("BTN")
         self.assertEqual(position, Position.BTN)
-        
+
         # Invalid position string
         position = Position.from_string("INVALID")
         self.assertEqual(position, Position.UNDEFINED)

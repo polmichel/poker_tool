@@ -53,13 +53,17 @@ export class TrainingApi {
     return response.data;
   }
 
-  async start(sessionId: number): Promise<{ session: TrainingSession; first_question: TrainingQuestionType | null }> {
+  async start(
+    sessionId: number,
+  ): Promise<{ session: TrainingSession; first_question: TrainingQuestionType | null }> {
     const response = await api.post(`/training/sessions/${sessionId}/start`);
     return response.data;
   }
 
   async answer(sessionId: number, answer: string): Promise<NextQuestionResponse> {
-    const response = await api.post<NextQuestionResponse>(`/training/sessions/${sessionId}/next`, { answer });
+    const response = await api.post<NextQuestionResponse>(`/training/sessions/${sessionId}/next`, {
+      answer,
+    });
     return response.data;
   }
 

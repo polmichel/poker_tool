@@ -1,7 +1,6 @@
 """
 Immutable global stats value object (Elegant Objects).
 """
-from typing import Dict
 
 
 class GlobalStats:
@@ -46,7 +45,7 @@ class GlobalStats:
         """Most common action in ranges."""
         return self._most_common_action
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             "total_ranges": self._total_ranges,
@@ -57,7 +56,7 @@ class GlobalStats:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'GlobalStats':
+    def from_dict(cls, data: dict) -> 'GlobalStats':
         """Create from dictionary."""
         return cls(
             total_ranges=data.get("total_ranges", 0),

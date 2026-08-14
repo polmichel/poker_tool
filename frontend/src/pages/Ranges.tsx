@@ -53,10 +53,13 @@ const Ranges: React.FC = () => {
   }, [fetchRanges]);
 
   // Sélectionner une range
-  const handleSelectRange = useCallback((range: Range) => {
-    setSelectedRange(range);
-    navigate(`/ranges/${range.id}/view`);
-  }, [setSelectedRange, navigate]);
+  const handleSelectRange = useCallback(
+    (range: Range) => {
+      setSelectedRange(range);
+      navigate(`/ranges/${range.id}/view`);
+    },
+    [setSelectedRange, navigate],
+  );
 
   // Modifier une range
   const handleEditRange = useCallback((range: Range) => {
@@ -65,34 +68,43 @@ const Ranges: React.FC = () => {
   }, []);
 
   // Supprimer une range
-  const handleDeleteRange = useCallback(async (rangeId: number) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette range ?')) {
-      await deleteRange(rangeId);
-      fetchRanges();
-    }
-  }, [deleteRange, fetchRanges]);
-
-  // Créer une nouvelle range
-  const handleCreateRange = useCallback(async (rangeData: Omit<Range, 'id' | 'created_at' | 'updated_at'>) => {
-    const newRange = await createRange(rangeData);
-    if (newRange) {
-      setOpenFormDialog(false);
-      fetchRanges();
-      navigate(`/ranges/${newRange.id}/edit`);
-    }
-  }, [createRange, fetchRanges, navigate]);
-
-  // Mettre à jour une range
-  const handleUpdateRange = useCallback(async (rangeData: Partial<Range>) => {
-    if (editingRange?.id) {
-      const updatedRange = await updateRange(editingRange.id, rangeData);
-      if (updatedRange) {
-        setOpenFormDialog(false);
-        setEditingRange(null);
+  const handleDeleteRange = useCallback(
+    async (rangeId: number) => {
+      if (window.confirm('Êtes-vous sûr de vouloir supprimer cette range ?')) {
+        await deleteRange(rangeId);
         fetchRanges();
       }
-    }
-  }, [editingRange, updateRange, fetchRanges]);
+    },
+    [deleteRange, fetchRanges],
+  );
+
+  // Créer une nouvelle range
+  const handleCreateRange = useCallback(
+    async (rangeData: Omit<Range, 'id' | 'created_at' | 'updated_at'>) => {
+      const newRange = await createRange(rangeData);
+      if (newRange) {
+        setOpenFormDialog(false);
+        fetchRanges();
+        navigate(`/ranges/${newRange.id}/edit`);
+      }
+    },
+    [createRange, fetchRanges, navigate],
+  );
+
+  // Mettre à jour une range
+  const handleUpdateRange = useCallback(
+    async (rangeData: Partial<Range>) => {
+      if (editingRange?.id) {
+        const updatedRange = await updateRange(editingRange.id, rangeData);
+        if (updatedRange) {
+          setOpenFormDialog(false);
+          setEditingRange(null);
+          fetchRanges();
+        }
+      }
+    },
+    [editingRange, updateRange, fetchRanges],
+  );
 
   // Ouvrir le dialogue d'import/export
   const handleOpenImportExport = useCallback((range?: Range) => {
@@ -101,27 +113,33 @@ const Ranges: React.FC = () => {
   }, []);
 
   // Gérer l'import
-  const handleImport = useCallback(async (content: string, format: 'json' | 'text' | 'csv') => {
-    await importRange(content, format);
-    fetchRanges();
-  }, [importRange, fetchRanges]);
+  const handleImport = useCallback(
+    async (content: string, format: 'json' | 'text' | 'csv') => {
+      await importRange(content, format);
+      fetchRanges();
+    },
+    [importRange, fetchRanges],
+  );
 
   // Gérer l'export
-  const handleExport = useCallback(async (range: Range, format: 'json' | 'text' | 'csv') => {
-    const result = await exportRange(range.id!, format);
-    if (result) {
-      // Télécharger le fichier
-      const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${range.name.replace(/\s+/g, '_')}_${format}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  }, [exportRange]);
+  const handleExport = useCallback(
+    async (range: Range, format: 'json' | 'text' | 'csv') => {
+      const result = await exportRange(range.id!, format);
+      if (result) {
+        // Télécharger le fichier
+        const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${range.name.replace(/\s+/g, '_')}_${format}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    },
+    [exportRange],
+  );
 
   // Fermer le dialogue de formulaire
   const handleCloseFormDialog = useCallback(() => {
@@ -148,7 +166,7 @@ const Ranges: React.FC = () => {
         <Typography variant="h4" component="h1">
           Mes Ranges
         </Typography>
-        
+
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Importer/Exporter">
             <Button
@@ -160,7 +178,7 @@ const Ranges: React.FC = () => {
               Importer/Exporter
             </Button>
           </Tooltip>
-          
+
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -195,7 +213,14 @@ const Ranges: React.FC = () => {
           <Grid item xs={12} md={8}>
             {selectedRange ? (
               <Paper sx={{ p: 2, height: '100%' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2,
+                  }}
+                >
                   <Typography variant="h6">{selectedRange.name}</Typography>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <Tooltip title="Modifier">
@@ -210,19 +235,19 @@ const Ranges: React.FC = () => {
                     </Tooltip>
                   </Box>
                 </Box>
-                
+
                 <Divider sx={{ my: 1 }} />
-                
+
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   {selectedRange.description}
                 </Typography>
-                
+
                 <Typography variant="caption" color="text.disabled" gutterBottom>
                   Type: {selectedRange.range_type} | Position: {selectedRange.position}
                 </Typography>
-                
+
                 <Divider sx={{ my: 2 }} />
-                
+
                 {/* Grille de la range */}
                 <Box sx={{ overflow: 'auto' }}>
                   <RangeGrid
@@ -245,15 +270,13 @@ const Ranges: React.FC = () => {
 
       {/* Dialogue pour créer/modifier une range */}
       <Dialog open={openFormDialog} onClose={handleCloseFormDialog} maxWidth="md" fullWidth>
-        <DialogTitle>
-          {editingRange ? 'Modifier la Range' : 'Nouvelle Range'}
-        </DialogTitle>
+        <DialogTitle>{editingRange ? 'Modifier la Range' : 'Nouvelle Range'}</DialogTitle>
         <DialogContent>
           <RangeForm
             range={editingRange}
             onSubmit={editingRange ? handleUpdateRange : handleCreateRange}
             onCancel={handleCloseFormDialog}
-            existingRangeNames={ranges.map(r => r.name)}
+            existingRangeNames={ranges.map((r) => r.name)}
           />
         </DialogContent>
       </Dialog>

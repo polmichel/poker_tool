@@ -5,8 +5,8 @@ Encapsulates: uniqueness check, user creation (password hash), persistence
 and token generation. Dependencies (Users port, Auth port) are injected,
 so this is unit-testable with fakes.
 """
-from ..interfaces.users import Users
 from ..interfaces.auth import Auth
+from ..interfaces.users import Users
 from ..objects.user import User
 
 

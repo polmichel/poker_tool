@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Divider,
-  Grid,
-} from '@mui/material';
+import { Box, Typography, Paper, Button, Divider, Grid } from '@mui/material';
 import {
   Add as AddIcon,
   List as ListIcon,
@@ -25,7 +18,8 @@ const Home: React.FC = () => {
   const featureCards = [
     {
       title: 'Créer une Range',
-      description: 'Créez et personnalisez vos propres ranges de poker pour différentes positions et scénarios.',
+      description:
+        'Créez et personnalisez vos propres ranges de poker pour différentes positions et scénarios.',
       icon: <AddIcon fontSize="large" color="primary" />,
       path: '/ranges/new',
       color: '#4CAF50',
@@ -125,7 +119,7 @@ const Home: React.FC = () => {
       <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
         Fonctionnalités
       </Typography>
-      
+
       <Grid container spacing={3}>
         {featureCards.map((card, index) => (
           <Grid item xs={12} sm={6} md={4} lg={2.4} key={index}>

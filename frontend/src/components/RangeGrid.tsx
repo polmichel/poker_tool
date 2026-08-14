@@ -22,12 +22,12 @@ const getTextColor = (bgColor: string): string => {
     const b = parseInt(hex.slice(5, 7), 16);
     return { r, g, b };
   };
-  
+
   // Calculer la luminosité (formule standard)
   const getBrightness = (r: number, g: number, b: number) => {
     return (r * 299 + g * 587 + b * 114) / 1000;
   };
-  
+
   try {
     const { r, g, b } = hexToRgb(bgColor);
     const brightness = getBrightness(r, g, b);
@@ -54,43 +54,41 @@ const RangeGrid: React.FC<RangeGridProps> = ({
     currentAction: ActionType;
   } | null>(null);
 
-  const handleContextMenu = useCallback((
-    e: React.MouseEvent,
-    hand: string,
-    currentAction: ActionType
-  ) => {
-    e.preventDefault();
-    setContextMenu({
-      mouseX: e.clientX + 2,
-      mouseY: e.clientY - 6,
-      hand,
-      currentAction,
-    });
-  }, []);
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent, hand: string, currentAction: ActionType) => {
+      e.preventDefault();
+      setContextMenu({
+        mouseX: e.clientX + 2,
+        mouseY: e.clientY - 6,
+        hand,
+        currentAction,
+      });
+    },
+    [],
+  );
 
   const handleCloseContextMenu = useCallback(() => {
     setContextMenu(null);
   }, []);
 
-  const handleActionSelect = useCallback((
-    action: ActionType,
-    hand: string,
-    currentAction: ActionType
-  ) => {
-    if (onCellClick) {
-      onCellClick(hand, action);
-    }
-    handleCloseContextMenu();
-  }, [onCellClick, handleCloseContextMenu]);
+  const handleActionSelect = useCallback(
+    (action: ActionType, hand: string, currentAction: ActionType) => {
+      if (onCellClick) {
+        onCellClick(hand, action);
+      }
+      handleCloseContextMenu();
+    },
+    [onCellClick, handleCloseContextMenu],
+  );
 
-  const handleCellClick = useCallback((
-    hand: string,
-    currentAction: ActionType
-  ) => {
-    if (editable && onCellClick) {
-      onCellClick(hand, currentAction);
-    }
-  }, [editable, onCellClick]);
+  const handleCellClick = useCallback(
+    (hand: string, currentAction: ActionType) => {
+      if (editable && onCellClick) {
+        onCellClick(hand, currentAction);
+      }
+    },
+    [editable, onCellClick],
+  );
 
   // Générer les labels pour les axes
   const getRowLabel = (rowIndex: number): string => {
@@ -102,10 +100,12 @@ const RangeGrid: React.FC<RangeGridProps> = ({
   };
 
   // Position pour le menu contextuel
-  const menuPosition = contextMenu ? {
-    top: contextMenu.mouseY,
-    left: contextMenu.mouseX,
-  } : undefined;
+  const menuPosition = contextMenu
+    ? {
+        top: contextMenu.mouseY,
+        left: contextMenu.mouseX,
+      }
+    : undefined;
 
   return (
     <Box sx={{ position: 'relative', display: 'inline-block' }}>
@@ -161,7 +161,7 @@ const RangeGrid: React.FC<RangeGridProps> = ({
                 // Déterminer la couleur du texte en fonction de la couleur de fond
                 const bgColor = cell.color || ACTION_COLORS['undefined'];
                 const textColor = getTextColor(bgColor);
-                
+
                 return (
                   <Tooltip
                     key={cell.hand}
@@ -183,13 +183,15 @@ const RangeGrid: React.FC<RangeGridProps> = ({
                         fontWeight: 'bold',
                         color: textColor,
                         transition: 'all 0.2s ease',
-                        '&:hover': editable ? {
-                          opacity: 0.8,
-                          border: '1px solid rgba(0, 0, 0, 0.4)',
-                          transform: 'scale(1.05)',
-                        } : {
-                          opacity: 0.9,
-                        },
+                        '&:hover': editable
+                          ? {
+                              opacity: 0.8,
+                              border: '1px solid rgba(0, 0, 0, 0.4)',
+                              transform: 'scale(1.05)',
+                            }
+                          : {
+                              opacity: 0.9,
+                            },
                       }}
                       onClick={() => handleCellClick(cell.hand, cell.action as ActionType)}
                       onContextMenu={(e) => {
@@ -225,15 +227,16 @@ const RangeGrid: React.FC<RangeGridProps> = ({
           {Object.entries(ACTION_LABELS).map(([action, label]) => (
             <MenuItem
               key={action}
-              onClick={() => handleActionSelect(
-                action as ActionType,
-                contextMenu.hand,
-                contextMenu.currentAction
-              )}
+              onClick={() =>
+                handleActionSelect(
+                  action as ActionType,
+                  contextMenu.hand,
+                  contextMenu.currentAction,
+                )
+              }
               sx={{
-                backgroundColor: action === contextMenu.currentAction 
-                  ? 'rgba(255, 255, 255, 0.1)' 
-                  : 'transparent',
+                backgroundColor:
+                  action === contextMenu.currentAction ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
               }}
             >
               <Box

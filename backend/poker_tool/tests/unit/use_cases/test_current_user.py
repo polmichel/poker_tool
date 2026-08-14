@@ -2,10 +2,11 @@
 Unit tests for the CurrentUser use case (with in-memory fakes, no mocks).
 """
 import unittest
+
 from poker_tool.use_cases.current_user import CurrentUser
 from poker_tool.use_cases.register_user import RegisterUser
-from poker_tool.objects.user import User
-from .fakes import FakeUsers, FakeAuth
+
+from .fakes import FakeAuth, FakeUsers
 
 
 class TestCurrentUser(unittest.TestCase):

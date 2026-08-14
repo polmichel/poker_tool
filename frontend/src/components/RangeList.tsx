@@ -50,10 +50,7 @@ const RangeList: React.FC<RangeListProps> = ({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [selectedRangeForMenu, setSelectedRangeForMenu] = useState<Range | null>(null);
 
-  const handleMenuOpen = useCallback((
-    event: React.MouseEvent<HTMLElement>,
-    range: Range
-  ) => {
+  const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>, range: Range) => {
     setAnchorEl(event.currentTarget);
     setSelectedRangeForMenu(range);
   }, []);
@@ -146,7 +143,7 @@ const RangeList: React.FC<RangeListProps> = ({
           filteredRanges.map((range) => {
             const handCounts = countHandsByAction(range);
             const totalHands = Object.keys(range.hands).length;
-            
+
             return (
               <React.Fragment key={range.id}>
                 <ListItem
@@ -160,7 +157,7 @@ const RangeList: React.FC<RangeListProps> = ({
                       >
                         <MoreVertIcon />
                       </IconButton>
-                      
+
                       {/* Menu des options */}
                       <Menu
                         anchorEl={anchorEl}
@@ -209,21 +206,14 @@ const RangeList: React.FC<RangeListProps> = ({
                       primary={range.name}
                       secondary={
                         <>
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            color="text.secondary"
-                          >
-                            {getRangeTypeLabel(range.range_type)} • {getPositionLabel(range.position)}
+                          <Typography component="span" variant="body2" color="text.secondary">
+                            {getRangeTypeLabel(range.range_type)} •{' '}
+                            {getPositionLabel(range.position)}
                           </Typography>
                           {range.description && (
                             <>
                               <br />
-                              <Typography
-                                component="span"
-                                variant="caption"
-                                color="text.disabled"
-                              >
+                              <Typography component="span" variant="caption" color="text.disabled">
                                 {range.description}
                               </Typography>
                             </>
@@ -231,35 +221,34 @@ const RangeList: React.FC<RangeListProps> = ({
                         </>
                       }
                     />
-                    
+
                     {/* Statistiques de la range */}
                     <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
-                      <Chip
-                        label={totalHands}
-                        size="small"
-                        variant="outlined"
-                        color="primary"
-                      />
+                      <Chip label={totalHands} size="small" variant="outlined" color="primary" />
                       {Object.entries(handCounts).map(([action, count]) => (
                         <Chip
                           key={action}
                           label={`${count}`}
                           size="small"
                           sx={{
-                            backgroundColor: action === 'undefined' 
-                              ? 'grey.500' 
-                              : ACTION_LABELS[action as keyof typeof ACTION_LABELS] 
-                                ? ACTION_LABELS[action as keyof typeof ACTION_LABELS] === 'Non défini' 
-                                  ? 'grey.500' 
-                                  : 'transparent'
-                              : 'transparent',
-                            color: action === 'undefined' 
-                              ? 'white' 
-                              : ACTION_LABELS[action as keyof typeof ACTION_LABELS] 
-                                ? ACTION_LABELS[action as keyof typeof ACTION_LABELS] === 'Non défini' 
-                                  ? 'white' 
-                                  : ACTION_COLORS[action as ActionType]
-                              : ACTION_COLORS[action as ActionType],
+                            backgroundColor:
+                              action === 'undefined'
+                                ? 'grey.500'
+                                : ACTION_LABELS[action as keyof typeof ACTION_LABELS]
+                                  ? ACTION_LABELS[action as keyof typeof ACTION_LABELS] ===
+                                    'Non défini'
+                                    ? 'grey.500'
+                                    : 'transparent'
+                                  : 'transparent',
+                            color:
+                              action === 'undefined'
+                                ? 'white'
+                                : ACTION_LABELS[action as keyof typeof ACTION_LABELS]
+                                  ? ACTION_LABELS[action as keyof typeof ACTION_LABELS] ===
+                                    'Non défini'
+                                    ? 'white'
+                                    : ACTION_COLORS[action as ActionType]
+                                  : ACTION_COLORS[action as ActionType],
                             borderColor: ACTION_COLORS[action as ActionType],
                           }}
                         />

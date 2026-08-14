@@ -11,25 +11,18 @@ export interface Hand {
 }
 
 // Types pour les actions
-export type ActionType = 
-  | 'open'
-  | 'call'
-  | 'raise'
-  | 'all_in'
-  | 'fold'
-  | 'check'
-  | 'bet'
-  | 'undefined';
+export type ActionType =
+  'open' | 'call' | 'raise' | 'all_in' | 'fold' | 'check' | 'bet' | 'undefined';
 
 // Couleurs associées aux actions (pour le frontend)
 export const ACTION_COLORS: Record<ActionType, string> = {
-  open: '#4CAF50',     // Vert
-  call: '#2196F3',     // Bleu
-  raise: '#FF9800',    // Orange
-  all_in: '#F44336',   // Rouge
-  fold: '#9E9E9E',     // Gris
-  check: '#FFEB3B',    // Jaune
-  bet: '#9C27B0',      // Violet
+  open: '#4CAF50', // Vert
+  call: '#2196F3', // Bleu
+  raise: '#FF9800', // Orange
+  all_in: '#F44336', // Rouge
+  fold: '#9E9E9E', // Gris
+  check: '#FFEB3B', // Jaune
+  bet: '#9C27B0', // Violet
   undefined: '#FFFFFF', // Blanc
 };
 
@@ -102,18 +95,24 @@ export interface Stats {
 }
 
 export interface UserStats extends Stats {
-  mode_stats: Record<TrainingMode, {
-    total_sessions: number;
-    total_questions: number;
-    correct_answers: number;
-    avg_score: number;
-  }>;
-  range_stats: Record<number, {
-    total_sessions: number;
-    total_questions: number;
-    correct_answers: number;
-    avg_score: number;
-  }>;
+  mode_stats: Record<
+    TrainingMode,
+    {
+      total_sessions: number;
+      total_questions: number;
+      correct_answers: number;
+      avg_score: number;
+    }
+  >;
+  range_stats: Record<
+    number,
+    {
+      total_sessions: number;
+      total_questions: number;
+      correct_answers: number;
+      avg_score: number;
+    }
+  >;
 }
 
 // Types pour les réponses de l'API
@@ -159,11 +158,27 @@ export function generateAllHands(): Hand[] {
     for (let j = 0; j < RANKS.length; j++) {
       if (i < j) {
         // Mains non-paires et non-symétriques (ex: AK, AQ)
-        hands.push({ rank1: RANKS[i], rank2: RANKS[j], suited: true, notation: `${RANKS[i]}${RANKS[j]}s` });   // Suited
-        hands.push({ rank1: RANKS[i], rank2: RANKS[j], suited: false, notation: `${RANKS[i]}${RANKS[j]}o` }); // Offsuit
+        hands.push({
+          rank1: RANKS[i],
+          rank2: RANKS[j],
+          suited: true,
+          notation: `${RANKS[i]}${RANKS[j]}s`,
+        }); // Suited
+        hands.push({
+          rank1: RANKS[i],
+          rank2: RANKS[j],
+          suited: false,
+          notation: `${RANKS[i]}${RANKS[j]}o`,
+        }); // Offsuit
       } else if (i === j) {
         // Paires (ex: AA, KK)
-        hands.push({ rank1: RANKS[i], rank2: RANKS[j], suited: false, is_pair: true, notation: `${RANKS[i]}${RANKS[j]}` });
+        hands.push({
+          rank1: RANKS[i],
+          rank2: RANKS[j],
+          suited: false,
+          is_pair: true,
+          notation: `${RANKS[i]}${RANKS[j]}`,
+        });
       }
     }
   }
@@ -183,7 +198,7 @@ export function generateHandGrid(): string[][] {
       } else if (i > j) {
         row.push(`${rank2}${rank1}o`); // Offsuit (inversé pour éviter les doublons)
       } else {
-        row.push(`${rank1}${rank2}`);   // Pair
+        row.push(`${rank1}${rank2}`); // Pair
       }
     }
     grid.push(row);
@@ -196,7 +211,7 @@ export function handFromString(handStr: string): Hand {
   const upperHand = handStr.toUpperCase();
   let suited = false;
   let handStrClean = upperHand;
-  
+
   if (handStrClean.endsWith('S')) {
     suited = true;
     handStrClean = handStrClean.slice(0, -1);
@@ -204,14 +219,14 @@ export function handFromString(handStr: string): Hand {
     suited = false;
     handStrClean = handStrClean.slice(0, -1);
   }
-  
+
   if (handStrClean.length === 2) {
     const rank1 = handStrClean[0] as Rank;
     const rank2 = handStrClean[1] as Rank;
     const isPair = rank1 === rank2;
     return { rank1, rank2, suited, is_pair: isPair, notation: upperHand };
   }
-  
+
   throw new Error(`Invalid hand string: ${handStr}`);
 }
 

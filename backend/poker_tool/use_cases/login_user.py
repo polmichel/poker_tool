@@ -4,8 +4,8 @@ Login a user (use case).
 Encapsulates: user lookup by username, password verification and token
 generation. Dependencies (Users port, Auth port) are injected.
 """
-from ..interfaces.users import Users
 from ..interfaces.auth import Auth
+from ..interfaces.users import Users
 from ..objects.user import User
 
 

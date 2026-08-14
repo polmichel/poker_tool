@@ -1,13 +1,12 @@
 """
 Immutable training session entity (Elegant Objects).
 """
-from datetime import datetime
-from typing import Optional, List, Dict
-from ..user import User
-from ..range import Range
-from .question import TrainingQuestion
 import random
+from datetime import datetime
 
+from ..range import Range
+from ..user import User
+from .question import TrainingQuestion
 
 # Sentinel for "no override" in _clone (distinct from None which is a valid value).
 _UNSET = object()
@@ -22,24 +21,24 @@ class TrainingSession:
         range_obj: Range,
         mode: str = "fill",
         total_questions: int = 10,
-        session_id: Optional[int] = None,
+        session_id: int | None = None,
     ):
         self._user = user
         self._range = range_obj
         self._mode = mode
         self._total_questions = total_questions
         self._id = session_id
-        self._questions: List[TrainingQuestion] = []
+        self._questions: list[TrainingQuestion] = []
         self._current_index = 0
         self._correct_answers = 0
         self._start_time = datetime.utcnow()
-        self._ended_at: Optional[datetime] = None
+        self._ended_at: datetime | None = None
 
         # Generate questions
         self._generate_questions()
 
     @property
-    def id(self) -> Optional[int]:
+    def id(self) -> int | None:
         """Session ID."""
         return self._id
 
@@ -64,7 +63,7 @@ class TrainingSession:
         return self._total_questions
 
     @property
-    def current_question(self) -> Optional[TrainingQuestion]:
+    def current_question(self) -> TrainingQuestion | None:
         """Current question."""
         if self._current_index < len(self._questions):
             return self._questions[self._current_index]
@@ -144,7 +143,7 @@ class TrainingSession:
         """End the session (immutable)."""
         return self._clone(ended_at=datetime.utcnow())
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             "id": self._id,
@@ -162,7 +161,7 @@ class TrainingSession:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict, user: User, range_obj: Range) -> 'TrainingSession':
+    def from_dict(cls, data: dict, user: User, range_obj: Range) -> 'TrainingSession':
         """Create from dictionary."""
         session = cls(
             user=user,
@@ -180,7 +179,7 @@ class TrainingSession:
 
     def _generate_questions(self) -> None:
         """Generate questions for this session."""
-        from ..hand import RANKS, generate_all_hands
+        from ..hand import generate_all_hands
 
         range_hands = self._range.hands
         all_hands = generate_all_hands()
@@ -216,8 +215,9 @@ class TrainingSession:
                 # Toutes les mains sont dans la range, on prend uniquement des mains de la range
                 selected_hands = random.sample(range_hand_strings, min(self._total_questions, len(range_hand_strings)))
             else:
-                selected_in_range = random.sample(range_hand_strings, min(self._total_questions // 2, len(range_hand_strings)))
-                selected_out_range = random.sample(non_range_hands, min(self._total_questions // 2, len(non_range_hands)))
+                half = self._total_questions // 2
+                selected_in_range = random.sample(range_hand_strings, min(half, len(range_hand_strings)))
+                selected_out_range = random.sample(non_range_hands, min(half, len(non_range_hands)))
                 selected_hands = selected_in_range + selected_out_range
 
             for hand_str in selected_hands:

@@ -1,12 +1,13 @@
 """HTTP controllers for the users + auth resources."""
 from flask import Blueprint, jsonify, request
-from werkzeug.exceptions import BadRequest, NotFound
 from flask_jwt_extended import jwt_required
-from ....interfaces.users import Users
+from werkzeug.exceptions import BadRequest, NotFound
+
 from ....interfaces.auth import Auth
-from ....use_cases.register_user import RegisterUser, UserAlreadyExists
-from ....use_cases.login_user import LoginUser, InvalidCredentials
+from ....interfaces.users import Users
 from ....use_cases.current_user import CurrentUser
+from ....use_cases.login_user import InvalidCredentials, LoginUser
+from ....use_cases.register_user import RegisterUser, UserAlreadyExists
 
 
 class UserController:
