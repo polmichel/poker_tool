@@ -39,8 +39,6 @@ const Training: React.FC = () => {
     isSessionActive,
     timeSpent,
     progress,
-    setCurrentSession,
-    setCurrentQuestion,
     setIsSessionActive,
     createSession,
     nextQuestion,
@@ -50,7 +48,7 @@ const Training: React.FC = () => {
     resetTrainingState,
   } = useTraining();
 
-  const { ranges, fetchRanges } = useRanges();
+  const { ranges } = useRanges();
 
   const [selectedMode, setSelectedMode] = useState<TrainingMode>('fill');
   const [selectedRange, setSelectedRange] = useState<Range | null>(null);
@@ -58,11 +56,11 @@ const Training: React.FC = () => {
   const [openResultsDialog, setOpenResultsDialog] = useState<boolean>(false);
   const [totalQuestions, setTotalQuestions] = useState<number>(10);
 
-  // Charger les données au montage
+  // Charger les données au montage.
+  // fetchRanges() is already called by useRanges on mount; only fetch modes here.
   useEffect(() => {
-    fetchRanges();
     fetchTrainingModes();
-  }, [fetchRanges, fetchTrainingModes]);
+  }, [fetchTrainingModes]);
 
   // Démarrer une nouvelle session
   const handleStartTraining = useCallback(async () => {

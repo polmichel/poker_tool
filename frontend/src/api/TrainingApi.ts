@@ -25,6 +25,13 @@ export interface CreateSessionResponse {
   first_question: TrainingQuestionType | null;
 }
 
+export interface SessionDetail {
+  id: number;
+  session: TrainingSession;
+  current_question: TrainingQuestionType | null;
+  progress: { current: number; total: number; correct: number; score: number };
+}
+
 export class TrainingApi {
   async modes(): Promise<{ value: string; label: string }[]> {
     const response = await api.get('/training/modes');
@@ -41,7 +48,7 @@ export class TrainingApi {
     return response.data;
   }
 
-  async session(sessionId: number): Promise<TrainingSession> {
+  async session(sessionId: number): Promise<SessionDetail> {
     const response = await api.get(`/training/sessions/${sessionId}`);
     return response.data;
   }

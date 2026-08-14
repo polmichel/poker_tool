@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '../utils/api';
+import { api } from '../api/client';
 import { Stats, UserStats } from '../types';
 
 // URL de base pour l'API
