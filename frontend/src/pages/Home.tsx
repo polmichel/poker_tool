@@ -1,187 +1,167 @@
 import React from 'react';
-import { Box, Typography, Paper, Button, Divider, Grid } from '@mui/material';
-import {
-  Add as AddIcon,
-  List as ListIcon,
-  School as SchoolIcon,
-  BarChart as BarChartIcon,
-  ImportExport as ImportExportIcon,
-} from '@mui/icons-material';
+import { Box, Typography, Grid, Container, Skeleton, Chip, Stack } from '@mui/material';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useNavigate } from 'react-router-dom';
-import { StatsCard } from '../components';
+import { AppCard } from '../components';
 import { useStats } from '../hooks';
+import { useAuthContext } from '../auth/AuthContext';
+import { APP_ENTRIES, moduleRoute, type AppEntry } from '../app/theme';
+import { THEME_COLORS } from '../utils/constants';
 
+/**
+ * Home hub — the application landing screen.
+ *
+ * Presents a set of "vignettes" (cards), each opening a dedicated sub-app:
+ * Le Ranger, Le Simulateur, Statistiques, etc. Designed as a fluid, modern
+ * dashboard rather than a flat feature list.
+ */
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { globalStats, loading, error, fetchGlobalStats } = useStats();
+  const { globalStats, loading } = useStats();
+  const { isAuthenticated, user } = useAuthContext();
 
-  const featureCards = [
-    {
-      title: 'Créer une Range',
-      description:
-        'Créez et personnalisez vos propres ranges de poker pour différentes positions et scénarios.',
-      icon: <AddIcon fontSize="large" color="primary" />,
-      path: '/ranges/new',
-      color: '#4CAF50',
-    },
-    {
-      title: 'Mes Ranges',
-      description: 'Consultez, modifiez ou supprimez vos ranges existantes.',
-      icon: <ListIcon fontSize="large" color="secondary" />,
-      path: '/ranges',
-      color: '#2196F3',
-    },
-    {
-      title: "S'entraîner",
-      description: 'Entraînez-vous à reconnaître et compléter vos ranges avec différents modes.',
-      icon: <SchoolIcon fontSize="large" color="warning" />,
-      path: '/training',
-      color: '#FF9800',
-    },
-    {
-      title: 'Statistiques',
-      description: 'Suivez vos progrès et analysez vos performances.',
-      icon: <BarChartIcon fontSize="large" color="info" />,
-      path: '/stats',
-      color: '#00BCD4',
-    },
-    {
-      title: 'Importer/Exporter',
-      description: 'Importez ou exportez vos ranges dans différents formats.',
-      icon: <ImportExportIcon fontSize="large" color="success" />,
-      path: '/import-export',
-      color: '#8BC34A',
-    },
-  ];
+  const handleSelect = (entry: AppEntry) => {
+    const route = moduleRoute(entry.slug);
+    if (route) navigate(route);
+  };
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* En-tête */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Poker Tool
+    <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
+      {/* Hero */}
+      <Box
+        sx={{
+          position: 'relative',
+          mb: 5,
+          overflow: 'hidden',
+          borderRadius: 4,
+          border: `1px solid ${THEME_COLORS.border}`,
+          background:
+            'radial-gradient(700px 320px at 85% -20%, rgba(34,211,238,0.16), transparent 60%),' +
+            'radial-gradient(520px 280px at 5% 10%, rgba(16,185,129,0.18), transparent 60%),' +
+            'linear-gradient(180deg, rgba(18,24,33,0.9), rgba(11,15,20,0.9))',
+          px: { xs: 3, md: 6 },
+          py: { xs: 4, md: 6 },
+        }}
+      >
+        <Chip
+          icon={<AutoAwesomeIcon sx={{ fontSize: 16 }} />}
+          label="Suite poker · tout-en-un"
+          size="small"
+          sx={{
+            mb: 2,
+            color: THEME_COLORS.primaryLight,
+            backgroundColor: 'rgba(16,185,129,0.12)',
+            border: `1px solid ${THEME_COLORS.primary}33`,
+            fontWeight: 600,
+          }}
+        />
+        <Typography
+          variant="h3"
+          component="h1"
+          sx={{ fontWeight: 800, maxWidth: 760, lineHeight: 1.1 }}
+        >
+          Choisissez votre module et entrez dans la partie.
         </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          Outil complet de gestion et d'entraînement aux ranges poker
+        <Typography
+          variant="h6"
+          color="text.secondary"
+          sx={{ mt: 1.5, maxWidth: 680, fontWeight: 400 }}
+        >
+          {isAuthenticated
+            ? `Bonjour ${user?.username}, reprenez là où vous vous étiez arrêté.`
+            : 'Construisez vos ranges, entraînez-vous et suivez vos progrès — chaque outil dans son espace dédié.'}
+        </Typography>
+
+        {/* Quick stat strip */}
+        <Stack
+          direction="row"
+          spacing={{ xs: 2, md: 4 }}
+          sx={{ mt: 4, flexWrap: 'wrap', rowGap: 2 }}
+        >
+          <StatPill
+            label="Ranges"
+            value={loading || !globalStats ? null : globalStats.total_ranges}
+          />
+          <StatPill
+            label="Sessions"
+            value={loading || !globalStats ? null : globalStats.total_sessions}
+          />
+          <StatPill
+            label="Précision moy."
+            value={loading || !globalStats ? null : `${Math.round(globalStats.avg_score || 0)}%`}
+          />
+          <StatPill
+            label="Utilisateurs"
+            value={loading || !globalStats ? null : globalStats.total_users}
+          />
+        </Stack>
+      </Box>
+
+      {/* Vignettes grid */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          Modules
+        </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ display: { xs: 'none', sm: 'block' } }}
+        >
+          Sélectionnez un outil pour y accéder
         </Typography>
       </Box>
 
-      {/* Statistiques globales */}
-      {loading ? (
-        <Typography>Chargement des statistiques...</Typography>
-      ) : error ? (
-        <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography color="error">{error}</Typography>
-          <Button
-            variant="outlined"
-            color="primary"
-            size="small"
-            onClick={() => fetchGlobalStats()}
-          >
-            Réessayer
-          </Button>
-        </Box>
-      ) : globalStats ? (
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Statistiques Globales
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatsCard
-                title="Ranges"
-                stats={{ total_ranges: globalStats.total_ranges }}
-                icon={<ListIcon color="primary" />}
-                color="#4CAF50"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatsCard
-                title="Sessions"
-                stats={{ total_sessions: globalStats.total_sessions }}
-                icon={<SchoolIcon color="secondary" />}
-                color="#2196F3"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatsCard
-                title="Score Moyen"
-                stats={{ avg_score: globalStats.avg_score }}
-                icon={<BarChartIcon color="info" />}
-                color="#FF9800"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatsCard
-                title="Temps Total"
-                stats={{ total_hands: globalStats.total_hands }}
-                icon={<ImportExportIcon color="success" />}
-                color="#8BC34A"
-              />
-            </Grid>
-          </Grid>
-        </Box>
-      ) : null}
-
-      <Divider sx={{ my: 4 }} />
-
-      {/* Cartes des fonctionnalités */}
-      <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-        Fonctionnalités
-      </Typography>
-
       <Grid container spacing={3}>
-        {featureCards.map((card, index) => (
-          <Grid item xs={12} sm={6} md={4} lg={2.4} key={index}>
-            <Paper
-              sx={{
-                p: 3,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                cursor: 'pointer',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                borderLeft: `4px solid ${card.color}`,
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                },
-              }}
-              onClick={() => navigate(card.path)}
-            >
-              <Box sx={{ mb: 2 }}>{card.icon}</Box>
-              <Typography variant="h6" gutterBottom>
-                {card.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
-                {card.description}
-              </Typography>
-              <Button
-                variant="text"
-                color="primary"
-                size="small"
-                sx={{ mt: 1, alignSelf: 'flex-start' }}
-              >
-                Accéder
-              </Button>
-            </Paper>
+        {APP_ENTRIES.map((entry) => (
+          <Grid item xs={12} sm={6} md={4} key={entry.slug}>
+            <AppCard entry={entry} onSelect={handleSelect} />
           </Grid>
         ))}
       </Grid>
 
-      <Divider sx={{ my: 4 }} />
-
-      {/* Section d'aide */}
-      <Paper sx={{ p: 3, mt: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Besoin d'aide ?
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Consultez la documentation ou contactez le support pour toute question.
-        </Typography>
-      </Paper>
-    </Box>
+      {/* Footer hint */}
+      <Box
+        sx={{
+          mt: 5,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1,
+          color: THEME_COLORS.textMuted,
+        }}
+      >
+        <Typography variant="body2">D’autres modules poker arrivent bientôt.</Typography>
+        <ArrowForwardIcon sx={{ fontSize: 16 }} />
+      </Box>
+    </Container>
   );
 };
+
+/** A single glassy stat pill for the hero strip. */
+const StatPill: React.FC<{ label: string; value: string | number | null }> = ({ label, value }) => (
+  <Box
+    sx={{
+      minWidth: 96,
+      px: 2,
+      py: 1.25,
+      borderRadius: 3,
+      border: `1px solid ${THEME_COLORS.border}`,
+      background: 'rgba(15,21,30,0.6)',
+      backdropFilter: 'blur(6px)',
+    }}
+  >
+    <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1, display: 'block' }}>
+      {label}
+    </Typography>
+    {value === null ? (
+      <Skeleton variant="text" width={48} height={26} />
+    ) : (
+      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        {value}
+      </Typography>
+    )}
+  </Box>
+);
 
 export default Home;

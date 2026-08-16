@@ -76,18 +76,37 @@ export const HAND_GRID = [
   ['2Ao', '2Ko', '2Qo', '2Jo', '2To', '29o', '28o', '27o', '26o', '25o', '24o', '23o', '22'],
 ];
 
-// Couleurs pour le thème
+// Couleurs pour le thème — palette moderne (charcoal + émeraude + cyan).
+// Source unique de vérité partagée par theme.ts et les composants.
 export const THEME_COLORS = {
-  primary: '#4CAF50',
-  secondary: '#2196F3',
-  background: '#121212',
-  paper: '#1e1e1e',
-  textPrimary: '#ffffff',
-  textSecondary: '#b0b0b0',
-  error: '#F44336',
-  warning: '#FF9800',
-  info: '#2196F3',
-  success: '#4CAF50',
+  // Marque
+  primary: '#10b981', // emerald 500 (vert tapis)
+  primaryDark: '#059669',
+  primaryLight: '#34d399',
+  secondary: '#22d3ee', // cyan 400
+  secondaryDark: '#06b6d4',
+
+  // Surfaces
+  background: '#0b0f14',
+  backgroundGradient:
+    'radial-gradient(1200px 600px at 80% -10%, rgba(34,211,238,0.10), transparent 60%),' +
+    'radial-gradient(900px 500px at 0% 0%, rgba(16,185,129,0.12), transparent 55%),' +
+    'linear-gradient(180deg, #0b0f14 0%, #0a0e13 100%)',
+  paper: '#121821',
+  paperElevated: '#1a2330',
+  border: 'rgba(148, 163, 184, 0.14)',
+  borderStrong: 'rgba(148, 163, 184, 0.28)',
+
+  // Texte
+  textPrimary: '#f1f5f9',
+  textSecondary: '#94a3b8',
+  textMuted: '#64748b',
+
+  // Statut
+  error: '#f43f5e',
+  warning: '#f59e0b',
+  info: '#22d3ee',
+  success: '#10b981',
 };
 
 // Tailles pour la grille

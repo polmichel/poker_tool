@@ -1,16 +1,16 @@
 /**
- * Main application shell: layout, drawer, app bar and user menu.
+ * Main application shell: a fluid app bar with a brand mark, module-aware
+ * breadcrumb (with a back-to-hub action), a module navigation drawer and
+ * the user menu.
+ *
+ * E2E contract preserved: the "Connexion" button appears when anonymous,
+ * the username button + "Déconnexion" menu item appear when authenticated.
  */
 import React, { useState, useEffect } from 'react';
 import {
   Box,
   CssBaseline,
   Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Toolbar,
   AppBar,
   IconButton,
@@ -19,32 +19,29 @@ import {
   Button,
   Menu,
   MenuItem,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Chip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Home as HomeIcon,
-  List as ListIcon,
-  School as SchoolIcon,
-  BarChart as BarChartIcon,
-  ImportExport as ImportExportIcon,
   Settings as SettingsIcon,
   Login as LoginIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
+  GridView as GridViewIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../auth/AuthContext';
 import { THEME_COLORS } from '../utils/constants';
+import { APP_ENTRIES, MODULE_ROUTES, moduleRoute, resolveModule } from './theme';
+import { getIcon } from './icons';
 
-const DRAWER_WIDTH = 240;
-
-const menuItems = [
-  { text: 'Accueil', icon: <HomeIcon />, path: '/' },
-  { text: 'Mes Ranges', icon: <ListIcon />, path: '/ranges' },
-  { text: "S'entraîner", icon: <SchoolIcon />, path: '/training' },
-  { text: 'Statistiques', icon: <BarChartIcon />, path: '/stats' },
-  { text: 'Importer/Exporter', icon: <ImportExportIcon />, path: '/import-export' },
-];
+const DRAWER_WIDTH = 256;
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -72,49 +69,122 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     setMobileOpen(false);
   }, [location]);
 
+  const activeModule = resolveModule(location.pathname);
+  const onHub = location.pathname === '/';
+  const title = onHub ? 'Accueil' : (MODULE_ROUTES[activeModule ?? '']?.title ?? 'Poker Tool');
+
   const drawer = (
-    <div>
-      <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2 }}>
-        <Typography variant="h6" noWrap component="div">
-          Poker Tool
-        </Typography>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Brand */}
+      <Toolbar
+        sx={{
+          gap: 1.25,
+          cursor: 'pointer',
+          px: 2.5,
+          py: 2.5,
+          '&:hover': { opacity: 0.9 },
+        }}
+        onClick={() => navigate('/')}
+      >
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: 2.5,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: THEME_COLORS.background,
+            background: `linear-gradient(135deg, ${THEME_COLORS.primaryLight}, ${THEME_COLORS.primaryDark})`,
+            boxShadow: `0 8px 20px -8px ${THEME_COLORS.primary}cc`,
+            fontSize: 18,
+            fontWeight: 800,
+          }}
+        >
+          ♠
+        </Box>
+        <Box sx={{ lineHeight: 1.1 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 800, letterSpacing: '-0.01em' }}>
+            Poker Tool
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Suite d'entraînement
+          </Typography>
+        </Box>
       </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={location.pathname === item.path}
-              onClick={() => navigate(item.path)}
-              sx={{
-                '&.Mui-selected': {
-                  backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                  '&:hover': { backgroundColor: 'rgba(76, 175, 80, 0.2)' },
-                },
-              }}
+
+      <Divider sx={{ borderColor: THEME_COLORS.border }} />
+
+      <List sx={{ flex: 1, pt: 1.5 }}>
+        <ListItem disablePadding>
+          <ListItemButton selected={onHub} onClick={() => navigate('/')}>
+            <ListItemIcon
+              sx={{ color: onHub ? THEME_COLORS.primaryLight : 'inherit', minWidth: 38 }}
             >
-              <ListItemIcon
-                sx={{ color: location.pathname === item.path ? THEME_COLORS.primary : 'inherit' }}
+              <GridViewIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="Accueil"
+              secondary="Tous les modules"
+              secondaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
+            />
+          </ListItemButton>
+        </ListItem>
+
+        {APP_ENTRIES.map((entry) => {
+          const Icon = getIcon(entry.icon);
+          const isActive = activeModule === entry.slug;
+          const route = moduleRoute(entry.slug);
+          return (
+            <ListItem key={entry.slug} disablePadding>
+              <ListItemButton
+                selected={isActive}
+                disabled={!route}
+                onClick={() => route && navigate(route)}
               >
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+                <ListItemIcon sx={{ color: isActive ? entry.accent : 'inherit', minWidth: 38 }}>
+                  <Icon fontSize="medium" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={entry.title}
+                  secondary={entry.tagline}
+                  secondaryTypographyProps={{
+                    variant: 'caption',
+                    color: 'text.secondary',
+                    noWrap: true,
+                  }}
+                />
+                {entry.soon && (
+                  <Chip
+                    label="Soon"
+                    size="small"
+                    sx={{
+                      ml: 1,
+                      height: 18,
+                      fontSize: 10,
+                      color: THEME_COLORS.textMuted,
+                      backgroundColor: 'rgba(148,163,184,0.12)',
+                    }}
+                  />
+                )}
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
       </List>
-      <Divider />
+
+      <Divider sx={{ borderColor: THEME_COLORS.border }} />
       <List>
         <ListItem disablePadding>
           <ListItemButton onClick={() => navigate('/settings')}>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 38 }}>
               <SettingsIcon />
             </ListItemIcon>
             <ListItemText primary="Paramètres" />
           </ListItemButton>
         </ListItem>
       </List>
-    </div>
+    </Box>
   );
 
   return (
@@ -122,40 +192,59 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <CssBaseline />
       <AppBar
         position="fixed"
+        elevation={0}
         sx={{
           width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
           ml: { sm: `${DRAWER_WIDTH}px` },
-          backgroundColor: THEME_COLORS.paper,
-          color: THEME_COLORS.textPrimary,
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ gap: 1 }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ mr: 1, display: { sm: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
 
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {menuItems.find((item) => location.pathname.startsWith(item.path))?.text ||
-              'Poker Tool'}
+          {/* Back to hub when inside a module */}
+          {!onHub && (
+            <IconButton
+              color="inherit"
+              onClick={() => navigate('/')}
+              aria-label="retour à l'accueil"
+              sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+          )}
+
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 700 }}>
+            {title}
           </Typography>
 
           <Box>
             {isAuthenticated && user ? (
               <>
-                <Button color="inherit" startIcon={<PersonIcon />} onClick={handleMenuOpen}>
+                <Button
+                  color="inherit"
+                  startIcon={<PersonIcon />}
+                  onClick={handleMenuOpen}
+                  sx={{
+                    borderRadius: 999,
+                    border: `1px solid ${THEME_COLORS.borderStrong}`,
+                    px: 1.5,
+                  }}
+                >
                   {user.username}
                 </Button>
                 <Menu
                   anchorEl={anchorEl}
                   open={Boolean(anchorEl)}
                   onClose={handleMenuClose}
-                  PaperProps={{ sx: { mt: '45px' } }}
+                  PaperProps={{ sx: { mt: '45px', minWidth: 200 } }}
                 >
                   <MenuItem onClick={handleMenuClose}>
                     <ListItemIcon>
@@ -179,7 +268,12 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 </Menu>
               </>
             ) : (
-              <Button color="inherit" startIcon={<LoginIcon />} onClick={handleLogin}>
+              <Button
+                color="inherit"
+                startIcon={<LoginIcon />}
+                onClick={handleLogin}
+                sx={{ borderRadius: 999, border: `1px solid ${THEME_COLORS.borderStrong}` }}
+              >
                 Connexion
               </Button>
             )}
@@ -220,9 +314,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
           width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
-          backgroundColor: THEME_COLORS.background,
           minHeight: '100vh',
         }}
       >

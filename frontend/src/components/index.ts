@@ -6,3 +6,4 @@ export { default as RangeList } from './RangeList';
 export { default as StatsCard } from './StatsCard';
 export { default as RangeStats } from './RangeStats';
 export { default as ImportExportDialog } from './ImportExportDialog';
+export { default as AppCard } from './AppCard';
