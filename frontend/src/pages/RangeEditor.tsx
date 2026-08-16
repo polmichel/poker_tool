@@ -17,13 +17,20 @@ import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
 const RangeEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  // autoFetch=false : on n'a pas besoin de charger la liste de toutes les
+  // ranges dans l'éditeur. Cela évite que loading passe à true au montage
+  // et masque la range ciblée (ce qui causait le bug « Range non trouvée »).
   const { loading, error, selectedRange, setSelectedRange, fetchRange, updateRange, deleteRange } =
-    useRanges();
+    useRanges(undefined, false);
 
   const [range, setRange] = useState<Range | null>(null);
   const [grid, setGrid] = useState<any[][]>([]);
   const [history, setHistory] = useState<any[][][]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
+  // Indique si on a tenté de charger la range (fetchRange appelé au moins une
+  // fois). Sert à ne pas afficher « Range non trouvée » pendant le tout premier
+  // rendu, avant même que le fetch n'ait commencé.
+  const [fetchAttempted, setFetchAttempted] = useState<boolean>(false);
   // Action actuellement sélectionnée dans la légende, appliquée au clic/glissé
   // sur la grille. Par défaut 'open'.
   const [selectedAction, setSelectedAction] = useState<ActionType>('open');
@@ -31,6 +38,7 @@ const RangeEditor: React.FC = () => {
   // Charger la range au montage
   useEffect(() => {
     if (id) {
+      setFetchAttempted(true);
       fetchRange(parseInt(id));
     }
   }, [id, fetchRange]);
@@ -160,10 +168,20 @@ const RangeEditor: React.FC = () => {
     );
   }
 
-  if (!range) {
+  // N'afficher « Range non trouvée » que si on a réellement tenté de charger
+  // la range (id présent + fetch tenté) et qu'elle n'est toujours pas là.
+  if (!range && fetchAttempted && id) {
     return (
       <Box sx={{ p: 3 }}>
         <Typography>Range non trouvée</Typography>
+      </Box>
+    );
+  }
+
+  if (!range) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography>Chargement...</Typography>
       </Box>
     );
   }

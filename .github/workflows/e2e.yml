@@ -2,141 +2,148 @@ name: E2E Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-    - name: Install backend dependencies
-      working-directory: backend
-      run: |
-        pip install -q Flask Flask-CORS Flask-SQLAlchemy Flask-JWT-Extended python-dotenv Werkzeug
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          pip install -q Flask Flask-CORS Flask-SQLAlchemy Flask-JWT-Extended python-dotenv Werkzeug
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
-    - name: Install frontend dependencies
-      working-directory: frontend
-      run: npm ci
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
 
-    - name: Install Playwright browsers
-      working-directory: frontend
-      run: npx playwright install --with-deps
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps
 
-    # Start backend server in background
-    - name: Start backend server
-      working-directory: backend
-      run: |
-        # Create instance directory
-        mkdir -p instance
-        # Start Flask server in background
-        FLASK_ENV=production python3 -c "from poker_tool.app import PokerTool; PokerTool().run(debug=False)" > /tmp/backend.log 2>&1 &
-        BACKEND_PID=$!
-        echo "Backend PID: $BACKEND_PID"
-        
-        # Wait for backend to be ready
-        for i in {1..30}; do
-          if curl -s http://localhost:5000/api/health > /dev/null; then
-            echo "Backend is ready!"
-            break
-          fi
-          sleep 2
-          echo "Waiting for backend... ($i/30)"
-        done
-        
-        # Create test data
-        python3 scripts/create_test_data.py > /tmp/create_test_data.log 2>&1
+      # Start backend server in background
+      - name: Start backend server
+        working-directory: backend
+        run: |
+          # Create instance directory
+          mkdir -p instance
+          # Start Flask server in background
+          FLASK_ENV=production python3 -c "from poker_tool.app import PokerTool; PokerTool().run(debug=False)" > /tmp/backend.log 2>&1 &
+          BACKEND_PID=$!
+          echo "Backend PID: $BACKEND_PID"
 
-    - name: Start frontend server
-      working-directory: frontend
-      run: |
-        # Start React dev server in background
-        PORT=3000 BROWSER=none npm start > /tmp/frontend.log 2>&1 &
-        FRONTEND_PID=$!
-        echo "Frontend PID: $FRONTEND_PID"
-        
-        # Wait for frontend to be ready
-        for i in {1..30}; do
-          if curl -s http://localhost:3000 > /dev/null; then
-            echo "Frontend is ready!"
-            break
-          fi
-          sleep 2
-          echo "Waiting for frontend... ($i/30)"
-        done
+          # Wait for backend to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:5000/api/health > /dev/null; then
+              echo "Backend is ready!"
+              break
+            fi
+            sleep 2
+            echo "Waiting for backend... ($i/30)"
+          done
 
-    - name: Run CI basic tests
-      working-directory: frontend
-      run: npx playwright test --config tests/e2e ci-basic.spec.ts
-      env:
-        BASE_URL: http://localhost:3000
-        CI: true
+          # Create test data
+          python3 scripts/create_test_data.py > /tmp/create_test_data.log 2>&1
 
-    - name: Run questionnaire tests
-      working-directory: frontend
-      run: npx playwright test --config tests/e2e questionnaire.spec.ts
-      env:
-        BASE_URL: http://localhost:3000
-        CI: true
+      - name: Start frontend server
+        working-directory: frontend
+        run: |
+          # Start React dev server in background
+          PORT=3000 BROWSER=none npm start > /tmp/frontend.log 2>&1 &
+          FRONTEND_PID=$!
+          echo "Frontend PID: $FRONTEND_PID"
 
-    - name: Run create range tests
-      working-directory: frontend
-      run: npx playwright test --config tests/e2e create-range.spec.ts
-      env:
-        BASE_URL: http://localhost:3000
-        CI: true
+          # Wait for frontend to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "Frontend is ready!"
+              break
+            fi
+            sleep 2
+            echo "Waiting for frontend... ($i/30)"
+          done
 
-    - name: Run smoke tests
-      working-directory: frontend
-      run: npx playwright test --config tests/e2e smoke.spec.ts
-      env:
-        BASE_URL: http://localhost:3000
-        CI: true
+      - name: Run CI basic tests
+        working-directory: frontend
+        run: npx playwright test --config tests/e2e ci-basic.spec.ts
+        env:
+          BASE_URL: http://localhost:3000
+          CI: true
 
-    - name: Run range paint & legend tests
-      working-directory: frontend
-      run: npx playwright test --config tests/e2e range-paint-legend.spec.ts
-      env:
-        BASE_URL: http://localhost:3000
-        CI: true
+      - name: Run questionnaire tests
+        working-directory: frontend
+        run: npx playwright test --config tests/e2e questionnaire.spec.ts
+        env:
+          BASE_URL: http://localhost:3000
+          CI: true
 
-    - name: Stop servers
-      if: always()
-      run: |
-        # Stop backend
-        pkill -f "poker_tool.app" || true
-        # Stop frontend
-        pkill -f "npm start" || true
-        pkill -f "node.*react-scripts" || true
+      - name: Run create range tests
+        working-directory: frontend
+        run: npx playwright test --config tests/e2e create-range.spec.ts
+        env:
+          BASE_URL: http://localhost:3000
+          CI: true
 
-    - name: Upload test results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: playwright-report
-        path: frontend/playwright-report/
-        retention-days: 30
+      - name: Run smoke tests
+        working-directory: frontend
+        run: npx playwright test --config tests/e2e smoke.spec.ts
+        env:
+          BASE_URL: http://localhost:3000
+          CI: true
 
-    - name: Upload test artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results
-        path: frontend/test-results/
-        retention-days: 30
+      - name: Run range paint & legend tests
+        working-directory: frontend
+        run: npx playwright test --config tests/e2e range-paint-legend.spec.ts
+        env:
+          BASE_URL: http://localhost:3000
+          CI: true
+
+      - name: Run range create & edit tests
+        working-directory: frontend
+        run: npx playwright test --config tests/e2e range-create-edit.spec.ts
+        env:
+          BASE_URL: http://localhost:3000
+          CI: true
+
+      - name: Stop servers
+        if: always()
+        run: |
+          # Stop backend
+          pkill -f "poker_tool.app" || true
+          # Stop frontend
+          pkill -f "npm start" || true
+          pkill -f "node.*react-scripts" || true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: frontend/test-results/
+          retention-days: 30
