@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Card, CardActionArea, Typography, Chip } from '@mui/material';
+import { Box, Card, CardActionArea, Typography } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { getIcon } from '../app/icons';
 import type { AppEntry } from '../app/theme';
@@ -86,15 +86,23 @@ const AppCard: React.FC<AppCardProps> = ({ entry, onSelect }) => {
           sx={{ mt: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
         >
           {disabled ? (
-            <Chip
-              label="Bientôt"
-              size="small"
+            <Box
+              component="span"
               sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                height: 22,
+                px: 1,
+                borderRadius: 999,
+                fontSize: 11,
+                fontWeight: 600,
                 color: THEME_COLORS.textSecondary,
                 backgroundColor: 'rgba(148,163,184,0.12)',
                 border: `1px solid ${THEME_COLORS.border}`,
               }}
-            />
+            >
+              Bientôt
+            </Box>
           ) : (
             <Typography
               variant="button"

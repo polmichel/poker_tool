@@ -24,7 +24,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Chip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -155,17 +154,25 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                   }}
                 />
                 {entry.soon && (
-                  <Chip
-                    label="Soon"
-                    size="small"
+                  <Box
+                    component="span"
                     sx={{
                       ml: 1,
+                      px: 0.75,
+                      py: 0.25,
                       height: 18,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      borderRadius: 9,
                       fontSize: 10,
+                      fontWeight: 600,
                       color: THEME_COLORS.textMuted,
                       backgroundColor: 'rgba(148,163,184,0.12)',
+                      border: `1px solid ${THEME_COLORS.border}`,
                     }}
-                  />
+                  >
+                    Soon
+                  </Box>
                 )}
               </ListItemButton>
             </ListItem>
