@@ -8,7 +8,6 @@ export const ACTION_COLORS = {
   all_in: '#F44336', // Rouge
   fold: '#9E9E9E', // Gris
   check: '#FFEB3B', // Jaune
-  bet: '#9C27B0', // Violet
   undefined: '#607D8B', // Gris-bleu (visible sur fond clair et foncé)
 };
 
@@ -20,7 +19,6 @@ export const ACTION_LABELS: Record<string, string> = {
   all_in: 'All-In',
   fold: 'Passer',
   check: 'Checker',
-  bet: 'Miser',
   undefined: 'Non défini',
 };
 

@@ -58,9 +58,9 @@ test.describe('Remplissage de range : légende + paint-on-drag', () => {
     await legend.waitFor({ state: 'visible', timeout: 10000 });
     await expect(legend).toBeVisible();
 
-    // Tous les items de légende doivent être présents (8 actions)
+    // Tous les items de légende doivent être présents (7 actions)
     const legendItems = page.locator('[data-testid^="legend-item-"]');
-    await expect(legendItems).toHaveCount(8, { timeout: 10000 });
+    await expect(legendItems).toHaveCount(7, { timeout: 10000 });
 
     // Vérifier quelques items spécifiques
     await expect(page.locator('[data-testid="legend-item-open"]')).toBeVisible();

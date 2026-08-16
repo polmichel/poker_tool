@@ -76,7 +76,6 @@ export function getActionLabel(action: ActionType): string {
     all_in: 'All-In',
     fold: 'Passer',
     check: 'Checker',
-    bet: 'Miser',
     undefined: 'Non défini',
   };
   return labels[action] || action;
@@ -177,7 +176,6 @@ export function calculateRangeStats(hands: Record<string, ActionType>): {
     all_in: 0,
     fold: 0,
     check: 0,
-    bet: 0,
     undefined: 0,
   };
 
@@ -275,6 +273,6 @@ export function getRandomHand(): string {
 
 // Obtenir une action aléatoire
 export function getRandomAction(): ActionType {
-  const actions: ActionType[] = ['open', 'call', 'raise', 'all_in', 'fold', 'check', 'bet'];
+  const actions: ActionType[] = ['open', 'call', 'raise', 'all_in', 'fold', 'check'];
   return actions[Math.floor(Math.random() * actions.length)];
 }

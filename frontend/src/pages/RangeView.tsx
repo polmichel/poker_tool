@@ -124,7 +124,6 @@ const RangeView: React.FC = () => {
       all_in: 0,
       fold: 0,
       check: 0,
-      bet: 0,
       undefined: 0,
     };
     for (const action of Object.values(range.hands)) {
@@ -230,7 +229,7 @@ const RangeView: React.FC = () => {
               sx={{
                 backgroundColor: ACTION_COLORS[action as ActionType] || 'grey.500',
                 color:
-                  action === 'open' || action === 'raise' || action === 'all_in' || action === 'bet'
+                  action === 'open' || action === 'raise' || action === 'all_in'
                     ? 'white'
                     : 'black',
               }}
