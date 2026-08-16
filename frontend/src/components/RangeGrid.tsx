@@ -1,8 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Box, Paper, Tooltip, MenuItem, Menu } from '@mui/material';
+import { Box, Paper, MenuItem, Menu } from '@mui/material';
 import { RangeGridCell, ActionType, RANKS } from '../types';
 import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
-import { getActionLabel } from '../utils/helpers';
 
 interface RangeGridProps {
   grid: RangeGridCell[][];
@@ -236,56 +235,48 @@ const RangeGrid: React.FC<RangeGridProps> = ({
                   const textColor = getTextColor(bgColor);
 
                   return (
-                    <Tooltip
+                    <Paper
                       key={cell.hand}
-                      title={`Main: ${cell.hand} | Action: ${getActionLabel(
-                        cell.action as ActionType,
-                      )}`}
-                      arrow
-                      placement="top"
+                      data-testid={`range-cell-${cell.hand}`}
+                      sx={{
+                        width: cellSize,
+                        height: cellSize,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: bgColor,
+                        border: editable ? '1px solid rgba(0, 0, 0, 0.2)' : 'none',
+                        cursor: editable ? 'pointer' : 'default',
+                        fontSize: 10,
+                        fontWeight: 'bold',
+                        color: textColor,
+                        userSelect: 'none',
+                        transition: 'all 0.2s ease',
+                        '&:hover': editable
+                          ? {
+                              opacity: 0.8,
+                              border: '1px solid rgba(0, 0, 0, 0.4)',
+                              transform: 'scale(1.05)',
+                            }
+                          : {
+                              opacity: 0.9,
+                            },
+                      }}
+                      onClick={() => handleCellClick(cell.hand, cell.action as ActionType)}
+                      onMouseDown={(e) =>
+                        handleCellMouseDown(e, cell.hand, cell.action as ActionType)
+                      }
+                      onMouseEnter={() =>
+                        handleCellMouseEnter(cell.hand, cell.action as ActionType)
+                      }
+                      onContextMenu={(e) => {
+                        if (editable) {
+                          handleContextMenu(e, cell.hand, cell.action as ActionType);
+                        }
+                      }}
                     >
-                      <Paper
-                        data-testid={`range-cell-${cell.hand}`}
-                        sx={{
-                          width: cellSize,
-                          height: cellSize,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          backgroundColor: bgColor,
-                          border: editable ? '1px solid rgba(0, 0, 0, 0.2)' : 'none',
-                          cursor: editable ? 'pointer' : 'default',
-                          fontSize: 10,
-                          fontWeight: 'bold',
-                          color: textColor,
-                          userSelect: 'none',
-                          transition: 'all 0.2s ease',
-                          '&:hover': editable
-                            ? {
-                                opacity: 0.8,
-                                border: '1px solid rgba(0, 0, 0, 0.4)',
-                                transform: 'scale(1.05)',
-                              }
-                            : {
-                                opacity: 0.9,
-                              },
-                        }}
-                        onClick={() => handleCellClick(cell.hand, cell.action as ActionType)}
-                        onMouseDown={(e) =>
-                          handleCellMouseDown(e, cell.hand, cell.action as ActionType)
-                        }
-                        onMouseEnter={() =>
-                          handleCellMouseEnter(cell.hand, cell.action as ActionType)
-                        }
-                        onContextMenu={(e) => {
-                          if (editable) {
-                            handleContextMenu(e, cell.hand, cell.action as ActionType);
-                          }
-                        }}
-                      >
-                        {showLabels && cell.hand}
-                      </Paper>
-                    </Tooltip>
+                      {showLabels && cell.hand}
+                    </Paper>
                   );
                 })}
               </Box>
