@@ -6,6 +6,8 @@
  * - Vérifier la présence de la légende cliquable
  * - Sélectionner une action dans la légende
  * - Peindre plusieurs cellules en glissé (mousedown + drag + mouseup)
+ * - Créer une nouvelle range via l'UI et vérifier que l'éditeur s'ouvre
+ *   sans afficher "Range non trouvée"
  */
 import { test, expect } from '@playwright/test';
 import { authenticatePage } from '../utils';
@@ -121,5 +123,48 @@ test.describe('Remplissage de range : légende + paint-on-drag', () => {
     // Vérifier que le composant n'a pas planté : la grille est toujours là
     await expect(cells.first()).toBeVisible();
     await expect(legend).toBeVisible();
+  });
+
+  test('crée une range via l\'UI et ouvre l\'éditeur sans "Range non trouvée"', async ({
+    page,
+  }) => {
+    // Aller sur la liste des ranges
+    await page.goto('/ranges');
+    await page.waitForLoadState('domcontentloaded');
+
+    // Ouvrir le dialogue de création
+    const newRangeButton = page.locator('[data-testid="new-range-button"]');
+    await newRangeButton.waitFor({ state: 'visible', timeout: 10000 });
+    await newRangeButton.click();
+
+    const dialog = page.locator('.MuiDialog-root');
+    await dialog.waitFor({ state: 'visible', timeout: 5000 });
+
+    // Remplir le nom
+    const nameInput = page.locator('[data-testid="range-name-input"]');
+    await nameInput.waitFor({ state: 'visible', timeout: 5000 });
+    const rangeName = 'Range Bug Fix E2E ' + Date.now();
+    await nameInput.fill(rangeName);
+
+    // Sauvegarder
+    const saveButton = page.locator('[data-testid="range-save-button"]');
+    await saveButton.waitFor({ state: 'visible', timeout: 5000 });
+    await saveButton.click();
+
+    // Attendre la redirection vers l'éditeur
+    await dialog.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+    await page.waitForURL(/\/ranges\/\d+\/edit$/, { timeout: 15000 });
+
+    // Le nom de la range doit être affiché dans l'éditeur (pas "Range non trouvée")
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.getByText(rangeName)).toBeVisible({ timeout: 10000 });
+
+    // Vérifier explicitement qu'on n'a pas le message d'erreur
+    await expect(page.getByText('Range non trouvée')).not.toBeVisible();
+
+    // La grille doit être présente
+    const firstCell = page.locator('[data-testid^="range-cell-"]').first();
+    await firstCell.waitFor({ state: 'visible', timeout: 10000 });
+    await expect(firstCell).toBeVisible();
   });
 });
