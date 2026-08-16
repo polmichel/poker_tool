@@ -109,10 +109,7 @@ test.describe('Remplissage de range : légende + paint-on-drag', () => {
 
     // Simuler un paint-on-drag : enfoncer le bouton sur la première cellule,
     // déplacer vers la deuxième, puis relâcher.
-    await page.mouse.move(
-      firstBox!.x + firstBox!.width / 2,
-      firstBox!.y + firstBox!.height / 2,
-    );
+    await page.mouse.move(firstBox!.x + firstBox!.width / 2, firstBox!.y + firstBox!.height / 2);
     await page.mouse.down();
     await page.mouse.move(
       secondBox!.x + secondBox!.width / 2,

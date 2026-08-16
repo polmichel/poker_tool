@@ -367,16 +367,10 @@ const RangeGrid: React.FC<RangeGridProps> = ({
                   py: 0.5,
                   cursor: onActionSelect ? 'pointer' : 'default',
                   borderRadius: 1,
-                  border: isSelected
-                    ? '2px solid'
-                    : '1px solid rgba(255, 255, 255, 0.12)',
+                  border: isSelected ? '2px solid' : '1px solid rgba(255, 255, 255, 0.12)',
                   borderColor: isSelected ? 'primary.main' : 'transparent',
-                  backgroundColor: isSelected
-                    ? 'rgba(255, 255, 255, 0.08)'
-                    : 'transparent',
-                  '&:hover': onActionSelect
-                    ? { backgroundColor: 'rgba(255, 255, 255, 0.05)' }
-                    : {},
+                  backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                  '&:hover': onActionSelect ? { backgroundColor: 'rgba(255, 255, 255, 0.05)' } : {},
                 }}
               >
                 <Box
@@ -388,10 +382,7 @@ const RangeGrid: React.FC<RangeGridProps> = ({
                     flexShrink: 0,
                   }}
                 />
-                <Box
-                  component="span"
-                  sx={{ fontSize: 12, color: 'text.primary' }}
-                >
+                <Box component="span" sx={{ fontSize: 12, color: 'text.primary' }}>
                   {ACTION_LABELS[action] || action}
                 </Box>
               </Box>
