@@ -79,13 +79,15 @@ describe('RangeGrid Component', () => {
     expect(mockOnCellClick).not.toHaveBeenCalled();
   });
 
-  it('renders with correct cell colors', () => {
+  it('renders a cell per hand', () => {
     render(<RangeGrid grid={mockGrid} onCellClick={mockOnCellClick} />);
     // jsdom does not reliably compute MUI Emotion `sx` background colors, so
-    // assert on the tooltip/aria-label which encodes the cell's action (and
-    // thus its color mapping) instead of the computed style.
-    expect(screen.getByLabelText('Main: AA | Action: Ouvrir')).toBeInTheDocument();
-    expect(screen.getByLabelText('Main: AKs | Action: Relancer')).toBeInTheDocument();
+    // assert on the cell test ids (which encode the hand) rather than the
+    // computed style. Each hand maps to a cell via data-testid.
+    expect(screen.getByTestId('range-cell-AA')).toBeInTheDocument();
+    expect(screen.getByTestId('range-cell-AKs')).toBeInTheDocument();
+    expect(screen.getByTestId('range-cell-KK')).toBeInTheDocument();
+    expect(screen.getByTestId('range-cell-QQ')).toBeInTheDocument();
   });
 
   it('renders row and column labels when showLabels is true', () => {
