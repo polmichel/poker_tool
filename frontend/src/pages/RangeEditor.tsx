@@ -24,6 +24,9 @@ const RangeEditor: React.FC = () => {
   const [grid, setGrid] = useState<any[][]>([]);
   const [history, setHistory] = useState<any[][][]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
+  // Action actuellement sélectionnée dans la légende, appliquée au clic/glissé
+  // sur la grille. Par défaut 'open'.
+  const [selectedAction, setSelectedAction] = useState<ActionType>('open');
 
   // Charger la range au montage
   useEffect(() => {
@@ -42,29 +45,18 @@ const RangeEditor: React.FC = () => {
     }
   }, [selectedRange]);
 
-  // Gérer le clic sur une cellule de la grille
+  // Gérer le clic/glissé sur une cellule de la grille : applique directement
+  // l'action sélectionnée dans la légende (au lieu de cycler les actions).
   const handleCellClick = useCallback(
-    (hand: string, currentAction: ActionType) => {
+    (hand: string, _currentAction: ActionType) => {
       // Trouver la position de la main dans la grille
-      const newGrid = [...grid];
+      const newGrid = grid.map((row) => row.map((cell: any) => ({ ...cell })));
       let found = false;
 
       for (let i = 0; i < newGrid.length && !found; i++) {
         for (let j = 0; j < newGrid[i].length; j++) {
           if (newGrid[i][j].hand === hand) {
-            // Passer à l'action suivante
-            const actions: ActionType[] = [
-              'fold',
-              'open',
-              'call',
-              'raise',
-              'all_in',
-              'check',
-              'undefined',
-            ];
-            const currentIndex = actions.indexOf(currentAction);
-            const nextIndex = (currentIndex + 1) % actions.length;
-            const newAction = actions[nextIndex];
+            const newAction = selectedAction;
             newGrid[i][j].action = newAction;
             // ✅ FIX: Mettre à jour la couleur avec ACTION_COLORS
             newGrid[i][j].color = ACTION_COLORS[newAction] || '#FFFFFF';
@@ -82,7 +74,7 @@ const RangeEditor: React.FC = () => {
         setGrid(newGrid);
       }
     },
-    [grid, history, historyIndex],
+    [grid, history, historyIndex, selectedAction],
   );
 
   // Annuler la dernière modification
@@ -270,7 +262,14 @@ const RangeEditor: React.FC = () => {
           Grille de la Range
         </Typography>
         <Box sx={{ overflow: 'auto' }}>
-          <RangeGrid grid={grid} onCellClick={handleCellClick} editable={true} cellSize={40} />
+          <RangeGrid
+            grid={grid}
+            onCellClick={handleCellClick}
+            editable={true}
+            cellSize={40}
+            selectedAction={selectedAction}
+            onActionSelect={setSelectedAction}
+          />
         </Box>
       </Paper>
 
