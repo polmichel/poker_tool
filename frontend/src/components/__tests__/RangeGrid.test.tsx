@@ -12,7 +12,6 @@ jest.mock('../../utils/constants', () => ({
     fold: '#F44336',
     all_in: '#9C27B0',
     check: '#FFEB3B',
-    bet: '#9C27B0',
     undefined: '#607D8B',
   },
   ACTION_LABELS: {
@@ -22,7 +21,6 @@ jest.mock('../../utils/constants', () => ({
     fold: 'Passer',
     all_in: 'All-In',
     check: 'Checker',
-    bet: 'Miser',
     undefined: 'Non défini',
   },
 }));
@@ -126,14 +124,13 @@ describe('RangeGrid Component', () => {
         onActionSelect={mockOnActionSelect}
       />,
     );
-    // Les 8 actions de LEGEND_ACTIONS
+    // Les 7 actions de LEGEND_ACTIONS
     expect(screen.getByTestId('legend-item-fold')).toBeInTheDocument();
     expect(screen.getByTestId('legend-item-open')).toBeInTheDocument();
     expect(screen.getByTestId('legend-item-call')).toBeInTheDocument();
     expect(screen.getByTestId('legend-item-raise')).toBeInTheDocument();
     expect(screen.getByTestId('legend-item-all_in')).toBeInTheDocument();
     expect(screen.getByTestId('legend-item-check')).toBeInTheDocument();
-    expect(screen.getByTestId('legend-item-bet')).toBeInTheDocument();
     expect(screen.getByTestId('legend-item-undefined')).toBeInTheDocument();
   });
 

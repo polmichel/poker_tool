@@ -248,9 +248,7 @@ const RangeEditor: React.FC = () => {
             sx={{
               backgroundColor: ACTION_COLORS[action as ActionType] || 'grey.500',
               color:
-                action === 'open' || action === 'raise' || action === 'all_in' || action === 'bet'
-                  ? 'white'
-                  : 'black',
+                action === 'open' || action === 'raise' || action === 'all_in' ? 'white' : 'black',
             }}
           />
         ))}

@@ -22,7 +22,6 @@ const LEGEND_ACTIONS: ActionType[] = [
   'raise',
   'all_in',
   'check',
-  'bet',
   'undefined',
 ];
 

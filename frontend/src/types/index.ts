@@ -11,8 +11,7 @@ export interface Hand {
 }
 
 // Types pour les actions
-export type ActionType =
-  'open' | 'call' | 'raise' | 'all_in' | 'fold' | 'check' | 'bet' | 'undefined';
+export type ActionType = 'open' | 'call' | 'raise' | 'all_in' | 'fold' | 'check' | 'undefined';
 
 // Couleurs associées aux actions (pour le frontend)
 export const ACTION_COLORS: Record<ActionType, string> = {
@@ -22,7 +21,6 @@ export const ACTION_COLORS: Record<ActionType, string> = {
   all_in: '#F44336', // Rouge
   fold: '#9E9E9E', // Gris
   check: '#FFEB3B', // Jaune
-  bet: '#9C27B0', // Violet
   undefined: '#FFFFFF', // Blanc
 };
 
