@@ -17,13 +17,16 @@ import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
 const RangeView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { loading, error, selectedRange, fetchRange, deleteRange } = useRanges();
+  // autoFetch=false : voir RangeEditor. On ne charge que la range ciblée.
+  const { loading, error, selectedRange, fetchRange, deleteRange } = useRanges(undefined, false);
 
   const [range, setRange] = useState<Range | null>(null);
+  const [fetchAttempted, setFetchAttempted] = useState<boolean>(false);
 
   // Charger la range au montage
   useEffect(() => {
     if (id) {
+      setFetchAttempted(true);
       fetchRange(parseInt(id));
     }
   }, [id, fetchRange]);
@@ -95,10 +98,19 @@ const RangeView: React.FC = () => {
     );
   }
 
-  if (!range) {
+  // N'afficher « Range non trouvée » que si on a réellement tenté de charger.
+  if (!range && fetchAttempted && id) {
     return (
       <Box sx={{ p: 3 }}>
         <Typography>Range non trouvée</Typography>
+      </Box>
+    );
+  }
+
+  if (!range) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography>Chargement...</Typography>
       </Box>
     );
   }

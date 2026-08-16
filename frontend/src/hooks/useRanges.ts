@@ -4,12 +4,17 @@ import { Range, ActionType } from '../types';
 
 // Hook personnalisé pour gérer les ranges.
 // Dépend de RangesApi (injectable) plutôt que d'appeler axios directement.
-export function useRanges(rangesApi?: RangesApi) {
+export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
   const rangesApiRef = useRef<RangesApi>(rangesApi ?? new RangesApi());
   const api = rangesApiRef.current;
 
   const [ranges, setRanges] = useState<Range[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  // loading commence à false pour ne pas afficher prématurément un état
+  // « Chargement... » / « Range non trouvée » quand le hook est monté dans un
+  // composant qui n'a pas besoin de la liste (ex: RangeEditor). Chaque appel
+  // explicite (fetchRanges, fetchRange, etc.) met loading à true le temps
+  // de l'opération.
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedRange, setSelectedRange] = useState<Range | null>(null);
 
@@ -58,7 +63,7 @@ export function useRanges(rangesApi?: RangesApi) {
         setRanges((prev) => [...prev, data]);
         // Sélectionner immédiatement la range nouvellement créée afin que le
         // RangeEditor puisse l'afficher sans attendre un fetchRange supplémentaire.
-        // Cela évite le bug "Range non trouvée" juste après la création.
+        // Cela évite le bug « Range non trouvée » juste après la création.
         setSelectedRange(data);
         return data;
       } catch (err) {
@@ -262,10 +267,15 @@ export function useRanges(rangesApi?: RangesApi) {
     }
   }, [api]);
 
-  // Initialiser le hook
+  // Charger toutes les ranges au montage uniquement si autoFetch est vrai.
+  // Les pages comme RangeEditor qui n'ont pas besoin de la liste passent
+  // autoFetch=false pour éviter un fetch inutile qui masquerait le
+  // chargement de la range ciblée.
   useEffect(() => {
-    fetchRanges();
-  }, [fetchRanges]);
+    if (autoFetch) {
+      fetchRanges();
+    }
+  }, [fetchRanges, autoFetch]);
 
   return {
     ranges,
