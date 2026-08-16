@@ -109,6 +109,13 @@ jobs:
         BASE_URL: http://localhost:3000
         CI: true
 
+    - name: Run range paint & legend tests
+      working-directory: frontend
+      run: npx playwright test --config tests/e2e range-paint-legend.spec.ts
+      env:
+        BASE_URL: http://localhost:3000
+        CI: true
+
     - name: Stop servers
       if: always()
       run: |
