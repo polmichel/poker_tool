@@ -7,6 +7,7 @@ import { Range, ActionType } from '../types';
 export function useRanges(rangesApi?: RangesApi) {
   const rangesApiRef = useRef<RangesApi>(rangesApi ?? new RangesApi());
   const api = rangesApiRef.current;
+
   const [ranges, setRanges] = useState<Range[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +17,6 @@ export function useRanges(rangesApi?: RangesApi) {
   const fetchRanges = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
       const data = await api.all();
       setRanges(data);
@@ -33,7 +33,6 @@ export function useRanges(rangesApi?: RangesApi) {
     async (id: number) => {
       setLoading(true);
       setError(null);
-
       try {
         const data = await api.byId(id);
         setSelectedRange(data);
@@ -54,10 +53,13 @@ export function useRanges(rangesApi?: RangesApi) {
     async (rangeData: Omit<Range, 'id' | 'created_at' | 'updated_at'>) => {
       setLoading(true);
       setError(null);
-
       try {
         const data = await api.create(rangeData);
         setRanges((prev) => [...prev, data]);
+        // Sélectionner immédiatement la range nouvellement créée afin que le
+        // RangeEditor puisse l'afficher sans attendre un fetchRange supplémentaire.
+        // Cela évite le bug "Range non trouvée" juste après la création.
+        setSelectedRange(data);
         return data;
       } catch (err) {
         setError('Erreur lors de la création de la range');
