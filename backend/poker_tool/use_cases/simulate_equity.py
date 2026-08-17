@@ -15,7 +15,7 @@ adapter without touching this file.
 import random
 
 from ..interfaces.hand_evaluator import HandEvaluator
-from ..objects.deck import Deck, RANKS, SUITS
+from ..objects.deck import SUITS, Deck
 from ..objects.equity import EquityByHand, EquityResult, hand_combos
 from ..objects.hand import Hand
 from ..objects.range_parser import parse_range

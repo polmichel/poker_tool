@@ -9,10 +9,10 @@ from flask import Flask
 from flask_cors import CORS
 
 from .adapters.jwt.auth import JwtAuth
-from .adapters.treys.evaluator import TreysEvaluator
 from .adapters.sqlalchemy.ranges import SqlRanges
 from .adapters.sqlalchemy.training_sessions import SqlTrainingSessions
 from .adapters.sqlalchemy.users import SqlUsers
+from .adapters.treys.evaluator import TreysEvaluator
 from .config import Config
 from .infrastructure.web.flask_app import FlaskApp
 from .use_cases.answer_question import AnswerQuestion

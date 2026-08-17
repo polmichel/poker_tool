@@ -6,6 +6,8 @@ that store data in memory. They let use cases be tested with real behavior
 and zero coupling to SQLAlchemy/Flask.
 """
 
+from typing import ClassVar
+
 from poker_tool.interfaces.hand_evaluator import HandEvaluator
 from poker_tool.interfaces.ranges import Ranges
 from poker_tool.interfaces.training_sessions import TrainingSessions
@@ -144,7 +146,7 @@ class FakeHandEvaluator(HandEvaluator):
     without depending on a real evaluator implementation.
     """
 
-    _RANKS = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
+    _RANKS: ClassVar[list[str]] = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
 
     def evaluate(self, hole_cards: list[str], board: list[str]) -> int:
         # Lower is better; use the best (lowest) rank index of the two hole cards.

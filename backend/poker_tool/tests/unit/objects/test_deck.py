@@ -2,7 +2,7 @@
 import random
 import unittest
 
-from poker_tool.objects.deck import Deck, RANKS, SUITS
+from poker_tool.objects.deck import RANKS, SUITS, Deck
 
 
 class TestDeck(unittest.TestCase):

@@ -22,7 +22,7 @@ jobs:
       - name: Install backend dependencies
         working-directory: backend
         run: |
-          pip install -q Flask Flask-CORS Flask-SQLAlchemy Flask-JWT-Extended python-dotenv Werkzeug
+          pip install -q -r requirements.txt
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -119,6 +119,13 @@ jobs:
       - name: Run range create & edit tests
         working-directory: frontend
         run: npx playwright test --config tests/e2e range-create-edit.spec.ts
+        env:
+          BASE_URL: http://localhost:3000
+          CI: true
+
+      - name: Run equity simulator tests
+        working-directory: frontend
+        run: npx playwright test --config tests/e2e equity.spec.ts
         env:
           BASE_URL: http://localhost:3000
           CI: true

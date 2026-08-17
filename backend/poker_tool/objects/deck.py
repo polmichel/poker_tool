@@ -8,7 +8,6 @@ external dependency: cards are represented as canonical 2-char strings
 """
 import random
 
-
 # Ranks and suits reused across the equity module (mirror of objects/hand.py).
 RANKS = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
 SUITS = ['s', 'h', 'd', 'c']

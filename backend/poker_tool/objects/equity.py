@@ -5,7 +5,6 @@ Holds the aggregated win/tie/lose of a hero hand against an opposing range,
 plus the per-hand breakdown used by the frontend heatmap and detail table.
 """
 
-from .hand import RANKS
 
 
 def hand_combos(rank1: str, rank2: str, suited: bool) -> int:

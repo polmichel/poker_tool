@@ -17,9 +17,9 @@ from ...use_cases.create_range import CreateRange
 from ...use_cases.current_user import CurrentUser
 from ...use_cases.end_training_session import EndTrainingSession
 from ...use_cases.global_stats import GlobalStats
-from ...use_cases.simulate_equity import SimulateEquity
 from ...use_cases.login_user import LoginUser
 from ...use_cases.register_user import RegisterUser
+from ...use_cases.simulate_equity import SimulateEquity
 from ...use_cases.start_training_session import StartTrainingSession
 from ...use_cases.update_range import UpdateRange
 from ...use_cases.user_stats import UserStats
