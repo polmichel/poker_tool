@@ -153,8 +153,6 @@ class TestObjectCreationFlow(unittest.TestCase):
 
     def test_training_session_flow(self):
         """Test creating a TrainingSession."""
-        from unittest.mock import patch
-
         from poker_tool.objects.action import Action, ActionType
         from poker_tool.objects.position import Position
         from poker_tool.objects.range import Range
@@ -172,27 +170,33 @@ class TestObjectCreationFlow(unittest.TestCase):
             range_id=1,
         )
 
-        # Mock random to avoid randomness in tests
-        with patch('poker_tool.objects.training.session.random.sample') as mock_sample:
-            mock_sample.return_value = ["AKs", "TT"]
+        # Mode "fill" is now a grid-painting exercise: a single question whose
+        # correct answer is the full 169-cell reference range (JSON). No
+        # random sampling is involved for "fill" anymore.
+        import json
 
-            # Create session
-            session = TrainingSession(
-                user=user,
-                range_obj=range_obj,
-                mode="fill",
-                total_questions=2,
-                session_id=1,
-            )
+        session = TrainingSession(
+            user=user,
+            range_obj=range_obj,
+            mode="fill",
+            total_questions=2,
+            session_id=1,
+        )
 
-            self.assertEqual(session.user, user)
-            self.assertEqual(session.range, range_obj)
-            self.assertEqual(session.mode, "fill")
+        self.assertEqual(session.user, user)
+        self.assertEqual(session.range, range_obj)
+        self.assertEqual(session.mode, "fill")
+        # One grid question, typed grid_paint.
+        self.assertEqual(len(session._questions), 1)
+        self.assertEqual(session.current_question.type, "grid_paint")
 
-            # Answer a question
-            new_session = session.answer("raise")
-            self.assertEqual(new_session.current_index, 1)
-            self.assertEqual(new_session.correct_answers, 1)
+        # Answer with the exact reference grid -> all 169 cells correct.
+        reference = json.loads(session.current_question.correct_answer)
+        new_session = session.answer(json.dumps(reference))
+        self.assertEqual(new_session.current_index, 1)
+        self.assertTrue(new_session.is_complete)
+        self.assertEqual(new_session.correct_answers, 169)
+        self.assertEqual(new_session.score, 100.0)
 
 
 class TestInterfaceImplementations(unittest.TestCase):

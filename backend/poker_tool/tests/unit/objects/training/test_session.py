@@ -52,13 +52,13 @@ class TestTrainingSession(unittest.TestCase):
 
     @patch('poker_tool.objects.training.session.random.sample')
     def test_session_answer_correct(self, mock_sample):
-        """Test answering a question correctly."""
+        """Test answering a question correctly (one-question-per-hand mode)."""
         mock_sample.return_value = ["AKs", "TT"]
 
         session = TrainingSession(
             user=self.user,
             range_obj=self.range_obj,
-            mode="fill",
+            mode="complete",
             total_questions=2,
             session_id=1,
         )
@@ -98,13 +98,13 @@ class TestTrainingSession(unittest.TestCase):
 
     @patch('poker_tool.objects.training.session.random.sample')
     def test_session_answer_incorrect(self, mock_sample):
-        """Test answering a question incorrectly."""
+        """Test answering a question incorrectly (one-question-per-hand mode)."""
         mock_sample.return_value = ["AKs", "TT"]
 
         session = TrainingSession(
             user=self.user,
             range_obj=self.range_obj,
-            mode="fill",
+            mode="complete",
             total_questions=2,
             session_id=1,
         )
@@ -119,13 +119,13 @@ class TestTrainingSession(unittest.TestCase):
 
     @patch('poker_tool.objects.training.session.random.sample')
     def test_session_complete(self, mock_sample):
-        """Test session completion."""
+        """Test session completion (one-question-per-hand mode)."""
         mock_sample.return_value = ["AKs", "TT"]
 
         session = TrainingSession(
             user=self.user,
             range_obj=self.range_obj,
-            mode="fill",
+            mode="complete",
             total_questions=2,
             session_id=1,
         )
@@ -214,6 +214,93 @@ class TestTrainingSession(unittest.TestCase):
 
         self.assertEqual(session.time_spent, 330)  # 5 minutes 30 seconds
 
+
+
+class TestTrainingSessionGridMode(unittest.TestCase):
+    """Tests for the grid-painting 'fill' mode."""
+
+    def setUp(self):
+        self.user = User("testuser", "test@example.com", user_id=1)
+        self.range_obj = Range(
+            name="Test Range",
+            range_type=RangeType.PREFLOP,
+            position=Position.BTN,
+            hands={"AKs": Action(ActionType.RAISE), "TT": Action(ActionType.OPEN)},
+            range_id=1,
+        )
+
+    def test_fill_generates_single_grid_question(self):
+        """Mode 'fill' must produce a single grid_paint question."""
+        import json
+
+        session = TrainingSession(
+            user=self.user,
+            range_obj=self.range_obj,
+            mode="fill",
+            total_questions=10,
+            session_id=1,
+        )
+        self.assertEqual(len(session._questions), 1)
+        question = session.current_question
+        self.assertEqual(question.type, "grid_paint")
+        self.assertEqual(question.hand, "grid")
+        reference = json.loads(question.correct_answer)
+        # The reference covers the whole 13x13 grid.
+        self.assertEqual(len(reference), 169)
+        self.assertEqual(reference["AKs"], "raise")
+        self.assertEqual(reference["TT"], "open")
+        # Hands absent from the range default to fold.
+        self.assertEqual(reference["QQ"], "fold")
+
+    def test_fill_perfect_grid_scores_full(self):
+        """Submitting the exact reference grid scores 100%."""
+        import json
+
+        session = TrainingSession(
+            user=self.user,
+            range_obj=self.range_obj,
+            mode="fill",
+            total_questions=10,
+            session_id=1,
+        )
+        reference = json.loads(session.current_question.correct_answer)
+        answered = session.answer(json.dumps(reference))
+        self.assertTrue(answered.is_complete)
+        self.assertEqual(answered.correct_answers, 169)
+        self.assertEqual(answered.score, 100.0)
+
+    def test_fill_empty_grid_scores_defaults(self):
+        """An empty painted grid matches all default 'fold' cells."""
+        import json
+
+        session = TrainingSession(
+            user=self.user,
+            range_obj=self.range_obj,
+            mode="fill",
+            total_questions=10,
+            session_id=1,
+        )
+        answered = session.answer(json.dumps({}))
+        self.assertTrue(answered.is_complete)
+        # The range has 2 non-fold hands, so 169 - 2 = 167 fold cells match.
+        self.assertEqual(answered.correct_answers, 167)
+
+    def test_fill_answer_does_not_mutate_original(self):
+        """Answering a grid must not mutate the original session."""
+        import json
+
+        session = TrainingSession(
+            user=self.user,
+            range_obj=self.range_obj,
+            mode="fill",
+            total_questions=10,
+            session_id=1,
+        )
+        original_questions = list(session._questions)
+        reference = json.loads(session.current_question.correct_answer)
+        session.answer(json.dumps(reference))
+        self.assertEqual(session._questions, original_questions)
+        self.assertEqual(session.current_index, 0)
 
 if __name__ == '__main__':
     unittest.main()

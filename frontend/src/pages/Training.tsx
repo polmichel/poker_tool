@@ -21,7 +21,7 @@ import {
   Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { TrainingModeSelector, TrainingQuestion } from '../components';
+import { TrainingModeSelector, TrainingQuestion, TrainingGridQuestion } from '../components';
 import { useTraining, useRanges } from '../hooks';
 import { TrainingMode, Range } from '../types';
 
@@ -286,14 +286,23 @@ const Training: React.FC = () => {
             </Box>
           </Paper>
 
-          <TrainingQuestion
-            question={currentQuestion}
-            onAnswer={handleAnswer}
-            onNext={handleNextQuestion}
-            feedback={feedback}
-            questionNumber={questionNumber}
-            totalQuestions={progress?.total || totalQuestions}
-          />
+          {currentQuestion.type === 'grid_paint' ? (
+            <TrainingGridQuestion
+              question={currentQuestion}
+              onAnswer={handleAnswer}
+              onNext={handleNextQuestion}
+              feedback={feedback}
+            />
+          ) : (
+            <TrainingQuestion
+              question={currentQuestion}
+              onAnswer={handleAnswer}
+              onNext={handleNextQuestion}
+              feedback={feedback}
+              questionNumber={questionNumber}
+              totalQuestions={progress?.total || totalQuestions}
+            />
+          )}
         </Box>
       )}
 

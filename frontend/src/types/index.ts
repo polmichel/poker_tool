@@ -60,8 +60,11 @@ export interface Scenario {
 // Types pour l'entraînement
 export type TrainingMode = 'fill' | 'guess' | 'complete';
 
+// Type de question : les modes classiques plus le mode grille à peindre.
+export type TrainingQuestionKind = TrainingMode | 'grid_paint';
+
 export interface TrainingQuestion {
-  type: TrainingMode;
+  type: TrainingQuestionKind;
   hand: string;
   question: string;
   correct_answer: string;
