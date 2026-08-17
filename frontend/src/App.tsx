@@ -16,6 +16,7 @@ import {
   Training,
   Stats,
   ImportExport,
+  Equity,
   Login,
   Register,
 } from './pages';
@@ -82,6 +83,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <ImportExport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/equity"
+              element={
+                <ProtectedRoute>
+                  <Equity />
                 </ProtectedRoute>
               }
             />

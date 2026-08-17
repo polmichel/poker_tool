@@ -233,10 +233,31 @@ export function handFromString(handStr: string): Hand {
 
 // Vérifier si une main est valide
 export function isValidHand(handStr: string): boolean {
-  try {
-    handFromString(handStr);
-    return true;
-  } catch {
+  const upper = handStr.toUpperCase();
+  let clean = upper;
+  if (clean.endsWith('S') || clean.endsWith('O')) {
+    clean = clean.slice(0, -1);
+  }
+  if (clean.length !== 2) {
     return false;
   }
+  return RANKS.includes(clean[0] as Rank) && RANKS.includes(clean[1] as Rank);
+}
+
+// Types pour le simulateur d'équité (range vs main)
+export interface EquityByHand {
+  hand: string;
+  combos: number;
+  win: number;
+  tie: number;
+  lose: number;
+}
+
+export interface EquityResult {
+  hero: string;
+  win: number;
+  tie: number;
+  lose: number;
+  iterations: number;
+  by_hand: EquityByHand[];
 }

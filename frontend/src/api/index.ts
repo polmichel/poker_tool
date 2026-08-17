@@ -15,3 +15,4 @@ export type {
 } from './TrainingApi';
 export { StatsApi } from './StatsApi';
 export type { GlobalStats, UserStats } from './StatsApi';
+export { EquityApi } from './EquityApi';
