@@ -118,7 +118,8 @@ poker_tool/
 │   │       ├── RangeEditor.tsx
 │   │       ├── Training.tsx
 │   │       ├── Stats.tsx
-│   │       └── ImportExport.tsx
+│   │       ├── ImportExport.tsx
+│   │       └── Equity.tsx
 │   ├── package.json
 │   └── tsconfig.json
 │
