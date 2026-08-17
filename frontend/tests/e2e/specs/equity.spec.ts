@@ -42,8 +42,8 @@ test.describe('Equity simulator', () => {
     await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(500);
 
-    // The page title should be visible.
-    await expect(page.getByText("Calculateur d'Équité")).toBeVisible({ timeout: 5000 });
+    // The page title (h1) should be visible.
+    await expect(page.getByRole('heading', { name: "Calculateur d'Équité" })).toBeVisible({ timeout: 5000 });
 
     // Configure the hero hand.
     const heroInput = page.getByTestId('equity-hero-input');
