@@ -46,6 +46,7 @@ class TestJsonErrorHandling(unittest.TestCase):
             end_training=MagicMock(),
             global_stats=MagicMock(),
             user_stats=MagicMock(),
+            simulate_equity=MagicMock(),
         )
         self.flask_app = FlaskApp(**kwargs)
 

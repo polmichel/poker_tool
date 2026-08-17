@@ -17,12 +17,14 @@ from ...use_cases.create_range import CreateRange
 from ...use_cases.current_user import CurrentUser
 from ...use_cases.end_training_session import EndTrainingSession
 from ...use_cases.global_stats import GlobalStats
+from ...use_cases.simulate_equity import SimulateEquity
 from ...use_cases.login_user import LoginUser
 from ...use_cases.register_user import RegisterUser
 from ...use_cases.start_training_session import StartTrainingSession
 from ...use_cases.update_range import UpdateRange
 from ...use_cases.user_stats import UserStats
 from .controllers.auth import AuthController, UserController
+from .controllers.equity import EquityController
 from .controllers.ranges import RangeController
 from .controllers.stats import StatsController
 from .controllers.training import TrainingController
@@ -48,6 +50,7 @@ class FlaskApp:
         end_training: EndTrainingSession,
         global_stats: GlobalStats,
         user_stats: UserStats,
+        simulate_equity: SimulateEquity,
     ):
         """Initialize the Flask app with its use cases (DI)."""
         self.app = flask_app
@@ -63,6 +66,7 @@ class FlaskApp:
             AuthController(register_user, login_user, current_user),
             TrainingController(sessions, start_training, answer_question, end_training),
             StatsController(global_stats, user_stats),
+            EquityController(simulate_equity),
         ]
         self._register_routes()
 

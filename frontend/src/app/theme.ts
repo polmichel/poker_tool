@@ -75,12 +75,11 @@ export const APP_ENTRIES: AppEntry[] = [
   {
     slug: 'equity',
     title: "Calculateur d'Équité",
-    tagline: 'Bientôt disponible',
+    tagline: "Équité d'une main contre une range",
     description:
-      "Comparez l'équité de vos mains contre des ranges adverses. Module en cours de développement.",
+      "Comparez l'équité de vos mains contre des ranges adverses (notation QQ+, ATs+, KTs-JTs).",
     accent: '#f43f5e',
     icon: 'Calculate',
-    soon: true,
   },
   {
     slug: 'icm',
@@ -105,6 +104,7 @@ export const MODULE_ROUTES: Record<string, { title: string; paths: string[] }> =
   simulateur: { title: 'Le Simulateur', paths: ['/training'] },
   stats: { title: 'Statistiques', paths: ['/stats'] },
   data: { title: 'Import / Export', paths: ['/import-export'] },
+  equity: { title: "Calculateur d'Équité", paths: ['/equity'] },
 };
 
 /** Resolve the active module slug from a pathname. */
@@ -133,6 +133,8 @@ export function moduleRoute(slug: string): string | null {
       return '/stats';
     case 'data':
       return '/import-export';
+    case 'equity':
+      return '/equity';
     default:
       return null;
   }
