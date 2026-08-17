@@ -57,6 +57,12 @@ async function startTrainingSession(page: import('@playwright/test').Page) {
   }
   await page.waitForTimeout(500);
 
+  // Select the "Deviner une range" (guess) mode so the per-hand question UI
+  // (answer buttons) is exercised. The default "fill" mode renders a grid.
+  const guessModeButton = page.locator('button:has-text("Deviner une range")');
+  await guessModeButton.first().click();
+  await page.waitForTimeout(300);
+
   // Start training
   await page.click('[data-testid="start-training-button"]');
   await page.waitForTimeout(2000);
