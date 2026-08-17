@@ -105,8 +105,17 @@ test.describe('Training "Remplir une range" (fill) grid mode', () => {
     expect(await feedback.textContent()).toMatch(/cellules correspondent/i);
     expect(await feedback.textContent()).toMatch(/%/);
 
+    // Regression invariant: validating must NOT drop the user back to the
+    // main menu. The "Démarrer l'entraînement" start button and the session's
+    // grid-question-paper must stay mounted while the feedback is shown.
+    await expect(page.locator('[data-testid="start-training-button"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="grid-question-paper"]')).toBeVisible();
+
     // The grid must be locked: no more validate button.
     await expect(page.locator('[data-testid="validate-grid-button"]')).toHaveCount(0);
+
+    // The "next" button advertises the results (session complete).
+    await expect(page.locator('[data-testid="next-question-button"]')).toHaveText(/résultats/i);
 
     // Finish the session -> results dialog.
     await page.click('[data-testid="next-question-button"]');

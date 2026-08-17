@@ -114,16 +114,20 @@ export function useTraining(trainingApi?: TrainingApi) {
         const result = await api.answer(sessionId, answer);
 
         // Update state based on response
+        // NOTE: when the session is complete we deliberately keep the current
+        // question and the session active so the feedback panel stays mounted
+        // in the page until the user clicks "Voir les résultats". Closing the
+        // session (setIsSessionActive(false) + setCurrentQuestion(null)) is
+        // driven by the page's handleNextQuestion, which also opens the results
+        // dialog. Doing it here would unmount the question component (and its
+        // feedback panel) before the user can read it.
         if (result.session_complete) {
-          // Session is complete
-          setIsSessionActive(false);
-          setCurrentQuestion(null);
           setProgress({
             current: result.progress?.current || progress.total,
             total: result.progress?.total || progress.total,
             correct: result.progress?.correct || progress.correct,
           });
-          setScore(result.progress?.score || score);
+          setScore(result.progress?.score ?? score);
 
           return {
             isCorrect: result.is_correct,
