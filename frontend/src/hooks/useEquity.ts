@@ -21,10 +21,7 @@ export function useEquity(equityApi?: EquityApi) {
         setResult(data);
         return data;
       } catch (err) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : "Erreur lors du calcul de l'équité";
+        const message = err instanceof Error ? err.message : "Erreur lors du calcul de l'équité";
         setError(message);
         return null;
       } finally {

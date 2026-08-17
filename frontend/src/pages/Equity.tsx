@@ -97,7 +97,12 @@ const Equity: React.FC = () => {
             onChange={(e) => setIterations(Number(e.target.value))}
             size="small"
             sx={{ width: 140 }}
-            inputProps={{ min: 100, max: 100000, step: 500, 'data-testid': 'equity-iterations-input' }}
+            inputProps={{
+              min: 100,
+              max: 100000,
+              step: 500,
+              'data-testid': 'equity-iterations-input',
+            }}
           />
         </Box>
 
@@ -119,7 +124,12 @@ const Equity: React.FC = () => {
         </Box>
 
         {validationError && (
-          <Typography variant="body2" color="error" sx={{ mt: 1 }} data-testid="equity-validation-error">
+          <Typography
+            variant="body2"
+            color="error"
+            sx={{ mt: 1 }}
+            data-testid="equity-validation-error"
+          >
             {validationError}
           </Typography>
         )}
@@ -133,9 +143,14 @@ const Equity: React.FC = () => {
       {/* Résultats agrégés */}
       {result && (
         <Paper sx={{ p: 3, mb: 3 }} data-testid="equity-results">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
+          >
             <Typography variant="h6">
-              {result.hero} <Typography component="span" color="text.secondary">vs range</Typography>
+              {result.hero}{' '}
+              <Typography component="span" color="text.secondary">
+                vs range
+              </Typography>
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {result.iterations.toLocaleString('fr-FR')} itérations
@@ -180,9 +195,13 @@ const Equity: React.FC = () => {
                     {h.hand}
                   </TableCell>
                   <TableCell align="right">{h.combos}</TableCell>
-                  <TableCell align="right" sx={{ color: '#10b981' }}>{h.win.toFixed(1)}</TableCell>
+                  <TableCell align="right" sx={{ color: '#10b981' }}>
+                    {h.win.toFixed(1)}
+                  </TableCell>
                   <TableCell align="right">{h.tie.toFixed(1)}</TableCell>
-                  <TableCell align="right" sx={{ color: '#f43f5e' }}>{h.lose.toFixed(1)}</TableCell>
+                  <TableCell align="right" sx={{ color: '#f43f5e' }}>
+                    {h.lose.toFixed(1)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
