@@ -12,6 +12,7 @@ from .adapters.jwt.auth import JwtAuth
 from .adapters.sqlalchemy.ranges import SqlRanges
 from .adapters.sqlalchemy.training_sessions import SqlTrainingSessions
 from .adapters.sqlalchemy.users import SqlUsers
+from .adapters.treys.evaluator import TreysEvaluator
 from .config import Config
 from .infrastructure.web.flask_app import FlaskApp
 from .use_cases.answer_question import AnswerQuestion
@@ -59,7 +60,7 @@ class PokerTool:
         self.end_training = EndTrainingSession(self.sessions)
         self.global_stats = GlobalStats(self.ranges, self.users, self.sessions)
         self.user_stats = UserStats(self.users, self.ranges, self.sessions)
-        self.simulate_equity = SimulateEquity()
+        self.simulate_equity = SimulateEquity(TreysEvaluator())
 
         # Create the web layer (thin controllers delegating to use cases)
         self.flask_app = FlaskApp(

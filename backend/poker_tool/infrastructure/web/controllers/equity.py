@@ -8,7 +8,6 @@ from ....objects.hand import Hand
 from ....objects.range_parser import InvalidRangeNotation, parse_range
 from ....use_cases.simulate_equity import SimulateEquity
 
-
 _HERO_RE = re.compile(r"^[2-9TJQKA]{2}[soSO]?$")
 
 

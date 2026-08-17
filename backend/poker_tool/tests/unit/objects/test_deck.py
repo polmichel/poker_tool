@@ -2,7 +2,7 @@
 import random
 import unittest
 
-from poker_tool.objects.deck import Deck, RANKS, SUITS
+from poker_tool.objects.deck import RANKS, SUITS, Deck
 
 
 class TestDeck(unittest.TestCase):
@@ -19,11 +19,10 @@ class TestDeck(unittest.TestCase):
         excluded = ["Ah", "As"]
         deck = Deck(excluded=excluded, rng=random.Random(0))
         for _ in range(20):
-            for _ in range(10):
-                cards = deck.draw(2)
-                # We cannot easily compare ints to strings here without treys;
-                # instead verify the count and that 50 cards remain available.
-                self.assertEqual(len(cards), 2)
+            cards = deck.draw(2)
+            self.assertEqual(len(cards), 2)
+            for card in cards:
+                self.assertNotIn(card, excluded)
 
     def test_without_is_immutable(self):
         """Test that without() returns a new deck without mutating the original."""

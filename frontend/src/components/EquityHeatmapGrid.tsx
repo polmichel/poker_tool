@@ -34,10 +34,7 @@ function equityColor(win: number): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-const EquityHeatmapGrid: React.FC<EquityHeatmapGridProps> = ({
-  byHand,
-  cellSize = 40,
-}) => {
+const EquityHeatmapGrid: React.FC<EquityHeatmapGridProps> = ({ byHand, cellSize = 40 }) => {
   const grid = generateHandGrid();
   const equityMap = new Map<string, EquityByHand>();
   byHand.forEach((h) => equityMap.set(h.hand, h));

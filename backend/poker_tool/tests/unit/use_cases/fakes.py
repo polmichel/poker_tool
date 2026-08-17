@@ -6,6 +6,9 @@ that store data in memory. They let use cases be tested with real behavior
 and zero coupling to SQLAlchemy/Flask.
 """
 
+from typing import ClassVar
+
+from poker_tool.interfaces.hand_evaluator import HandEvaluator
 from poker_tool.interfaces.ranges import Ranges
 from poker_tool.interfaces.training_sessions import TrainingSessions
 from poker_tool.interfaces.users import Users
@@ -133,3 +136,19 @@ class FakeAuth:
 
     def generate_token(self, user: User) -> str:
         return f"token_for_{user.id}"
+
+
+class FakeHandEvaluator(HandEvaluator):
+    """Deterministic in-memory HandEvaluator for testing the equity use case.
+
+    Ranks hands by the first hole card's rank index (A=0 ... 2=12) so the
+    simulation produces reproducible, easy-to-assert win/tie/lose values
+    without depending on a real evaluator implementation.
+    """
+
+    _RANKS: ClassVar[list[str]] = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
+
+    def evaluate(self, hole_cards: list[str], board: list[str]) -> int:
+        # Lower is better; use the best (lowest) rank index of the two hole cards.
+        ranks = [self._RANKS.index(c[0].upper()) for c in hole_cards]
+        return min(ranks)

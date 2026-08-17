@@ -1,14 +1,12 @@
 """
 Immutable poker deck value object (Elegant Objects).
 
-Thin wrapper around ``treys`` so the rest of the domain stays free of any
-external dependency: the deck is a domain object that knows how to draw cards
-and exclude known cards (hero + range combos) before running a simulation.
+The deck is a pure domain object that knows how to draw cards and exclude known
+cards (hero + range combos) before running a simulation. It is free of any
+external dependency: cards are represented as canonical 2-char strings
+(e.g. ``"Ah"``), so the deck works with any evaluator adapter.
 """
 import random
-
-import treys
-
 
 # Ranks and suits reused across the equity module (mirror of objects/hand.py).
 RANKS = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
@@ -28,10 +26,10 @@ class Deck:
         """Cards removed from the deck (as 'Ah' strings)."""
         return list(self._excluded)
 
-    def draw(self, count: int) -> list[int]:
-        """Draw ``count`` cards as ``treys`` ints, excluding known cards."""
+    def draw(self, count: int) -> list[str]:
+        """Draw ``count`` cards as 2-char strings (e.g. 'Ah'), excluding known cards."""
         available = [
-            treys.Card.new(f"{rank}{suit}")
+            f"{rank}{suit}"
             for rank in RANKS
             for suit in SUITS
             if f"{rank}{suit}" not in self._excluded
