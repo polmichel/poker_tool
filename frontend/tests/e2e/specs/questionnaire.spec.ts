@@ -103,9 +103,16 @@ test.describe('Questionnaire sur une range', () => {
 
       console.log(`Après clic, URL: ${page.url()}`);
 
-      // Vérifier si le questionnaire est actif (recherche de la question)
-      const questionIndicator = page.locator('[data-testid="question-indicator"]');
-      await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
+      // Vérifier si le questionnaire est actif. Le mode "fill" affiche une grille
+      // à peindre (grid-question-paper) ; les autres modes affichent une question
+      // par main (question-indicator).
+      if (mode.value === 'fill') {
+        const gridPaper = page.locator('[data-testid="grid-question-paper"]');
+        await gridPaper.waitFor({ state: 'visible', timeout: 90000 });
+      } else {
+        const questionIndicator = page.locator('[data-testid="question-indicator"]');
+        await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
+      }
 
       // 4. Vérifier qu'on est toujours sur la page /training
       const url = page.url();
@@ -121,10 +128,10 @@ test.describe('Questionnaire sur une range', () => {
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
     await rangeChips.first().click();
 
-    // 2. Sélectionner le premier mode
-    const firstModeButton = page.locator('.MuiToggleButton-root').first();
-    await firstModeButton.waitFor({ state: 'visible', timeout: 5000 });
-    await firstModeButton.click();
+    // 2. Sélectionner le mode "Compléter une range" (questions une par une).
+    const completeModeButton = page.locator('button:has-text("Compléter une range")');
+    await completeModeButton.waitFor({ state: 'visible', timeout: 5000 });
+    await completeModeButton.click();
 
     // 3. Démarrer le questionnaire
     const startButton = page.locator('[data-testid="start-training-button"]');
@@ -181,10 +188,10 @@ test.describe('Questionnaire sur une range', () => {
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
     await rangeChips.first().click();
 
-    // 2. Sélectionner le premier mode
-    const firstModeButton = page.locator('.MuiToggleButton-root').first();
-    await firstModeButton.waitFor({ state: 'visible', timeout: 5000 });
-    await firstModeButton.click();
+    // 2. Sélectionner le mode "Compléter une range" (questions une par une).
+    const completeModeButton = page.locator('button:has-text("Compléter une range")');
+    await completeModeButton.waitFor({ state: 'visible', timeout: 5000 });
+    await completeModeButton.click();
 
     // 3. Démarrer le questionnaire
     const startButton = page.locator('[data-testid="start-training-button"]');
