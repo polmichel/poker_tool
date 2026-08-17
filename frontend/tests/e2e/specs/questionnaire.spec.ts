@@ -128,10 +128,10 @@ test.describe('Questionnaire sur une range', () => {
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
     await rangeChips.first().click();
 
-    // 2. Sélectionner le mode "Deviner une range" (questions une par une).
-    const guessModeButton = page.locator('button:has-text("Deviner une range")');
-    await guessModeButton.waitFor({ state: 'visible', timeout: 5000 });
-    await guessModeButton.click();
+    // 2. Sélectionner le mode "Compléter une range" (questions une par une).
+    const completeModeButton = page.locator('button:has-text("Compléter une range")');
+    await completeModeButton.waitFor({ state: 'visible', timeout: 5000 });
+    await completeModeButton.click();
 
     // 3. Démarrer le questionnaire
     const startButton = page.locator('[data-testid="start-training-button"]');
@@ -188,10 +188,10 @@ test.describe('Questionnaire sur une range', () => {
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
     await rangeChips.first().click();
 
-    // 2. Sélectionner le mode "Deviner une range" (questions une par une).
-    const guessModeButton = page.locator('button:has-text("Deviner une range")');
-    await guessModeButton.waitFor({ state: 'visible', timeout: 5000 });
-    await guessModeButton.click();
+    // 2. Sélectionner le mode "Compléter une range" (questions une par une).
+    const completeModeButton = page.locator('button:has-text("Compléter une range")');
+    await completeModeButton.waitFor({ state: 'visible', timeout: 5000 });
+    await completeModeButton.click();
 
     // 3. Démarrer le questionnaire
     const startButton = page.locator('[data-testid="start-training-button"]');
