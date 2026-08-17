@@ -3,16 +3,18 @@ Simulate equity of a hero hand against an opposing range (use case).
 
 Pure Monte-Carlo: for each iteration we pick a random opponent hand from the
 range (weighted by real-card combos), deal the missing board cards from the
-remaining deck, and evaluate the two 7-card hands with ``treys``. The result is
-aggregated win/tie/lose plus a per-hand breakdown.
+remaining deck, and evaluate the two 7-card hands via the injected
+:class:`HandEvaluator` port. The result is aggregated win/tie/lose plus a
+per-hand breakdown.
 
-Dependencies are injectable (Deck + evaluator) so the use case is fully testable
-with a deterministic deck / fake evaluator.
+The evaluator is injected (Elegant Objects): the use case is free of any
+external library dependency and can be tested with a fake evaluator, and the
+evaluation backend can be swapped (treys -> PokerKit -> custom) by adding a new
+adapter without touching this file.
 """
 import random
 
-import treys
-
+from ..interfaces.hand_evaluator import HandEvaluator
 from ..objects.deck import Deck, RANKS, SUITS
 from ..objects.equity import EquityByHand, EquityResult, hand_combos
 from ..objects.hand import Hand
@@ -47,7 +49,9 @@ def _card_string_split(card_str: str) -> list[str]:
 class SimulateEquity:
     """Simulate the equity of a hero hand against a range (Monte-Carlo)."""
 
-    def __init__(self, rng: random.Random | None = None) -> None:
+    def __init__(self, evaluator: HandEvaluator,
+                 rng: random.Random | None = None) -> None:
+        self._evaluator = evaluator
         self._rng = rng or random.Random()
 
     def simulate(self, hero: str, range_hands: list[str],
@@ -83,8 +87,6 @@ class SimulateEquity:
         wins = ties = losses = 0
         hero_card_combos = _hand_to_card_strings(hero_hand)
 
-        evaluator = treys.Evaluator()
-
         for _ in range(iterations):
             # Pick a weighted random opponent hand.
             pick = self._rng.randint(1, total_weight)
@@ -103,25 +105,23 @@ class SimulateEquity:
 
             # Ensure the two hands don't share a card (possible for pair vs pair,
             # same rank offsuit, etc.); resample if they collide.
-            hero_pair = set(_card_string_split(hero_cards))
-            opp_pair = set(_card_string_split(opp_cards))
+            hero_pair = _card_string_split(hero_cards)
+            opp_pair = _card_string_split(opp_cards)
             attempts = 0
-            while hero_pair & opp_pair and attempts < 50:
+            while set(hero_pair) & set(opp_pair) and attempts < 50:
                 opp_cards = self._rng.choice(opp_card_combos)
-                opp_pair = set(_card_string_split(opp_cards))
+                opp_pair = _card_string_split(opp_cards)
                 attempts += 1
-            if hero_pair & opp_pair:
+            if set(hero_pair) & set(opp_pair):
                 # Collision unavoidable for this combo pairing; skip iteration.
                 continue
 
-            excluded = list(hero_pair) + list(opp_pair)
+            excluded = hero_pair + opp_pair
             deck = Deck(excluded=excluded, rng=self._rng)
             board = deck.draw(5)
 
-            hero_cards_int = [treys.Card.new(c) for c in hero_pair]
-            opp_cards_int = [treys.Card.new(c) for c in opp_pair]
-            hero_eval = evaluator.evaluate(hero_cards_int, board)
-            opp_eval = evaluator.evaluate(opp_cards_int, board)
+            hero_eval = self._evaluator.evaluate(hero_pair, board)
+            opp_eval = self._evaluator.evaluate(opp_pair, board)
 
             key = (opp_hand.rank1, opp_hand.rank2, opp_hand.suited)
             if hero_eval < opp_eval:

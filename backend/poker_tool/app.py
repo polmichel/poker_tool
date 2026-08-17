@@ -9,6 +9,7 @@ from flask import Flask
 from flask_cors import CORS
 
 from .adapters.jwt.auth import JwtAuth
+from .adapters.treys.evaluator import TreysEvaluator
 from .adapters.sqlalchemy.ranges import SqlRanges
 from .adapters.sqlalchemy.training_sessions import SqlTrainingSessions
 from .adapters.sqlalchemy.users import SqlUsers
@@ -59,7 +60,7 @@ class PokerTool:
         self.end_training = EndTrainingSession(self.sessions)
         self.global_stats = GlobalStats(self.ranges, self.users, self.sessions)
         self.user_stats = UserStats(self.users, self.ranges, self.sessions)
-        self.simulate_equity = SimulateEquity()
+        self.simulate_equity = SimulateEquity(TreysEvaluator())
 
         # Create the web layer (thin controllers delegating to use cases)
         self.flask_app = FlaskApp(

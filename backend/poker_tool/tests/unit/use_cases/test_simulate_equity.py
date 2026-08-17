@@ -2,6 +2,8 @@
 import random
 import unittest
 
+from poker_tool.adapters.treys.evaluator import TreysEvaluator
+from poker_tool.tests.unit.use_cases.fakes import FakeHandEvaluator
 from poker_tool.use_cases.simulate_equity import SimulateEquity
 
 
@@ -9,7 +11,7 @@ class TestSimulateEquity(unittest.TestCase):
     """Tests for SimulateEquity."""
 
     def _sim(self, seed=0, **kwargs):
-        return SimulateEquity(rng=random.Random(seed)).simulate(**kwargs)
+        return SimulateEquity(TreysEvaluator(), rng=random.Random(seed)).simulate(**kwargs)
 
     def test_aa_vs_kk_is_dominant(self):
         """AA should beat KK ~80% of the time."""
@@ -36,10 +38,10 @@ class TestSimulateEquity(unittest.TestCase):
 
     def test_deterministic_with_seed(self):
         """Test that the same seed yields identical results."""
-        r1 = SimulateEquity(rng=random.Random(42)).simulate(
+        r1 = SimulateEquity(TreysEvaluator(), rng=random.Random(42)).simulate(
             hero="AKs", range_hands=["QQ"], iterations=500,
         )
-        r2 = SimulateEquity(rng=random.Random(42)).simulate(
+        r2 = SimulateEquity(TreysEvaluator(), rng=random.Random(42)).simulate(
             hero="AKs", range_hands=["QQ"], iterations=500,
         )
         self.assertEqual(r1.win, r2.win)
@@ -58,7 +60,7 @@ class TestSimulateEquity(unittest.TestCase):
 
     def test_simulate_notation(self):
         """Test the notation convenience method."""
-        sim = SimulateEquity(rng=random.Random(5))
+        sim = SimulateEquity(TreysEvaluator(), rng=random.Random(5))
         r = sim.simulate_notation("AKs", "QQ+, ATs+", iterations=2000)
         self.assertGreater(r.iterations, 0)
         # Range QQ+, ATs+ expands to at least QQ,KK,AA + ATs,AJs,AQs,AKs.
@@ -73,5 +75,15 @@ class TestSimulateEquity(unittest.TestCase):
         self.assertAlmostEqual(r.win + r.tie + r.lose, 100.0, places=1)
 
 
+    def test_works_with_fake_evaluator(self):
+        """Test that the use case works with any HandEvaluator (decoupling)."""
+        sim = SimulateEquity(FakeHandEvaluator(), rng=random.Random(0))
+        r = sim.simulate("AKs", ["QQ"], iterations=500)
+        # With the fake (ranks by hole card index), AKs (A=0) beats QQ (Q=2).
+        self.assertGreater(r.win, 90.0)
+        self.assertEqual(r.iterations, 500)
+
+
 if __name__ == "__main__":
     unittest.main()
+
