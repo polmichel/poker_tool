@@ -21,6 +21,7 @@ from .use_cases.end_training_session import EndTrainingSession
 from .use_cases.global_stats import GlobalStats
 from .use_cases.login_user import LoginUser
 from .use_cases.register_user import RegisterUser
+from .use_cases.simulate_equity import SimulateEquity
 from .use_cases.start_training_session import StartTrainingSession
 from .use_cases.update_range import UpdateRange
 from .use_cases.user_stats import UserStats
@@ -58,6 +59,7 @@ class PokerTool:
         self.end_training = EndTrainingSession(self.sessions)
         self.global_stats = GlobalStats(self.ranges, self.users, self.sessions)
         self.user_stats = UserStats(self.users, self.ranges, self.sessions)
+        self.simulate_equity = SimulateEquity()
 
         # Create the web layer (thin controllers delegating to use cases)
         self.flask_app = FlaskApp(
@@ -76,6 +78,7 @@ class PokerTool:
             end_training=self.end_training,
             global_stats=self.global_stats,
             user_stats=self.user_stats,
+            simulate_equity=self.simulate_equity,
         )
 
     def _configure_flask(self) -> None:

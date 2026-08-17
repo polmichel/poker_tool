@@ -38,6 +38,7 @@ class TestFlaskApp(unittest.TestCase):
         self.end_training = MagicMock()
         self.global_stats = MagicMock()
         self.user_stats = MagicMock()
+        self.simulate_equity = MagicMock()
 
     def _make_app(self):
         return FlaskApp(
@@ -45,7 +46,7 @@ class TestFlaskApp(unittest.TestCase):
             self.register_user, self.login_user, self.current_user,
             self.create_range, self.update_range,
             self.start_training, self.answer_question, self.end_training,
-            self.global_stats, self.user_stats,
+            self.global_stats, self.user_stats, self.simulate_equity,
         )
 
     def test_flask_app_creation(self):

@@ -253,5 +253,75 @@ class TestInterfaceImplementations(unittest.TestCase):
             )
 
 
+class TestEquityEndpoint(unittest.TestCase):
+    """Integration tests for the /api/equity/simulate endpoint."""
+
+    def setUp(self):
+        """Create a test client."""
+        self.app = PokerTool()
+        self.client = self.app.app.test_client()
+
+    def test_simulate_returns_equity(self):
+        """Test that the endpoint returns win/tie/lose percentages."""
+        resp = self.client.post(
+            "/api/equity/simulate",
+            json={"hero": "AKs", "range": "QQ", "iterations": 1000},
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertEqual(data["hero"], "AKs")
+        for key in ("win", "tie", "lose", "iterations", "by_hand"):
+            self.assertIn(key, data)
+        self.assertEqual(data["iterations"], 1000)
+        self.assertGreaterEqual(data["win"] + data["tie"] + data["lose"], 99.9)
+
+    def test_simulate_range_notation(self):
+        """Test that range notation (KK+) is accepted and expanded."""
+        resp = self.client.post(
+            "/api/equity/simulate",
+            json={"hero": "AA", "range": "KK", "iterations": 1000},
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        # AA vs KK should be heavily dominant (~80/20).
+        self.assertGreater(data["win"], 70.0)
+        # Verify the range was expanded into a single hand breakdown.
+        self.assertEqual(len(data["by_hand"]), 1)
+        self.assertEqual(data["by_hand"][0]["hand"], "KK")
+
+    def test_missing_hero_returns_400(self):
+        """Test that a missing hero field returns 400."""
+        resp = self.client.post(
+            "/api/equity/simulate",
+            json={"range": "QQ"},
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_invalid_hero_returns_400(self):
+        """Test that an invalid hero returns 400."""
+        resp = self.client.post(
+            "/api/equity/simulate",
+            json={"hero": "ZZ", "range": "QQ"},
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_missing_range_returns_400(self):
+        """Test that a missing range returns 400."""
+        resp = self.client.post(
+            "/api/equity/simulate",
+            json={"hero": "AKs"},
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_invalid_range_returns_400(self):
+        """Test that invalid range notation returns 400."""
+        resp = self.client.post(
+            "/api/equity/simulate",
+            json={"hero": "AKs", "range": "ZZ"},
+        )
+        self.assertEqual(resp.status_code, 400)
+
+
 if __name__ == '__main__':
     unittest.main()
+
