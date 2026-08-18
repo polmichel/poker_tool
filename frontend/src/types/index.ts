@@ -53,6 +53,12 @@ export interface TrainingQuestion {
   hand: string;
   question: string;
   correct_answer: string;
+  // Mode "Deviner une range" : noms de ranges proposés en QCM (l'un d'eux
+  // correspond à la grille affichée).
+  options?: string[];
+  // Mode "Deviner une range" : grille 169 cellules sérialisée en JSON
+  // (objet {hand: action}) affichée à l'utilisateur pour identification.
+  grid?: string;
 }
 export interface TrainingSession {
   id?: number;
@@ -122,7 +128,6 @@ export interface EquityByHand {
   tie: number;
   lose: number;
 }
-
 export interface EquityResult {
   hero: string;
   win: number;

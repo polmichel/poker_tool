@@ -61,11 +61,16 @@ class StartTrainingSession:
         if not user:
             raise UserRequired("User required")
 
+        # In "guess" mode the user must identify a displayed grid among the
+        # ranges of the library, so the session needs the whole library.
+        library_ranges = self._ranges.all() if mode == "guess" else None
+
         session = TrainingSession(
             user=user,
             range_obj=range_obj,
             mode=mode,
             total_questions=total_questions,
+            library_ranges=library_ranges,
         )
         saved = self._sessions.add(session)
         return StartedSession(saved)

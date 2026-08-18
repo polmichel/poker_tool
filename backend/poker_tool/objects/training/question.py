@@ -6,11 +6,24 @@ Immutable training question value object (Elegant Objects).
 class TrainingQuestion:
     """Immutable training question value object."""
 
-    def __init__(self, hand: str, question: str, correct_answer: str, q_type: str = "fill"):
+    def __init__(
+        self,
+        hand: str,
+        question: str,
+        correct_answer: str,
+        q_type: str = "fill",
+        options: list[str] | None = None,
+        grid: str | None = None,
+    ):
         self._hand = hand
         self._question = question
         self._correct_answer = correct_answer
         self._type = q_type
+        # ``options`` carries the multiple-choice range names for the
+        # "Deviner une range" mode (QCM). ``grid`` holds the JSON-serialized
+        # 169-cell reference grid displayed to the user for that mode.
+        self._options = options
+        self._grid = grid
 
     @property
     def hand(self) -> str:
@@ -32,18 +45,33 @@ class TrainingQuestion:
         """Question type (mode)."""
         return self._type
 
+    @property
+    def options(self) -> list[str] | None:
+        """Multiple-choice options (range names) for the guess mode."""
+        return self._options
+
+    @property
+    def grid(self) -> str | None:
+        """JSON-serialized reference grid displayed to the user (guess mode)."""
+        return self._grid
+
     def is_correct(self, answer: str) -> bool:
         """Check if answer is correct."""
         return answer.lower() == self._correct_answer.lower()
 
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
-        return {
+        data = {
             "hand": self._hand,
             "question": self._question,
             "correct_answer": self._correct_answer,
             "type": self._type,
         }
+        if self._options is not None:
+            data["options"] = self._options
+        if self._grid is not None:
+            data["grid"] = self._grid
+        return data
 
     @classmethod
     def from_dict(cls, data: dict) -> 'TrainingQuestion':
@@ -53,6 +81,8 @@ class TrainingQuestion:
             question=data["question"],
             correct_answer=data["correct_answer"],
             q_type=data.get("type", "fill"),
+            options=data.get("options"),
+            grid=data.get("grid"),
         )
 
     def __eq__(self, other: object) -> bool:

@@ -90,13 +90,16 @@ class FakeSessions(TrainingSessions):
         sid = session.id if session.id else self._next_id
         if not session.id:
             self._next_id += 1
-        # Reconstruct with an id (immutable pattern)
+        # Reconstruct with an id (immutable pattern). Preserve the library
+        # ranges so the question generation in __init__ stays consistent with
+        # the original session; the persisted questions are restored below.
         stored = TrainingSession(
             user=session.user,
             range_obj=session.range,
             mode=session.mode,
             total_questions=session.total_questions,
             session_id=sid,
+            library_ranges=session._library_ranges,
         )
         stored._questions = session._questions
         stored._current_index = session._current_index

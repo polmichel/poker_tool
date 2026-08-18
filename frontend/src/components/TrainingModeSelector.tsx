@@ -18,7 +18,8 @@ const modeIcons: Record<TrainingMode, React.ReactNode> = {
 
 const modeDescriptions: Record<TrainingMode, string> = {
   fill: 'Complétez une grille de range vide avec les bonnes actions pour chaque main.',
-  guess: "Déterminez si des mains font partie d'une range donnée.",
+  guess:
+    'Une grille de range est affichée : devinez à quelle range de votre bibliothèque elle correspond.',
   complete: 'Complétez une range partiellement remplie.',
 };
 

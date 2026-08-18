@@ -21,7 +21,12 @@ import {
   Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { TrainingModeSelector, TrainingQuestion, TrainingGridQuestion } from '../components';
+import {
+  TrainingModeSelector,
+  TrainingQuestion,
+  TrainingGridQuestion,
+  TrainingGuessRangeQuestion,
+} from '../components';
 import { useTraining, useRanges } from '../hooks';
 import { TrainingMode, Range } from '../types';
 
@@ -292,6 +297,15 @@ const Training: React.FC = () => {
               onAnswer={handleAnswer}
               onNext={handleNextQuestion}
               feedback={feedback}
+            />
+          ) : currentQuestion.type === 'guess' && currentQuestion.grid ? (
+            <TrainingGuessRangeQuestion
+              question={currentQuestion}
+              onAnswer={handleAnswer}
+              onNext={handleNextQuestion}
+              feedback={feedback}
+              questionNumber={questionNumber}
+              totalQuestions={progress?.total || totalQuestions}
             />
           ) : (
             <TrainingQuestion
