@@ -83,7 +83,8 @@ class TestJsonErrorHandling(unittest.TestCase):
             end_training=self.end_training,
             global_stats=self.global_stats,
             user_stats=self.user_stats,
-            equity_calculator=FakeEquityCalculator(),
+            table_equity=FakeEquityCalculator(),
+            monte_carlo_equity=FakeEquityCalculator(),
         )
 
     def test_bad_request_returns_json(self):

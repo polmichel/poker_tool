@@ -136,3 +136,13 @@ export interface EquityResult {
   iterations: number;
   by_hand: EquityByHand[];
 }
+
+/**
+ * Réponse 409 renvoyée quand la table exacte ne couvre pas toute la range.
+ * `missing` liste les mains adverses absentes de la table ; le frontend ouvre
+ * alors une pop-up pour lancer une simulation Monte-Carlo (avec itérations).
+ */
+export interface EquityMissingResponse {
+  error: string;
+  missing: string[];
+}

@@ -161,7 +161,9 @@ class FakeEquityCalculator(EquityCalculator):
             by_hand=[EquityByHand(hand="QQ", win=50.0, tie=0.0, lose=50.0, combos=6)],
         )
 
-    def compute(self, hero: str, range_hands: list[str]) -> EquityResult:
+    def compute(
+        self, hero: str, range_hands: list[str], iterations: int | None = None,
+    ) -> EquityResult:
         return self._result
 
 
