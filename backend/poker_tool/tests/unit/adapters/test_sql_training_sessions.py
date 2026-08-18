@@ -24,19 +24,17 @@ class TestSqlTrainingSessions(unittest.TestCase):
         self.assertTrue(issubclass(SqlTrainingSessions, TrainingSessions))
 
     def test_sql_training_sessions_creation(self):
-        """Test SqlTrainingSessions creation initializes the db."""
+        """Test SqlTrainingSessions creation delegates to the shared SQLAlchemy init."""
         mock_app = MagicMock(spec=Flask)
-        with patch('poker_tool.adapters.sqlalchemy.training_sessions.db') as mock_db:
+        with patch('poker_tool.adapters.sqlalchemy.training_sessions.init_sqlalchemy') as mock_init:
             SqlTrainingSessions(mock_app)
-            mock_db.init_app.assert_called_once_with(mock_app)
-            mock_db.create_all.assert_called_once()
+            mock_init.assert_called_once_with(mock_app)
 
     def test_sql_training_sessions_creation_without_app(self):
         """Test creation without app does not initialize the db."""
-        with patch('poker_tool.adapters.sqlalchemy.training_sessions.db') as mock_db:
+        with patch('poker_tool.adapters.sqlalchemy.training_sessions.init_sqlalchemy') as mock_init:
             SqlTrainingSessions()
-            mock_db.init_app.assert_not_called()
-            mock_db.create_all.assert_not_called()
+            mock_init.assert_not_called()
 
 
 if __name__ == '__main__':

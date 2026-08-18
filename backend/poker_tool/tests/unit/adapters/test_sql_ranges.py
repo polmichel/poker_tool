@@ -12,6 +12,7 @@ from unittest.mock import MagicMock, patch
 
 from flask import Flask
 
+from poker_tool.adapters.sqlalchemy import init_sqlalchemy
 from poker_tool.adapters.sqlalchemy.ranges import SqlRanges
 from poker_tool.interfaces.ranges import Ranges
 
@@ -24,27 +25,25 @@ class TestSqlRanges(unittest.TestCase):
         self.assertTrue(issubclass(SqlRanges, Ranges))
 
     def test_sql_ranges_creation(self):
-        """Test SqlRanges creation initializes the db."""
+        """Test SqlRanges creation delegates to the shared SQLAlchemy init."""
         mock_app = MagicMock(spec=Flask)
-        with patch('poker_tool.adapters.sqlalchemy.ranges.db') as mock_db:
+        with patch('poker_tool.adapters.sqlalchemy.ranges.init_sqlalchemy') as mock_init:
             SqlRanges(mock_app)
-            mock_db.init_app.assert_called_once_with(mock_app)
-            mock_db.create_all.assert_called_once()
+            mock_init.assert_called_once_with(mock_app)
 
     def test_sql_ranges_creation_without_app(self):
         """Test SqlRanges creation without app does not initialize the db."""
-        with patch('poker_tool.adapters.sqlalchemy.ranges.db') as mock_db:
+        with patch('poker_tool.adapters.sqlalchemy.ranges.init_sqlalchemy') as mock_init:
             SqlRanges()
-            mock_db.init_app.assert_not_called()
-            mock_db.create_all.assert_not_called()
+            mock_init.assert_not_called()
 
     def test_shared_db_initialized_once(self):
-        """When multiple Sql* adapters init the same app, db.init_app runs once."""
+        """When init_sqlalchemy is called twice on the same app, db.init_app runs once."""
         mock_app = MagicMock(spec=Flask)
         mock_app._sqlalchemy_initialized = False
-        with patch('poker_tool.adapters.sqlalchemy.ranges.db') as mock_db:
-            ranges = SqlRanges(mock_app)
-            ranges.init_app(mock_app)  # second call should NOT re-init
+        with patch('poker_tool.adapters.sqlalchemy.db') as mock_db:
+            init_sqlalchemy(mock_app)  # first call initializes
+            init_sqlalchemy(mock_app)  # second call is a no-op (flag set)
             self.assertEqual(mock_db.init_app.call_count, 1)
 
 

@@ -1,10 +1,8 @@
-"""
-SQLAlchemy implementation of the :class:`Users` port (Elegant Objects).
-"""
-
+"""SQLAlchemy implementation of the :class:`Users` port (Elegant Objects)."""
 
 from ...interfaces.users import Users
 from ...objects.user import User
+from . import init_sqlalchemy
 from .models import UserModel, db
 
 
@@ -14,17 +12,7 @@ class SqlUsers(Users):
     def __init__(self, app=None) -> None:
         self.db = db
         if app:
-            self.init_app(app)
-
-    def init_app(self, app) -> None:
-        """Initialize SQLAlchemy with a Flask app (idempotent)."""
-        # The ``db`` instance is shared across all Sql* adapters; only the
-        # first adapter to initialize binds it to the app.
-        if not getattr(app, "_sqlalchemy_initialized", False):
-            self.db.init_app(app)
-            app._sqlalchemy_initialized = True
-        with app.app_context():
-            self.db.create_all()
+            init_sqlalchemy(app)
 
     def add(self, user: User) -> User:
         """Add a new user or update an existing one; return the stored user."""
