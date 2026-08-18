@@ -339,7 +339,7 @@ class TrainingSession:
         distractors = [n for n in all_names if n != correct_name]
         random.shuffle(distractors)
         picked = distractors[: max(0, _GUESS_OPTIONS_COUNT - 1)]
-        options = picked + [correct_name]
+        options = [*picked, correct_name]
         random.shuffle(options)
         return options
 
@@ -348,7 +348,6 @@ class TrainingSession:
         partiellement remplie. On sélectionne des mains de la range et on
         demande l'action attendue.
         """
-        from ..hand import generate_all_hands
 
         range_hands = self._range.hands
         range_hand_strings = list(range_hands.keys())
