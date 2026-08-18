@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { RangesApi } from '../api';
-import { Range, ActionType } from '../types';
+import { Range } from '../types';
 import { useAsyncState } from './useAsyncState';
 import { extractErrorMessage } from '../utils/errors';
 
@@ -104,44 +104,6 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
     [selectedRange, api, run, setError],
   );
 
-  // Mettre à jour l'action d'une main dans une range
-  const updateHandAction = useCallback(
-    async (rangeId: number, handStr: string, action: ActionType) => {
-      try {
-        const data = await run(() => api.updateHand(rangeId, handStr, action));
-        setRanges((prev) => prev.map((r) => (r.id === rangeId ? data : r)));
-        if (selectedRange?.id === rangeId) {
-          setSelectedRange(data);
-        }
-        return data;
-      } catch (err) {
-        setError(extractErrorMessage(err, `Erreur lors de la mise à jour de la main ${handStr}`));
-        console.error(`Error updating hand ${handStr}:`, err);
-        return null;
-      }
-    },
-    [selectedRange, api, run, setError],
-  );
-
-  // Retirer une main d'une range
-  const removeHandFromRange = useCallback(
-    async (rangeId: number, handStr: string) => {
-      try {
-        const data = await run(() => api.removeHand(rangeId, handStr));
-        setRanges((prev) => prev.map((r) => (r.id === rangeId ? data : r)));
-        if (selectedRange?.id === rangeId) {
-          setSelectedRange(data);
-        }
-        return data;
-      } catch (err) {
-        setError(extractErrorMessage(err, `Erreur lors de la suppression de la main ${handStr}`));
-        console.error(`Error removing hand ${handStr}:`, err);
-        return null;
-      }
-    },
-    [selectedRange, api, run, setError],
-  );
-
   // Exporter une range
   const exportRange = useCallback(
     async (rangeId: number, format: 'json' | 'text' | 'csv' = 'json') => {
@@ -200,17 +162,6 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
     [api, run, setError],
   );
 
-  // Charger les ranges par défaut
-  const fetchDefaultRanges = useCallback(async () => {
-    try {
-      return await run(() => api.defaultRanges());
-    } catch (err) {
-      setError(extractErrorMessage(err, 'Erreur lors du chargement des ranges par défaut'));
-      console.error('Error fetching default ranges:', err);
-      return null;
-    }
-  }, [api, run, setError]);
-
   // Charger toutes les ranges au montage uniquement si autoFetch est vrai.
   // Les pages comme RangeEditor qui n'ont pas besoin de la liste passent
   // autoFetch=false pour éviter un fetch inutile qui masquerait le
@@ -232,12 +183,9 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
     createRange,
     updateRange,
     deleteRange,
-    updateHandAction,
-    removeHandFromRange,
     exportRange,
     importRange,
     getRangeStats,
     getRangeGrid,
-    fetchDefaultRanges,
   };
 }

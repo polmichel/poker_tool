@@ -47,20 +47,6 @@ export function useStats(statsApi?: StatsApi) {
     [api, run, setError],
   );
 
-  // Charger les statistiques d'une range
-  const fetchRangeStats = useCallback(
-    async (rangeId: number) => {
-      try {
-        return await run(() => api.byRange(rangeId));
-      } catch (err) {
-        setError(extractErrorMessage(err, `Erreur lors du chargement des statistiques de la range ${rangeId}`));
-        console.error(`Error fetching range stats for ${rangeId}:`, err);
-        return null;
-      }
-    },
-    [api, run, setError],
-  );
-
   // Charger l'historique des sessions
   const fetchTrainingHistory = useCallback(async () => {
     try {
@@ -83,20 +69,6 @@ export function useStats(statsApi?: StatsApi) {
     }
   }, [api, run, setError]);
 
-  // Charger la progression pour une range
-  const fetchRangeProgress = useCallback(
-    async (rangeId: number) => {
-      try {
-        return await run(() => api.rangeProgress(rangeId));
-      } catch (err) {
-        setError(extractErrorMessage(err, `Erreur lors du chargement de la progression de la range ${rangeId}`));
-        console.error(`Error fetching range progress for ${rangeId}:`, err);
-        return null;
-      }
-    },
-    [api, run, setError],
-  );
-
   // Exporter les statistiques
   const exportStats = useCallback(
     async (format: 'json' | 'csv' = 'json') => {
@@ -111,17 +83,6 @@ export function useStats(statsApi?: StatsApi) {
     [api, run, setError],
   );
 
-  // Sauvegarder toutes les données
-  const backupAllData = useCallback(async () => {
-    try {
-      return await run(() => api.backup());
-    } catch (err) {
-      setError(extractErrorMessage(err, 'Erreur lors de la sauvegarde des données'));
-      console.error('Error backing up data:', err);
-      return null;
-    }
-  }, [api, run, setError]);
-
   // Initialiser le hook
   useEffect(() => {
     fetchGlobalStats();
@@ -134,11 +95,8 @@ export function useStats(statsApi?: StatsApi) {
     error,
     fetchGlobalStats,
     fetchUserStats,
-    fetchRangeStats,
     fetchTrainingHistory,
     fetchLeaderboard,
-    fetchRangeProgress,
     exportStats,
-    backupAllData,
   };
 }
