@@ -5,4 +5,5 @@ Flask-JWT-Extended==4.6.0
 python-dotenv==1.0.1
 Werkzeug==3.0.3
 treys==0.1.8
+phevaluator==0.6.0
 pytest==8.3.3
