@@ -79,4 +79,26 @@ describe('TrainingGridQuestion', () => {
     });
     expect(screen.queryByTestId('validate-grid-button')).not.toBeInTheDocument();
   });
+
+  it('shows the solution grid and highlights wrong cells after validation', () => {
+    // Reference: only AA is "raise". The default empty grid paints nothing
+    // (every cell "fold"), so AA is wrong and every other cell is correct.
+    const feedback = {
+      isCorrect: false,
+      correctAnswer: JSON.stringify({ AA: 'raise' }),
+      sessionComplete: true,
+    };
+    renderGrid({ feedback });
+
+    // The solution grid is rendered alongside the user attempt.
+    expect(screen.getByTestId('solution-grid')).toBeInTheDocument();
+
+    // The AA cell (wrong, painted "fold" vs reference "raise") is flagged wrong.
+    const aaCell = screen.getAllByTestId('range-cell-AA')[0];
+    expect(aaCell).toHaveStyle({ borderColor: 'error.main' });
+
+    // A correct cell (KK -> "fold" both sides) is flagged correct.
+    const kkCell = screen.getAllByTestId('range-cell-KK')[0];
+    expect(kkCell).toHaveStyle({ borderColor: 'success.main' });
+  });
 });

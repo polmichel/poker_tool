@@ -232,6 +232,23 @@ const RangeGrid: React.FC<RangeGridProps> = ({
                   // Déterminer la couleur du texte en fonction de la couleur de fond
                   const bgColor = cell.color || ACTION_COLORS['undefined'];
                   const textColor = getTextColor(bgColor);
+                  // Per-cell comparison border (training feedback). Takes
+                  // precedence over the default editable border so wrong cells
+                  // stay highlighted even on hover.
+                  const statusBorder =
+                    cell.status === 'wrong'
+                      ? '2px solid'
+                      : cell.status === 'correct'
+                        ? '2px solid'
+                        : editable
+                          ? '1px solid rgba(0, 0, 0, 0.2)'
+                          : 'none';
+                  const statusBorderColor =
+                    cell.status === 'wrong'
+                      ? 'error.main'
+                      : cell.status === 'correct'
+                        ? 'success.main'
+                        : undefined;
 
                   return (
                     <Paper
@@ -244,7 +261,8 @@ const RangeGrid: React.FC<RangeGridProps> = ({
                         alignItems: 'center',
                         justifyContent: 'center',
                         backgroundColor: bgColor,
-                        border: editable ? '1px solid rgba(0, 0, 0, 0.2)' : 'none',
+                        border: statusBorder,
+                        borderColor: statusBorderColor,
                         cursor: editable ? 'pointer' : 'default',
                         fontSize: 10,
                         fontWeight: 'bold',

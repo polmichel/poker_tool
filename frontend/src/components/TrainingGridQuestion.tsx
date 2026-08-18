@@ -41,7 +41,13 @@ function buildDiffGrid(
       const ref = reference[i]?.[j];
       const isCorrect = (ref?.action || 'fold') === (cell.action || 'fold');
       if (isCorrect) correctCells += 1;
-      return { ...cell, color: cell.color };
+      // Keep the user's painted color so they can read their attempt, and tag
+      // each cell so RangeGrid draws a green (correct) / red (wrong) border.
+      return {
+        ...cell,
+        color: cell.color,
+        status: (isCorrect ? 'correct' : 'wrong') as 'correct' | 'wrong',
+      };
     }),
   );
   return { grid, correctCells };
@@ -119,6 +125,12 @@ const TrainingGridQuestion: React.FC<TrainingGridQuestionProps> = ({
 
       <Divider sx={{ my: 2 }} />
 
+      {isAnswered && (
+        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+          Votre tentative (vert = correct, rouge = faux)
+        </Typography>
+      )}
+
       <RangeGrid
         grid={isAnswered && diff ? diff.grid : grid}
         editable={!isAnswered}
@@ -139,6 +151,15 @@ const TrainingGridQuestion: React.FC<TrainingGridQuestionProps> = ({
           >
             Valider la range
           </Button>
+        </Box>
+      )}
+
+      {isAnswered && (
+        <Box sx={{ mt: 4 }} data-testid="solution-grid">
+          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+            Solution
+          </Typography>
+          <RangeGrid grid={referenceGrid} editable={false} cellSize={34} showLabels={false} />
         </Box>
       )}
 
@@ -177,7 +198,7 @@ const TrainingGridQuestion: React.FC<TrainingGridQuestionProps> = ({
             />
           </Box>
           <Chip
-            label="Grille de référence affichée ci-dessus"
+            label="Solution affichée ci-dessous"
             color="default"
             sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }}
           />
