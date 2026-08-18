@@ -140,10 +140,14 @@ export interface AuthResponse {
 }
 
 // Types pour la grille de range
+// Optional per-cell comparison status used by the training feedback view:
+// 'correct' / 'wrong' are set by buildDiffGrid after validation so the grid
+// can highlight wrong cells; absent when the grid is not in diff mode.
 export interface RangeGridCell {
   hand: string;
   action: ActionType;
   color: string;
+  status?: 'correct' | 'wrong';
 }
 
 export type RangeGrid = RangeGridCell[][];

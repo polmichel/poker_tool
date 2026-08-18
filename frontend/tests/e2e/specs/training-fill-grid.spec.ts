@@ -114,6 +114,9 @@ test.describe('Training "Remplir une range" (fill) grid mode', () => {
     // The grid must be locked: no more validate button.
     await expect(page.locator('[data-testid="validate-grid-button"]')).toHaveCount(0);
 
+    // The solution grid is shown alongside the user's attempt after validation.
+    await expect(page.locator('[data-testid="solution-grid"]')).toBeVisible();
+
     // The "next" button advertises the results (session complete).
     await expect(page.locator('[data-testid="next-question-button"]')).toHaveText(/résultats/i);
 
