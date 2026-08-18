@@ -101,13 +101,24 @@ class TestAggregateEquity(unittest.TestCase):
             with self.assertRaises(ValueError):
                 AggregateEquity(EquityTable(path)).aggregate("AA", [])
 
-    def test_missing_entry_zero_weight(self):
-        """A pairing absent from the table contributes zero weight."""
+    def test_missing_entry_raises(self):
+        """A pairing absent from the table makes aggregate() raise.
+
+        Callers should detect missing entries via missing_entries() and fall
+        back to Monte-Carlo rather than getting a silently-zero equity.
+        """
         with _TmpTable() as path:
             agg = AggregateEquity(EquityTable(path))
-            # AKo present, 22 absent -> result equals AKo alone.
-            r = agg.aggregate("AA", ["AKo", "22"])
-            self.assertAlmostEqual(r.win, 92.7967, places=3)
+            # 22 is absent from the sample table.
+            self.assertEqual(agg.missing_entries("AA", ["AKo", "22"]), ["22"])
+            with self.assertRaises(ValueError):
+                agg.aggregate("AA", ["AKo", "22"])
+
+    def test_missing_entries_empty_when_complete(self):
+        """missing_entries is empty when all pairings are in the table."""
+        with _TmpTable() as path:
+            agg = AggregateEquity(EquityTable(path))
+            self.assertEqual(agg.missing_entries("AA", ["AKo", "KK", "QQ"]), [])
 
     def test_aggregate_notation(self):
         with _TmpTable() as path:

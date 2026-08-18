@@ -49,13 +49,28 @@ class AggregateEquity:
     def __init__(self, table: EquityTable) -> None:
         self._table = table
 
+    def missing_entries(self, hero: str, range_hands: list[str]) -> list[str]:
+        """Opponent hands whose exact equity is absent from the table.
+
+        Used by callers to decide whether to fall back to Monte-Carlo for the
+        missing pairings (e.g. an incomplete or stale table).
+        """
+        missing = []
+        for notation in range_hands:
+            if not self._table.has(hero, notation):
+                missing.append(notation)
+        return missing
+
     def aggregate(self, hero: str, range_hands: list[str]) -> EquityResult:
         """Aggregate the table lookups into an exact range equity.
 
         ``range_hands`` is a list of canonical hand notations (already expanded).
         ``hero`` is a single canonical hand notation (e.g. 'AKs').
 
-        The result is exact and identical on every call (no sampling).
+        The result is exact and identical on every call (no sampling). Raises
+        ``ValueError`` if any required pairing is missing from the table —
+        callers should use :meth:`missing_entries` first, or catch the error
+        and fall back to :class:`SimulateEquity` for the missing entries.
         """
         if not range_hands:
             raise ValueError("Range contains no hands")
@@ -76,10 +91,17 @@ class AggregateEquity:
             weight = available_combos(
                 opp.rank1, opp.rank2, opp.suited, hero_cards
             )
-            if entry is None or weight == 0:
-                # Pairing impossible (e.g. AA vs AA) or no combo available.
+            if weight == 0:
+                # No combo available for this pairing (impossible overlap).
                 by_hand.append(EquityByHand(str(opp), weight, 0.0, 0.0, 0.0))
                 continue
+            if entry is None:
+                # Table entry missing: cannot produce an exact result.
+                raise ValueError(
+                    f"Missing exact equity for {hero} vs {notation}; "
+                    f"regenerate the table with "
+                    f"`python -m poker_tool.scripts.generate_equity_table --resume`"
+                )
             by_hand.append(EquityByHand(
                 str(opp), weight,
                 entry["win"], entry["tie"], entry["lose"],

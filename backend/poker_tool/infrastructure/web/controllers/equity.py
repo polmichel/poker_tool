@@ -4,18 +4,25 @@ import re
 from flask import Blueprint, jsonify, request
 from werkzeug.exceptions import BadRequest
 
+from ....interfaces.equity_calculator import EquityCalculator
 from ....objects.hand import Hand
 from ....objects.range_parser import InvalidRangeNotation, parse_range
-from ....use_cases.simulate_equity import SimulateEquity
 
 _HERO_RE = re.compile(r"^[2-9TJQKA]{2}[soSO]?$")
 
 
 class EquityController:
-    """Thin HTTP controller for /api/equity."""
+    """Thin HTTP controller for /api/equity.
 
-    def __init__(self, simulate_equity: SimulateEquity) -> None:
-        self._simulate_equity = simulate_equity
+    Depends only on the :class:`EquityCalculator` port; the chosen strategy
+    (exact table by default, with a Monte-Carlo fallback) is composed at the
+    application root, not here, so the controller stays free of equity logic.
+    The ``iterations`` request field still lets callers hint at the Monte-Carlo
+    sample count, used when the exact table cannot answer.
+    """
+
+    def __init__(self, equity_calculator: EquityCalculator) -> None:
+        self._equity_calculator = equity_calculator
 
     def register(self, api: Blueprint) -> None:
         @api.route("/equity/simulate", methods=["POST"])
@@ -23,11 +30,14 @@ class EquityController:
             data = request.get_json()
             if not data or "hero" not in data:
                 raise BadRequest("Missing required field: hero")
-            hero = str(data["hero"]).strip().upper()
-            if not _HERO_RE.match(hero):
+            hero_raw = str(data["hero"]).strip().upper()
+            if not _HERO_RE.match(hero_raw):
                 raise BadRequest(f"Invalid hero hand: {data['hero']}")
             try:
-                Hand.from_string(hero)
+                # Canonicalize to the table's notation (e.g. 'AKS' -> 'AKs') so
+                # the exact equity table path can answer instead of falling
+                # back to Monte-Carlo.
+                hero = str(Hand.from_string(hero_raw))
             except (ValueError, IndexError) as exc:
                 raise BadRequest(f"Invalid hero hand: {data['hero']}") from exc
 
@@ -45,13 +55,13 @@ class EquityController:
             if iterations <= 0 or iterations > 100000:
                 raise BadRequest("iterations must be between 1 and 100000")
 
+            # The injected EquityCalculator decides the strategy: exact table
+            # by default, transparently falling back to Monte-Carlo if an
+            # entry is missing or the table file is absent.
             try:
-                result = self._simulate_equity.simulate(
-                    hero=hero,
-                    range_hands=range_hands,
-                    iterations=iterations,
+                result = self._equity_calculator.compute(
+                    hero=hero, range_hands=range_hands,
                 )
             except ValueError as exc:
                 raise BadRequest(str(exc)) from exc
-
             return jsonify(result.to_dict()), 200
