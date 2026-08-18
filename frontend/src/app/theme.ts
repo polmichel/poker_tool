@@ -41,7 +41,7 @@ export const APP_ENTRIES: AppEntry[] = [
     title: 'Le Ranger',
     tagline: 'Créer, éditer & visualiser vos ranges',
     description:
-      'Construisez vos ranges préféflop/postflop sur la grille 13x13, peignez à la souris et organisez votre bibliothèque de positions.',
+      'Construisez vos ranges préflop/postflop sur la grille 13x13, peignez à la souris et organisez votre bibliothèque de positions.',
     accent: '#10b981',
     icon: 'GridOn',
   },
@@ -62,6 +62,7 @@ export const APP_ENTRIES: AppEntry[] = [
       "Visualisez votre précision, vos sessions et votre temps d'entraînement au fil du temps.",
     accent: '#a78bfa',
     icon: 'Insights',
+    soon: true,
   },
   {
     slug: 'data',
@@ -71,6 +72,7 @@ export const APP_ENTRIES: AppEntry[] = [
       'Importez ou exportez vos ranges en JSON, CSV ou texte brut pour les sauvegarder ou les échanger.',
     accent: '#fbbf24',
     icon: 'ImportExport',
+    soon: true,
   },
   {
     slug: 'equity',
