@@ -79,11 +79,21 @@ class Hand:
 
 
 def generate_all_hands() -> list:
-    """Generate all possible poker hands (13x13 = 169 combinations)."""
+    """Generate all 169 canonical poker hands (13x13 grid).
+
+    For pairs: one hand per rank (AA, KK, ..., 22) = 13 hands.
+    For non-pairs: two hands per (high, low) rank pair — suited and offsuit
+    (AKs, AKo, AQs, AQo, ..., 32o) = 156 hands. Total: 169 canonical hands.
+    """
     hands = []
     for i, rank1 in enumerate(RANKS):
         for j, rank2 in enumerate(RANKS):
-            if i <= j:
-                suited = (i == j)  # Pairs are always suited
-                hands.append(Hand(rank1, rank2, suited))
+            if i == j:
+                # Pocket pair (AA, KK, ...).
+                hands.append(Hand(rank1, rank1, False))
+            elif i < j:
+                # Offsuit: higher rank first (AKo, not KAo).
+                hands.append(Hand(rank1, rank2, False))
+                # Suited: higher rank first (AKs).
+                hands.append(Hand(rank1, rank2, True))
     return hands
