@@ -32,11 +32,6 @@ export class StatsApi {
     return response.data;
   }
 
-  async byRange(rangeId: number): Promise<Record<string, unknown>> {
-    const response = await api.get(`/stats/range/${rangeId}`);
-    return response.data;
-  }
-
   async history(): Promise<unknown> {
     const response = await api.get('/stats/history');
     return response.data;
@@ -47,18 +42,8 @@ export class StatsApi {
     return response.data;
   }
 
-  async rangeProgress(rangeId: number): Promise<unknown> {
-    const response = await api.get(`/stats/range/${rangeId}/progress`);
-    return response.data;
-  }
-
   async export(format: 'json' | 'csv' = 'json'): Promise<unknown> {
     const response = await api.get(`/stats/export?format=${format}`);
-    return response.data;
-  }
-
-  async backup(): Promise<unknown> {
-    const response = await api.get('/stats/backup');
     return response.data;
   }
 }

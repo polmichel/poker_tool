@@ -13,10 +13,9 @@ from ....use_cases.register_user import RegisterUser, UserAlreadyExists
 class UserController:
     """Thin HTTP controller for /api/users."""
 
-    def __init__(self, users: Users, auth: Auth, login_user: LoginUser) -> None:
+    def __init__(self, users: Users, auth: Auth) -> None:
         self._users = users
         self._auth = auth
-        self._login_user = login_user
 
     def register(self, api: Blueprint) -> None:
         @api.route("/users", methods=["GET"])
@@ -41,19 +40,6 @@ class UserController:
             )
             saved_user = self._users.add(user)
             return jsonify(saved_user.to_dict()), 201
-
-        @api.route("/users/login", methods=["POST"])
-        def login():
-            data = request.get_json()
-            if not data or "username" not in data or "password" not in data:
-                raise BadRequest("Missing username or password")
-            try:
-                result = self._login_user.login(data["username"], data["password"])
-            except InvalidCredentials as e:
-                if "not found" in str(e).lower():
-                    raise NotFound("User not found")
-                raise BadRequest("Invalid password")
-            return jsonify({"token": result.token, "user": result.user.to_dict()})
 
 
 class AuthController:

@@ -1,9 +1,8 @@
-"""
-SQLAlchemy implementation of the :class:`Ranges` port (Elegant Objects).
-"""
+"""SQLAlchemy implementation of the :class:`Ranges` port (Elegant Objects)."""
 
 from ...interfaces.ranges import Ranges
 from ...objects.range import Range
+from . import init_sqlalchemy
 from .models import RangeModel, db
 
 
@@ -13,24 +12,11 @@ class SqlRanges(Ranges):
     def __init__(self, app=None) -> None:
         self.db = db
         if app:
-            self.init_app(app)
-
-    def init_app(self, app) -> None:
-        """Initialize SQLAlchemy with a Flask app and create tables.
-
-        Only initializes once even if called from multiple Sql* adapters,
-        because the ``db`` instance is shared.
-        """
-        if not getattr(app, "_sqlalchemy_initialized", False):
-            self.db.init_app(app)
-            app._sqlalchemy_initialized = True
-        with app.app_context():
-            self.db.create_all()
+            init_sqlalchemy(app)
 
     def add(self, range_obj: Range) -> Range:
         """Add a new range or update an existing one; return the stored range."""
         hands_dict = {k: str(v) for k, v in range_obj.hands.items()}
-
         if range_obj.id:
             model = RangeModel.query.get(range_obj.id)
             if model:

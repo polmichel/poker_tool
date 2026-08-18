@@ -1,12 +1,8 @@
-"""
-JWT implementation of the Auth interface (Elegant Objects).
-"""
-
+"""JWT implementation of the Auth interface (Elegant Objects)."""
 from flask import Flask
 from flask_jwt_extended import (
     JWTManager,
     create_access_token,
-    decode_token,
     get_jwt_identity,
 )
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -42,18 +38,11 @@ class JwtAuth(Auth):
     def create_user(self, username: str, email: str, password: str) -> User:
         """Create a new user with hashed password."""
         password_hash = generate_password_hash(password)
-        user = User(
+        return User(
             username=username,
             email=email,
             password_hash=password_hash,
         )
-        return user
-
-    def authenticate(self, username: str, password: str) -> User | None:
-        """Authenticate a user (to be used with storage)."""
-        # This method is a placeholder - actual authentication happens in the route
-        # with the help of storage to fetch the user
-        return None
 
     def current_user(self) -> User | None:
         """Get the current authenticated user from JWT."""
@@ -74,25 +63,6 @@ class JwtAuth(Auth):
         if user.id:
             return create_access_token(identity=str(user.id))
         raise ValueError("Cannot generate token for user without ID")
-
-    def verify_token(self, token: str) -> User | None:
-        """Verify a JWT token and return the user."""
-        try:
-            # This is a simplified implementation
-            # In a real scenario, we would decode the token and fetch the user from storage
-            decoded = decode_token(token)
-            user_id = decoded["sub"]
-            try:
-                user_id = int(user_id)
-            except (TypeError, ValueError):
-                pass
-            return User(username="", email="", user_id=user_id)
-        except Exception:  # noqa: BLE001 - token decode errors are expected
-            return None
-
-    def hash_password(self, password: str) -> str:
-        """Hash a password."""
-        return generate_password_hash(password)
 
     def check_password(self, password: str, password_hash: str) -> bool:
         """Check if a password matches its hash."""

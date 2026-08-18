@@ -24,19 +24,17 @@ class TestSqlUsers(unittest.TestCase):
         self.assertTrue(issubclass(SqlUsers, Users))
 
     def test_sql_users_creation(self):
-        """Test SqlUsers creation initializes the db."""
+        """Test SqlUsers creation delegates to the shared SQLAlchemy init."""
         mock_app = MagicMock(spec=Flask)
-        with patch('poker_tool.adapters.sqlalchemy.users.db') as mock_db:
+        with patch('poker_tool.adapters.sqlalchemy.users.init_sqlalchemy') as mock_init:
             SqlUsers(mock_app)
-            mock_db.init_app.assert_called_once_with(mock_app)
-            mock_db.create_all.assert_called_once()
+            mock_init.assert_called_once_with(mock_app)
 
     def test_sql_users_creation_without_app(self):
         """Test SqlUsers creation without app does not initialize the db."""
-        with patch('poker_tool.adapters.sqlalchemy.users.db') as mock_db:
+        with patch('poker_tool.adapters.sqlalchemy.users.init_sqlalchemy') as mock_init:
             SqlUsers()
-            mock_db.init_app.assert_not_called()
-            mock_db.create_all.assert_not_called()
+            mock_init.assert_not_called()
 
 
 if __name__ == '__main__':

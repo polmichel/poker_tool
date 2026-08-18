@@ -242,8 +242,8 @@ class TestInterfaceImplementations(unittest.TestCase):
 
         # Verify all abstract methods are implemented
         required_methods = [
-            'create_user', 'authenticate', 'current_user',
-            'generate_token', 'verify_token'
+            'create_user', 'current_user',
+            'generate_token'
         ]
 
         for method_name in required_methods:

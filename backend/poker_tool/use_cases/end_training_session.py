@@ -6,10 +6,7 @@ result. Dependencies (TrainingSessions port) are injected.
 """
 from ..interfaces.training_sessions import TrainingSessions
 from ..objects.training.session import TrainingSession
-
-
-class SessionNotFound(Exception):
-    """Raised when the session does not exist."""
+from .training_errors import SessionNotFound
 
 
 class EndedSession:

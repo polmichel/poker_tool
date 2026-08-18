@@ -1,9 +1,8 @@
-"""
-SQLAlchemy implementation of the :class:`TrainingSessions` port (Elegant Objects).
-"""
+"""SQLAlchemy implementation of the :class:`TrainingSessions` port (Elegant Objects)."""
 
 from ...interfaces.training_sessions import TrainingSessions
 from ...objects.training.session import TrainingSession
+from . import init_sqlalchemy
 from .models import TrainingSessionModel, db
 
 
@@ -13,19 +12,7 @@ class SqlTrainingSessions(TrainingSessions):
     def __init__(self, app=None) -> None:
         self.db = db
         if app:
-            self.init_app(app)
-
-    def init_app(self, app) -> None:
-        """Initialize SQLAlchemy with a Flask app and create tables.
-
-        Only initializes once even if called from multiple Sql* adapters,
-        because the ``db`` instance is shared.
-        """
-        if not getattr(app, "_sqlalchemy_initialized", False):
-            self.db.init_app(app)
-            app._sqlalchemy_initialized = True
-        with app.app_context():
-            self.db.create_all()
+            init_sqlalchemy(app)
 
     def add(self, session: TrainingSession) -> TrainingSession:
         """Add a new session or update an existing one; return the stored session."""

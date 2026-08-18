@@ -24,12 +24,4 @@ export class AuthApi {
     const response = await api.post<User>('/users', { username, email, password });
     return response.data;
   }
-
-  async loginLegacy(username: string, password: string): Promise<{ token: string; user: User }> {
-    const response = await api.post<{ token: string; user: User }>('/users/login', {
-      username,
-      password,
-    });
-    return response.data;
-  }
 }

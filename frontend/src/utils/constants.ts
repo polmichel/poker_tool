@@ -1,3 +1,5 @@
+import { Rank } from '../types';
+
 // Constantes pour l'application
 
 // Couleurs des actions (même ordre que dans le backend)
@@ -55,7 +57,7 @@ export const TRAINING_MODES = [
 ];
 
 // Ranks (ordres des cartes)
-export const RANKS = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+export const RANKS: Rank[] = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
 
 // Grille 13x13 pour l'affichage des ranges
 export const HAND_GRID = [

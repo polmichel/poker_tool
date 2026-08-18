@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Box, Paper, MenuItem, Menu } from '@mui/material';
-import { RangeGridCell, ActionType, RANKS } from '../types';
-import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
+import { RangeGridCell, ActionType } from '../types';
+import { ACTION_COLORS, ACTION_LABELS, RANKS } from '../utils/constants';
 
 interface RangeGridProps {
   grid: RangeGridCell[][];
