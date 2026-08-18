@@ -62,7 +62,7 @@ class FlaskApp:
         # Build the controllers (each owns a resource's routes)
         self._controllers = [
             RangeController(ranges, auth, create_range, update_range),
-            UserController(users, auth, login_user),
+            UserController(users, auth),
             AuthController(register_user, login_user, current_user),
             TrainingController(sessions, start_training, answer_question, end_training),
             StatsController(global_stats, user_stats),

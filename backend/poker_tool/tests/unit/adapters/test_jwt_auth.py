@@ -79,31 +79,6 @@ class TestJwtAuth(unittest.TestCase):
         mock_create_token.assert_called_once_with(identity='1')
 
     @patch('poker_tool.adapters.jwt.auth.JWTManager')
-    @patch('poker_tool.adapters.jwt.auth.decode_token')
-    def test_verify_token(self, mock_decode_token, mock_jwt):
-        """Test verify_token method."""
-        mock_decode_token.return_value = {"sub": 1}
-
-        auth = JwtAuth(self.app)
-
-        user = auth.verify_token("mock_token")
-
-        self.assertEqual(user.id, 1)
-        mock_decode_token.assert_called_once_with("mock_token")
-
-    @patch('poker_tool.adapters.jwt.auth.JWTManager')
-    @patch('poker_tool.adapters.jwt.auth.decode_token')
-    def test_verify_token_invalid(self, mock_decode_token, mock_jwt):
-        """Test verify_token with invalid token."""
-        mock_decode_token.side_effect = Exception("Invalid token")
-
-        auth = JwtAuth(self.app)
-
-        user = auth.verify_token("invalid_token")
-
-        self.assertIsNone(user)
-
-    @patch('poker_tool.adapters.jwt.auth.JWTManager')
     def test_generate_token_without_id(self, mock_jwt):
         """Test generate_token with user without ID."""
         auth = JwtAuth(self.app)
@@ -136,19 +111,6 @@ class TestJwtAuth(unittest.TestCase):
         user = auth.current_user()
 
         self.assertIsNone(user)
-
-    @patch('poker_tool.adapters.jwt.auth.JWTManager')
-    def test_hash_password(self, mock_jwt):
-        """Test hash_password method."""
-        with patch('poker_tool.adapters.jwt.auth.generate_password_hash') as mock_hash:
-            mock_hash.return_value = "hashed_password"
-
-            auth = JwtAuth(self.app)
-
-            hashed = auth.hash_password("password123")
-
-            self.assertEqual(hashed, "hashed_password")
-            mock_hash.assert_called_once_with("password123")
 
     @patch('poker_tool.adapters.jwt.auth.JWTManager')
     def test_check_password(self, mock_jwt):

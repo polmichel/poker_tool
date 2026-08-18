@@ -4,9 +4,7 @@ from werkzeug.exceptions import BadRequest, NotFound
 
 from ....interfaces.training_sessions import TrainingSessions
 from ....use_cases.answer_question import AnswerQuestion
-from ....use_cases.answer_question import SessionNotFound as AnswerSessionNotFound
 from ....use_cases.end_training_session import EndTrainingSession
-from ....use_cases.end_training_session import SessionNotFound as EndSessionNotFound
 from ....use_cases.start_training_session import (
     RangeHasNoHands,
     StartTrainingSession,
@@ -15,6 +13,7 @@ from ....use_cases.start_training_session import (
 from ....use_cases.start_training_session import (
     RangeNotFound as StartRangeNotFound,
 )
+from ....use_cases.training_errors import SessionNotFound
 
 
 class TrainingController:
@@ -102,7 +101,7 @@ class TrainingController:
                 raise BadRequest("Missing answer")
             try:
                 result = self._answer_question.answer(session_id, data["answer"])
-            except AnswerSessionNotFound:
+            except SessionNotFound:
                 raise NotFound(f"Session {session_id} not found")
             return jsonify(result.response)
 
@@ -110,7 +109,7 @@ class TrainingController:
         def end_training_session(session_id: int):
             try:
                 result = self._end_training.end(session_id)
-            except EndSessionNotFound:
+            except SessionNotFound:
                 raise NotFound(f"Session {session_id} not found")
             return jsonify({"message": "Session ended", "session": result.session.to_dict()})
 

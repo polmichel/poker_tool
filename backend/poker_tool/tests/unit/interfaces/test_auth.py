@@ -1,6 +1,4 @@
-"""
-Unit tests for Auth interface.
-"""
+"""Unit tests for Auth interface."""
 import os
 import sys
 import unittest
@@ -25,12 +23,9 @@ class TestAuthInterface(unittest.TestCase):
         # Check that all required methods are abstract
         required_methods = [
             'create_user',
-            'authenticate',
             'current_user',
             'generate_token',
-            'verify_token',
         ]
-
         for method_name in required_methods:
             self.assertTrue(
                 hasattr(Auth, method_name),

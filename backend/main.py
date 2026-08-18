@@ -12,8 +12,8 @@ Or using the module syntax::
 
     python -m backend.main
 """
-import sys
 import os
+import sys
 
 # Add the backend directory to the path so ``poker_tool`` is importable
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
