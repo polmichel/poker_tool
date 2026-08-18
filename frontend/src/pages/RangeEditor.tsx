@@ -24,8 +24,15 @@ const RangeEditor: React.FC = () => {
     useRanges(undefined, false);
 
   const [range, setRange] = useState<Range | null>(null);
-  const { current: grid, canUndo, canRedo, reset: resetHistory, push: pushHistory, undo, redo } =
-    useHistory<RangeGridCell[][]>();
+  const {
+    current: grid,
+    canUndo,
+    canRedo,
+    reset: resetHistory,
+    push: pushHistory,
+    undo,
+    redo,
+  } = useHistory<RangeGridCell[][]>();
   // Indique si on a tenté de charger la range (fetchRange appelé au moins une
   // fois). Sert à ne pas afficher « Range non trouvée » pendant le tout premier
   // rendu, avant même que le fetch n'ait commencé.

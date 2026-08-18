@@ -84,7 +84,9 @@ export function useTraining(trainingApi?: TrainingApi) {
 
         return sessionData;
       } catch (err) {
-        setError(extractErrorMessage(err, "Erreur lors de la création de la session d'entraînement"));
+        setError(
+          extractErrorMessage(err, "Erreur lors de la création de la session d'entraînement"),
+        );
         console.error('Error creating training session:', err);
         return null;
       }

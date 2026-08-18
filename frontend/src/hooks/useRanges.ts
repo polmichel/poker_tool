@@ -140,7 +140,12 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
       try {
         return await run(() => api.stats(rangeId));
       } catch (err) {
-        setError(extractErrorMessage(err, `Erreur lors du chargement des statistiques de la range ${rangeId}`));
+        setError(
+          extractErrorMessage(
+            err,
+            `Erreur lors du chargement des statistiques de la range ${rangeId}`,
+          ),
+        );
         console.error(`Error fetching stats for range ${rangeId}:`, err);
         return null;
       }
@@ -154,7 +159,9 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
       try {
         return await run(() => api.grid(rangeId));
       } catch (err) {
-        setError(extractErrorMessage(err, `Erreur lors du chargement de la grille de la range ${rangeId}`));
+        setError(
+          extractErrorMessage(err, `Erreur lors du chargement de la grille de la range ${rangeId}`),
+        );
         console.error(`Error fetching grid for range ${rangeId}:`, err);
         return null;
       }

@@ -21,18 +21,15 @@ export function useAsyncState(initialLoading: boolean = false): AsyncState {
   const [loading, setLoading] = useState<boolean>(initialLoading);
   const [error, setError] = useState<string | null>(null);
 
-  const run = useCallback(
-    async <T,>(operation: () => Promise<T>): Promise<T> => {
-      setLoading(true);
-      setError(null);
-      try {
-        return await operation();
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const run = useCallback(async <T>(operation: () => Promise<T>): Promise<T> => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await operation();
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return { loading, error, setLoading, setError, run };
 }

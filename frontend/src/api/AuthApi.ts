@@ -24,5 +24,4 @@ export class AuthApi {
     const response = await api.post<User>('/users', { username, email, password });
     return response.data;
   }
-
 }
