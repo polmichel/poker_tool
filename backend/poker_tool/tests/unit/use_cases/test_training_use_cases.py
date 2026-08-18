@@ -64,6 +64,30 @@ class TestStartTrainingSession(unittest.TestCase):
         result = self.use_case.start("fill", range_id=1)
         self.assertEqual(result.session.user.id, 1)
 
+    def test_start_guess_uses_whole_library(self):
+        """The guess mode must draw questions from the entire range library."""
+        CreateRange(self.ranges, self.auth).create({
+            "name": "R2", "range_type": "preflop", "position": "CO",
+            "hands": {"QQ": "open", "JJ": "open"}, "user_id": 1,
+        })
+        with patch('poker_tool.objects.training.session.random.shuffle') as s, \
+                patch('poker_tool.objects.training.session.random.sample') as m:
+            # Force the target to be R1 so the correct answer is deterministic.
+            r1 = self.ranges.range_by_id(1)
+            m.return_value = [r1]
+            s.return_value = None
+            result = self.use_case.start("guess", range_id=1, user_id=1)
+
+        self.assertEqual(result.session.mode, "guess")
+        self.assertIsNotNone(result.session.current_question)
+        question = result.session.current_question
+        self.assertEqual(question.type, "guess")
+        # The correct answer is the target range name.
+        self.assertEqual(question.correct_answer, "R1")
+        # Options are drawn from the library (R1 and R2 are present).
+        self.assertIn("R1", question.options)
+        self.assertIn("R2", question.options)
+
 
 class TestAnswerQuestion(unittest.TestCase):
 

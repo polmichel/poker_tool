@@ -12,6 +12,10 @@ from .question import TrainingQuestion
 # Sentinel for "no override" in _clone (distinct from None which is a valid value).
 _UNSET = object()
 
+# Maximum number of range names offered as choices in the "Deviner une range"
+# mode (the correct one plus a few distractors).
+_GUESS_OPTIONS_COUNT = 4
+
 
 class TrainingSession:
     """Training session entity."""
@@ -23,12 +27,14 @@ class TrainingSession:
         mode: str = "fill",
         total_questions: int = 10,
         session_id: int | None = None,
+        library_ranges: list[Range] | None = None,
     ):
         self._user = user
         self._range = range_obj
         self._mode = mode
         self._total_questions = total_questions
         self._id = session_id
+        self._library_ranges = list(library_ranges) if library_ranges else []
         self._questions: list[TrainingQuestion] = []
         self._current_index = 0
         self._correct_answers = 0
@@ -124,6 +130,7 @@ class TrainingSession:
         new_session._mode = self._mode
         new_session._total_questions = self._total_questions
         new_session._id = self._id
+        new_session._library_ranges = list(self._library_ranges)
         new_session._questions = list(questions) if questions is not None else list(self._questions)
         new_session._current_index = self._current_index if current_index is None else current_index
         new_session._correct_answers = self._correct_answers if correct_answers is None else correct_answers
@@ -161,14 +168,16 @@ class TrainingSession:
             ended_at=ended_at,
         )
 
-    def _grid_reference(self) -> dict:
-        """Return the reference range as a 169-cell ``{hand: action}`` map.
+    def _grid_reference(self, range_obj: Range | None = None) -> dict:
+        """Return the given range (default: the session range) as a 169-cell
+        ``{hand: action}`` map.
 
         Matches the 13x13 grid layout (suited above the diagonal, offsuit
         below, pairs on it). Hands absent from the range map to ``fold``.
         """
         from ..hand import RANKS
 
+        reference_range = range_obj if range_obj is not None else self._range
         reference: dict[str, str] = {}
         for i, rank1 in enumerate(RANKS):
             for j, rank2 in enumerate(RANKS):
@@ -178,7 +187,7 @@ class TrainingSession:
                     hand_str = f"{rank2}{rank1}o"
                 else:
                     hand_str = f"{rank1}{rank2}"
-                action = self._range.hands.get(hand_str)
+                action = reference_range.hands.get(hand_str)
                 reference[hand_str] = str(action) if action else "fold"
         return reference
     def _score_grid(self, answer: str) -> int:
@@ -257,70 +266,103 @@ class TrainingSession:
 
     def _generate_questions(self) -> None:
         """Generate questions for this session."""
-        from ..hand import generate_all_hands
-
-        range_hands = self._range.hands
-        all_hands = generate_all_hands()
-        range_hand_strings = list(range_hands.keys())
-
         if self._mode == "fill":
-            # Mode "Remplir une range" : l'utilisateur peint une grille vide puis
-            # valide. La range de référence entière (169 cellules) est la
-            # réponse attendue ; l'évaluation se fait case par case.
-            if len(range_hand_strings) == 0:
-                # No hands in range, cannot generate questions
-                return
+            self._generate_fill_questions()
+        elif self._mode == "guess":
+            self._generate_guess_questions()
+        elif self._mode == "complete":
+            self._generate_complete_questions()
 
-            reference = self._grid_reference()
+    def _generate_fill_questions(self) -> None:
+        """Mode "Remplir une range" : l'utilisateur peint une grille vide puis
+        valide. La range de référence entière (169 cellules) est la
+        réponse attendue ; l'évaluation se fait case par case.
+        """
+        range_hand_strings = list(self._range.hands.keys())
+        if len(range_hand_strings) == 0:
+            # No hands in range, cannot generate questions
+            return
+
+        reference = self._grid_reference()
+        self._questions.append(
+            TrainingQuestion(
+                hand="grid",
+                question="Remplissez la range en coloriant la grille, puis validez.",
+                correct_answer=json.dumps(reference),
+                q_type="grid_paint",
+            )
+        )
+
+    def _generate_guess_questions(self) -> None:
+        """Mode "Deviner une range" : une grille (une range de la bibliothèque,
+        sans son nom) est affichée et l'utilisateur doit deviner à quelle range
+        de la bibliothèque elle correspond.
+
+        Chaque question tire une range cible parmi les ranges disponibles
+        (la bibliothèque passée à la session, sinon la range de la session),
+        sérialise sa grille 169 cellules, et propose en QCM le nom de la range
+        cible mélangé avec des noms d'autres ranges (distracteurs). La réponse
+        attendue est le nom de la range cible.
+        """
+        # Build the candidate pool: prefer the library ranges (with at least one
+        # hand so the grid is meaningful), fall back to the session range.
+        candidates = [r for r in self._library_ranges if r.hands]
+        if not candidates and self._range.hands:
+            candidates = [self._range]
+        if not candidates:
+            return
+
+        # Distinct range names available for the QCM options.
+        names = [r.name for r in candidates]
+
+        question_count = min(self._total_questions, len(candidates))
+        targets = random.sample(candidates, question_count)
+
+        for target in targets:
+            grid_json = json.dumps(self._grid_reference(target))
+            options = self._guess_options(target.name, names)
             self._questions.append(
                 TrainingQuestion(
                     hand="grid",
-                    question="Remplissez la range en coloriant la grille, puis validez.",
-                    correct_answer=json.dumps(reference),
-                    q_type="grid_paint",
+                    question="À quelle range de la bibliothèque correspond cette grille ?",
+                    correct_answer=target.name,
+                    q_type=self._mode,
+                    options=options,
+                    grid=grid_json,
                 )
             )
 
-        elif self._mode == "guess":
-            # Mode "Deviner une range" : l'utilisateur doit deviner si une main fait partie de la range
-            # On mélange des mains dans la range et des mains hors de la range
-            non_range_hands = [str(h) for h in all_hands if str(h) not in range_hand_strings]
+    def _guess_options(self, correct_name: str, all_names: list[str]) -> list[str]:
+        """Build the shuffled QCM options: the correct name plus a few
+        distractors drawn from the other range names.
+        """
+        distractors = [n for n in all_names if n != correct_name]
+        random.shuffle(distractors)
+        picked = distractors[: max(0, _GUESS_OPTIONS_COUNT - 1)]
+        options = picked + [correct_name]
+        random.shuffle(options)
+        return options
 
-            # Si il n'y a pas de mains hors de la range, on prend toutes les questions dans la range
-            if len(non_range_hands) == 0:
-                # Toutes les mains sont dans la range, on prend uniquement des mains de la range
-                selected_hands = random.sample(range_hand_strings, min(self._total_questions, len(range_hand_strings)))
-            else:
-                half = self._total_questions // 2
-                selected_in_range = random.sample(range_hand_strings, min(half, len(range_hand_strings)))
-                selected_out_range = random.sample(non_range_hands, min(half, len(non_range_hands)))
-                selected_hands = selected_in_range + selected_out_range
+    def _generate_complete_questions(self) -> None:
+        """Mode "Compléter une range" : l'utilisateur doit compléter une range
+        partiellement remplie. On sélectionne des mains de la range et on
+        demande l'action attendue.
+        """
+        from ..hand import generate_all_hands
 
-            for hand_str in selected_hands:
-                is_in_range = hand_str in range_hands
-                self._questions.append(
-                    TrainingQuestion(
-                        hand=hand_str,
-                        question=f"Est-ce que {hand_str} fait partie de cette range ?",
-                        correct_answer=str(is_in_range).lower(),
-                        q_type=self._mode,
-                    )
+        range_hands = self._range.hands
+        range_hand_strings = list(range_hands.keys())
+        if len(range_hand_strings) == 0:
+            return
+
+        selected_hands = random.sample(range_hand_strings, min(self._total_questions, len(range_hand_strings)))
+        for hand_str in selected_hands:
+            action = range_hands.get(hand_str)
+            self._questions.append(
+                TrainingQuestion(
+                    hand=hand_str,
+                    question=f"Quelle est l'action pour {hand_str} dans cette range ?",
+                    correct_answer=str(action) if action else "fold",
+                    q_type=self._mode,
                 )
-
-        elif self._mode == "complete":
-            # Mode "Compléter une range" : l'utilisateur doit compléter une range partiellement remplie
-            # On sélectionne des mains de la range et on en cache certaines
-            if len(range_hand_strings) == 0:
-                return
-
-            selected_hands = random.sample(range_hand_strings, min(self._total_questions, len(range_hand_strings)))
-            for hand_str in selected_hands:
-                action = range_hands.get(hand_str)
-                self._questions.append(
-                    TrainingQuestion(
-                        hand=hand_str,
-                        question=f"Quelle est l'action pour {hand_str} dans cette range ?",
-                        correct_answer=str(action) if action else "fold",
-                        q_type=self._mode,
-                    )
-                )
+            )
