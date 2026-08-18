@@ -7,6 +7,9 @@ entry is computed by *exhaustive* enumeration of all C(48,5) = 1 712 304
 runouts for a single representative combo-pair (the result is identical for
 every valid combo-pair by suit symmetry, which was verified empirically).
 
+Same-hand pairings (e.g. AA vs AA) are valid and included: four cards of a
+rank are enough to deal two disjoint 2-card hands.
+
 The table is written incrementally to ``backend/data/equity_table.json`` so a
 long run can be interrupted and resumed (``--resume``): already-computed
 entries are skipped. Concurrency uses ``multiprocessing`` to use all cores.
@@ -47,22 +50,13 @@ def _canonical_hands() -> list[str]:
     return [str(h) for h in generate_all_hands()]
 
 
-def _first_combo(hand_str: str) -> tuple[str, str]:
-    """First real-card combo for a canonical hand (representative by symmetry)."""
-    r1, r2 = hand_str[0], hand_str[1]
-    if len(hand_str) == 2:  # pair
-        return (f"{r1}s", f"{r1}h")
-    suited = len(hand_str) == 3 and hand_str[2] == "s"
-    if suited:
-        return (f"{r1}s", f"{r2}s")
-    return (f"{r1}s", f"{r2}h")  # offsuit, distinct suits
-
-
 def _disjoint_combo(hero_hand: str, opp_hand: str) -> tuple[tuple[str, str], tuple[str, str]] | None:
     """A representative disjoint (hero, opp) combo-pair, or None if impossible.
 
-    Some canonical pairings have no disjoint combo (e.g. hero AA vs opp AA is
-    impossible: only 4 aces exist). Those entries are skipped.
+    Most canonical pairings have at least one disjoint combo-pair (e.g. AA vs
+    AA: four aces suffice for AsAh vs AdAc). Only truly impossible pairings
+    (none in the 169x169 grid, since every canonical hand has at least one
+    disjoint combo against itself or any other) return None.
     """
     for hero_combo in _all_combos(hero_hand):
         hero_used = {hero_combo[0], hero_combo[1]}
@@ -156,8 +150,8 @@ def main() -> None:
     jobs = []
     for hero in hands:
         for opp in hands:
-            if hero == opp:
-                continue  # impossible pairing (same 2 ranks, no disjoint combo)
+            # Same-hand pairings (e.g. AA vs AA) are valid: four cards of a
+            # rank suffice for two disjoint 2-card hands. Do NOT skip them.
             key = f"{hero}|{opp}"
             if key in table:
                 continue
