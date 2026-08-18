@@ -1,6 +1,7 @@
 // Fonctions utilitaires pour l'application
 
-import { RANKS, ACTION_COLORS, ActionType, RangeGridCell } from '../types';
+import { ActionType, RangeGridCell, Rank, Hand } from '../types';
+import { RANKS, ACTION_COLORS, ACTION_LABELS } from './constants';
 
 // Générer une grille 13x13 pour une range donnée
 export function generateRangeGrid(rangeHands: Record<string, ActionType>): RangeGridCell[][] {
@@ -29,6 +30,80 @@ export function generateRangeGrid(rangeHands: Record<string, ActionType>): Range
   }
 
   return grid;
+}
+
+// Générer toutes les mains possibles (169 combinaisons)
+export function generateAllHands(): Hand[] {
+  const hands: Hand[] = [];
+  for (let i = 0; i < RANKS.length; i++) {
+    for (let j = 0; j < RANKS.length; j++) {
+      if (i < j) {
+        hands.push({
+          rank1: RANKS[i],
+          rank2: RANKS[j],
+          suited: true,
+          notation: `${RANKS[i]}${RANKS[j]}s`,
+        });
+        hands.push({
+          rank1: RANKS[i],
+          rank2: RANKS[j],
+          suited: false,
+          notation: `${RANKS[i]}${RANKS[j]}o`,
+        });
+      } else if (i === j) {
+        hands.push({
+          rank1: RANKS[i],
+          rank2: RANKS[j],
+          suited: false,
+          is_pair: true,
+          notation: `${RANKS[i]}${RANKS[j]}`,
+        });
+      }
+    }
+  }
+  return hands;
+}
+
+// Générer une grille 13x13 pour l'affichage (notations de mains)
+export function generateHandGrid(): string[][] {
+  const grid: string[][] = [];
+  for (const rank1 of RANKS) {
+    const row: string[] = [];
+    for (const rank2 of RANKS) {
+      const i = RANKS.indexOf(rank1);
+      const j = RANKS.indexOf(rank2);
+      if (i < j) {
+        row.push(`${rank1}${rank2}s`);
+      } else if (i > j) {
+        row.push(`${rank2}${rank1}o`);
+      } else {
+        row.push(`${rank1}${rank2}`);
+      }
+    }
+    grid.push(row);
+  }
+  return grid;
+}
+
+// Convertir une notation de main en objet Hand
+export function handFromString(handStr: string): Hand {
+  const upperHand = handStr.toUpperCase();
+  let suited = false;
+  let handStrClean = upperHand;
+  if (handStrClean.endsWith('S')) {
+    suited = true;
+    handStrClean = handStrClean.slice(0, -1);
+  } else if (handStrClean.endsWith('O')) {
+    suited = false;
+    handStrClean = handStrClean.slice(0, -1);
+  }
+  if (handStrClean.length === 2) {
+    const rank1 = handStrClean[0] as Rank;
+    const rank2 = handStrClean[1] as Rank;
+    const isPair = rank1 === rank2;
+    return { rank1, rank2, suited, is_pair: isPair, notation: upperHand };
+  }
+  throw new Error(`Invalid hand string: ${handStr}`);
 }
 
 // Convertir une grille en objet hands (pour sauvegarde)
@@ -67,18 +142,9 @@ export function getActionColor(action: ActionType): string {
   return ACTION_COLORS[action] || '#FFFFFF';
 }
 
-// Obtenir le label de l'action en français
+// Obtenir le label de l'action en français (délègue à ACTION_LABELS)
 export function getActionLabel(action: ActionType): string {
-  const labels: Record<ActionType, string> = {
-    open: 'Ouvrir',
-    call: 'Suivre',
-    raise: 'Relancer',
-    all_in: 'All-In',
-    fold: 'Passer',
-    check: 'Checker',
-    undefined: 'Non défini',
-  };
-  return labels[action] || action;
+  return ACTION_LABELS[action] || action;
 }
 
 // Vérifier si une main est une paire

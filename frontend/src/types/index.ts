@@ -1,7 +1,6 @@
 // Types pour les mains de poker
 export type Rank = 'A' | 'K' | 'Q' | 'J' | 'T' | '9' | '8' | '7' | '6' | '5' | '4' | '3' | '2';
 export type Suit = 's' | 'h' | 'd' | 'c';
-
 export interface Hand {
   rank1: Rank;
   rank2: Rank;
@@ -13,21 +12,9 @@ export interface Hand {
 // Types pour les actions
 export type ActionType = 'open' | 'call' | 'raise' | 'all_in' | 'fold' | 'check' | 'undefined';
 
-// Couleurs associées aux actions (pour le frontend)
-export const ACTION_COLORS: Record<ActionType, string> = {
-  open: '#4CAF50', // Vert
-  call: '#2196F3', // Bleu
-  raise: '#FF9800', // Orange
-  all_in: '#F44336', // Rouge
-  fold: '#9E9E9E', // Gris
-  check: '#FFEB3B', // Jaune
-  undefined: '#FFFFFF', // Blanc
-};
-
 // Types pour les ranges
 export type RangeType = 'preflop' | 'postflop' | 'push_fold';
 export type Position = 'UTG' | 'MP' | 'CO' | 'BTN' | 'SB' | 'BB' | 'undefined';
-
 export interface Range {
   id?: number;
   name: string;
@@ -42,7 +29,6 @@ export interface Range {
 
 // Types pour les scénarios
 export type ScenarioType = 'cash_game' | 'tournament' | 'push_fold' | 'heads_up';
-
 export interface Scenario {
   id?: number;
   name: string;
@@ -62,14 +48,12 @@ export type TrainingMode = 'fill' | 'guess' | 'complete';
 
 // Type de question : les modes classiques plus le mode grille à peindre.
 export type TrainingQuestionKind = TrainingMode | 'grid_paint';
-
 export interface TrainingQuestion {
   type: TrainingQuestionKind;
   hand: string;
   question: string;
   correct_answer: string;
 }
-
 export interface TrainingSession {
   id?: number;
   user_id?: number;
@@ -95,27 +79,6 @@ export interface Stats {
   total_time_spent: number;
 }
 
-export interface UserStats extends Stats {
-  mode_stats: Record<
-    TrainingMode,
-    {
-      total_sessions: number;
-      total_questions: number;
-      correct_answers: number;
-      avg_score: number;
-    }
-  >;
-  range_stats: Record<
-    number,
-    {
-      total_sessions: number;
-      total_questions: number;
-      correct_answers: number;
-      avg_score: number;
-    }
-  >;
-}
-
 // Types pour les réponses de l'API
 export interface ApiResponse<T> {
   success: boolean;
@@ -133,7 +96,6 @@ export interface User {
   created_at?: string;
   updated_at?: string;
 }
-
 export interface AuthResponse {
   access_token: string;
   user: User;
@@ -147,102 +109,6 @@ export interface RangeGridCell {
 }
 
 export type RangeGrid = RangeGridCell[][];
-
-// Constantes pour les ranks et les mains
-export const RANKS: Rank[] = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
-export const SUITS: Suit[] = ['s', 'h', 'd', 'c'];
-
-// Générer toutes les mains possibles (169 combinaisons)
-export function generateAllHands(): Hand[] {
-  const hands: Hand[] = [];
-  for (let i = 0; i < RANKS.length; i++) {
-    for (let j = 0; j < RANKS.length; j++) {
-      if (i < j) {
-        // Mains non-paires et non-symétriques (ex: AK, AQ)
-        hands.push({
-          rank1: RANKS[i],
-          rank2: RANKS[j],
-          suited: true,
-          notation: `${RANKS[i]}${RANKS[j]}s`,
-        }); // Suited
-        hands.push({
-          rank1: RANKS[i],
-          rank2: RANKS[j],
-          suited: false,
-          notation: `${RANKS[i]}${RANKS[j]}o`,
-        }); // Offsuit
-      } else if (i === j) {
-        // Paires (ex: AA, KK)
-        hands.push({
-          rank1: RANKS[i],
-          rank2: RANKS[j],
-          suited: false,
-          is_pair: true,
-          notation: `${RANKS[i]}${RANKS[j]}`,
-        });
-      }
-    }
-  }
-  return hands;
-}
-
-// Générer une grille 13x13 pour l'affichage
-export function generateHandGrid(): string[][] {
-  const grid: string[][] = [];
-  for (const rank1 of RANKS) {
-    const row: string[] = [];
-    for (const rank2 of RANKS) {
-      const i = RANKS.indexOf(rank1);
-      const j = RANKS.indexOf(rank2);
-      if (i < j) {
-        row.push(`${rank1}${rank2}s`); // Suited
-      } else if (i > j) {
-        row.push(`${rank2}${rank1}o`); // Offsuit (inversé pour éviter les doublons)
-      } else {
-        row.push(`${rank1}${rank2}`); // Pair
-      }
-    }
-    grid.push(row);
-  }
-  return grid;
-}
-
-// Convertir une notation de main en objet Hand
-export function handFromString(handStr: string): Hand {
-  const upperHand = handStr.toUpperCase();
-  let suited = false;
-  let handStrClean = upperHand;
-
-  if (handStrClean.endsWith('S')) {
-    suited = true;
-    handStrClean = handStrClean.slice(0, -1);
-  } else if (handStrClean.endsWith('O')) {
-    suited = false;
-    handStrClean = handStrClean.slice(0, -1);
-  }
-
-  if (handStrClean.length === 2) {
-    const rank1 = handStrClean[0] as Rank;
-    const rank2 = handStrClean[1] as Rank;
-    const isPair = rank1 === rank2;
-    return { rank1, rank2, suited, is_pair: isPair, notation: upperHand };
-  }
-
-  throw new Error(`Invalid hand string: ${handStr}`);
-}
-
-// Vérifier si une main est valide
-export function isValidHand(handStr: string): boolean {
-  const upper = handStr.toUpperCase();
-  let clean = upper;
-  if (clean.endsWith('S') || clean.endsWith('O')) {
-    clean = clean.slice(0, -1);
-  }
-  if (clean.length !== 2) {
-    return false;
-  }
-  return RANKS.includes(clean[0] as Rank) && RANKS.includes(clean[1] as Rank);
-}
 
 // Types pour le simulateur d'équité (range vs main)
 export interface EquityByHand {

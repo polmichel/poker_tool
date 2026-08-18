@@ -22,7 +22,7 @@ import {
 import { PlayArrow as PlayArrowIcon } from '@mui/icons-material';
 import { useEquity } from '../hooks';
 import { EquityHeatmapGrid } from '../components';
-import { isValidHand } from '../types';
+import { isValidHand } from '../utils/helpers';
 
 const Equity: React.FC = () => {
   const { result, loading, error, simulate, reset } = useEquity();

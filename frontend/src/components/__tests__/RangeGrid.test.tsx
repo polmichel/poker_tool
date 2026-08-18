@@ -5,6 +5,7 @@ import { RangeGridCell } from '../../types';
 
 // Mock des constantes
 jest.mock('../../utils/constants', () => ({
+  RANKS: ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'],
   ACTION_COLORS: {
     open: '#4CAF50',
     raise: '#2196F3',
@@ -25,11 +26,7 @@ jest.mock('../../utils/constants', () => ({
   },
 }));
 
-// Mock des types
-jest.mock('../../types', () => ({
-  ...jest.requireActual('../../types'),
-  RANKS: ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'],
-}));
+// Les types ne portent plus de runtime; rien à mocker ici.
 
 describe('RangeGrid Component', () => {
   const mockGrid: RangeGridCell[][] = [

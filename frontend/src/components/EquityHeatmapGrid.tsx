@@ -6,7 +6,9 @@
  */
 import React from 'react';
 import { Box, Paper, Tooltip } from '@mui/material';
-import { RANKS, generateHandGrid, EquityByHand } from '../types';
+import { EquityByHand } from '../types';
+import { RANKS } from '../utils/constants';
+import { generateHandGrid } from '../utils/helpers';
 
 interface EquityHeatmapGridProps {
   byHand: EquityByHand[];
