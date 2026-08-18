@@ -24,11 +24,7 @@ export class EquityMissingError extends Error {
 }
 
 export class EquityApi {
-  async simulate(
-    hero: string,
-    range: string,
-    iterations?: number,
-  ): Promise<EquityResult> {
+  async simulate(hero: string, range: string, iterations?: number): Promise<EquityResult> {
     try {
       const response = await api.post<EquityResult>('/equity/simulate', {
         hero,

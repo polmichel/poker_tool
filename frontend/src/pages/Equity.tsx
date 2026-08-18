@@ -45,9 +45,7 @@ const Equity: React.FC = () => {
 
   // Pop-up Monte-Carlo (ouverte quand la table exacte est incomplète).
   const [mcDialogOpen, setMcDialogOpen] = useState(false);
-  const [mcIterations, setMcIterations] = useState<number>(
-    DEFAULT_MONTE_CARLO_ITERATIONS,
-  );
+  const [mcIterations, setMcIterations] = useState<number>(DEFAULT_MONTE_CARLO_ITERATIONS);
   const [mcMissing, setMcMissing] = useState<string[]>([]);
   const [mcRunning, setMcRunning] = useState(false);
 
@@ -181,8 +179,8 @@ const Equity: React.FC = () => {
         <DialogTitle>Équité exacte indisponible</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ mb: 1 }}>
-            Certaines mains adverses ne sont pas dans la table d'équité exacte.
-            Vous pouvez lancer une simulation Monte-Carlo à la place.
+            Certaines mains adverses ne sont pas dans la table d'équité exacte. Vous pouvez lancer
+            une simulation Monte-Carlo à la place.
           </Typography>
           {mcMissing.length > 0 && (
             <Typography
