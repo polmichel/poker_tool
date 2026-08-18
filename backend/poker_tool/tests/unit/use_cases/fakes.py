@@ -8,10 +8,12 @@ and zero coupling to SQLAlchemy/Flask.
 
 from typing import ClassVar
 
+from poker_tool.interfaces.equity_calculator import EquityCalculator
 from poker_tool.interfaces.hand_evaluator import HandEvaluator
 from poker_tool.interfaces.ranges import Ranges
 from poker_tool.interfaces.training_sessions import TrainingSessions
 from poker_tool.interfaces.users import Users
+from poker_tool.objects.equity import EquityByHand, EquityResult
 from poker_tool.objects.range import Range
 from poker_tool.objects.training.session import TrainingSession
 from poker_tool.objects.user import User
@@ -136,6 +138,28 @@ class FakeAuth:
 
     def generate_token(self, user: User) -> str:
         return f"token_for_{user.id}"
+
+
+class FakeEquityCalculator(EquityCalculator):
+    """Deterministic in-memory EquityCalculator for testing the web layer.
+
+    Returns a fixed equity result without touching the exact table or the
+    Monte-Carlo engine, so controller/Flask tests stay fast and decoupled from
+    the equity strategy.
+    """
+
+    def __init__(self, result: EquityResult | None = None) -> None:
+        self._result = result or EquityResult(
+            hero="AKs",
+            win=50.0,
+            tie=0.0,
+            lose=50.0,
+            iterations=1,
+            by_hand=[EquityByHand(hand="QQ", win=50.0, tie=0.0, lose=50.0, combos=6)],
+        )
+
+    def compute(self, hero: str, range_hands: list[str]) -> EquityResult:
+        return self._result
 
 
 class FakeHandEvaluator(HandEvaluator):

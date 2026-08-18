@@ -8,6 +8,11 @@ which concrete adapter or use case to use.
 from flask import Flask
 from flask_cors import CORS
 
+from .adapters.equity import (
+    ExactWithMonteCarloFallback,
+    MonteCarloEquityCalculator,
+    TableEquityCalculator,
+)
 from .adapters.jwt.auth import JwtAuth
 from .adapters.sqlalchemy.ranges import SqlRanges
 from .adapters.sqlalchemy.training_sessions import SqlTrainingSessions
@@ -15,6 +20,9 @@ from .adapters.sqlalchemy.users import SqlUsers
 from .adapters.treys.evaluator import TreysEvaluator
 from .config import Config
 from .infrastructure.web.flask_app import FlaskApp
+from .interfaces.equity_calculator import EquityCalculator
+from .objects.equity_table import EquityTable
+from .use_cases.aggregate_equity import AggregateEquity
 from .use_cases.answer_question import AnswerQuestion
 from .use_cases.create_range import CreateRange
 from .use_cases.current_user import CurrentUser
@@ -61,7 +69,26 @@ class PokerTool:
         self.global_stats = GlobalStats(self.ranges, self.users, self.sessions)
         self.user_stats = UserStats(self.users, self.ranges, self.sessions)
         self.simulate_equity = SimulateEquity(TreysEvaluator())
-
+        # Equity strategy: exact pre-computed table by default (instant,
+        # reproducible), with the Monte-Carlo simulator above as a fallback
+        # when the table is missing or incomplete. The table is optional: if
+        # the JSON file is absent, equity uses Monte-Carlo so the app still
+        # starts. The Monte-Carlo engine (self.simulate_equity) is kept intact
+        # and wrapped behind the EquityCalculator port for future use cases.
+        self.equity_calculator: EquityCalculator
+        try:
+            table_calculator: EquityCalculator = TableEquityCalculator(
+                AggregateEquity(EquityTable()),
+            )
+        except FileNotFoundError:
+            # Table not generated yet — primary becomes Monte-Carlo itself,
+            # the fallback composite below still works (it just never needs to
+            # fall back, since primary already answers).
+            table_calculator = MonteCarloEquityCalculator(self.simulate_equity)
+        self.equity_calculator = ExactWithMonteCarloFallback(
+            primary=table_calculator,
+            fallback=MonteCarloEquityCalculator(self.simulate_equity),
+        )
         # Create the web layer (thin controllers delegating to use cases)
         self.flask_app = FlaskApp(
             flask_app=self.app,
@@ -79,7 +106,7 @@ class PokerTool:
             end_training=self.end_training,
             global_stats=self.global_stats,
             user_stats=self.user_stats,
-            simulate_equity=self.simulate_equity,
+            equity_calculator=self.equity_calculator,
         )
 
     def _configure_flask(self) -> None:

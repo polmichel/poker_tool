@@ -9,6 +9,7 @@ from flask import Blueprint, Flask, jsonify
 from werkzeug.exceptions import BadRequest, NotFound
 
 from ...interfaces.auth import Auth
+from ...interfaces.equity_calculator import EquityCalculator
 from ...interfaces.ranges import Ranges
 from ...interfaces.training_sessions import TrainingSessions
 from ...interfaces.users import Users
@@ -19,7 +20,6 @@ from ...use_cases.end_training_session import EndTrainingSession
 from ...use_cases.global_stats import GlobalStats
 from ...use_cases.login_user import LoginUser
 from ...use_cases.register_user import RegisterUser
-from ...use_cases.simulate_equity import SimulateEquity
 from ...use_cases.start_training_session import StartTrainingSession
 from ...use_cases.update_range import UpdateRange
 from ...use_cases.user_stats import UserStats
@@ -50,7 +50,7 @@ class FlaskApp:
         end_training: EndTrainingSession,
         global_stats: GlobalStats,
         user_stats: UserStats,
-        simulate_equity: SimulateEquity,
+        equity_calculator: EquityCalculator,
     ):
         """Initialize the Flask app with its use cases (DI)."""
         self.app = flask_app
@@ -59,14 +59,14 @@ class FlaskApp:
         self.sessions = sessions
         self.auth = auth
 
-        # Build the controllers (each owns a resource's routes)
+        # Build the controllers (each owns a resource's routes).
         self._controllers = [
             RangeController(ranges, auth, create_range, update_range),
             UserController(users, auth),
             AuthController(register_user, login_user, current_user),
             TrainingController(sessions, start_training, answer_question, end_training),
             StatsController(global_stats, user_stats),
-            EquityController(simulate_equity),
+            EquityController(equity_calculator),
         ]
         self._register_routes()
 

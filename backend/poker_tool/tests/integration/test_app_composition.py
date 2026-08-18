@@ -9,7 +9,6 @@ import unittest
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
-from unittest.mock import patch
 
 from flask import Flask
 
@@ -76,17 +75,25 @@ class TestAppComposition(unittest.TestCase):
         self.assertEqual(config.cors_origins, ["*"])
         self.assertEqual(config.jwt_access_token_expires_seconds, 3600)
 
-    @patch('poker_tool.app.CORS')
-    def test_cors_configuration(self, mock_cors):
-        """Test that CORS is configured from the injected Config."""
-        app = PokerTool()
+    def test_cors_configuration(self):
+        """Test that CORS is configured from the injected Config.
 
-        # Check that CORS was initialized
-        mock_cors.assert_called_once()
-        # Check the arguments passed to CORS
-        mock_cors.call_args[0][0]  # First argument is the Flask app
-        resources_arg = mock_cors.call_args[1].get('resources')
-        self.assertEqual(resources_arg, {r"/*": {"origins": app.config.cors_origins}})
+        Instead of patching flask_cors, we exercise a real request with an
+        Origin header and assert the Access-Control-Allow-Origin response
+        header is present, which proves CORS was initialized from Config.
+        """
+        app = PokerTool()
+        with app.app.test_client() as client:
+            response = client.get(
+                '/api/health',
+                headers={'Origin': 'http://localhost'},
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertIn('Access-Control-Allow-Origin', response.headers)
+            self.assertEqual(
+                response.headers['Access-Control-Allow-Origin'],
+                'http://localhost',
+            )
 
 
 class TestObjectCreationFlow(unittest.TestCase):
@@ -253,8 +260,13 @@ class TestInterfaceImplementations(unittest.TestCase):
             )
 
 
+
 class TestEquityEndpoint(unittest.TestCase):
-    """Integration tests for the /api/equity/simulate endpoint."""
+    """Integration tests for the /api/equity/simulate endpoint.
+
+    The default equity strategy is the exact pre-computed table (instant,
+    bit-identical); the Monte-Carlo engine is kept as a fallback.
+    """
 
     def setUp(self):
         """Create a test client."""
@@ -262,7 +274,7 @@ class TestEquityEndpoint(unittest.TestCase):
         self.client = self.app.app.test_client()
 
     def test_simulate_returns_equity(self):
-        """Test that the endpoint returns win/tie/lose percentages."""
+        """The endpoint returns win/tie/lose percentages via the exact table."""
         resp = self.client.post(
             "/api/equity/simulate",
             json={"hero": "AKs", "range": "QQ", "iterations": 1000},
@@ -272,22 +284,31 @@ class TestEquityEndpoint(unittest.TestCase):
         self.assertEqual(data["hero"], "AKs")
         for key in ("win", "tie", "lose", "iterations", "by_hand"):
             self.assertIn(key, data)
-        self.assertEqual(data["iterations"], 1000)
+        # Exact table path: iterations is the table size, not the MC count.
+        self.assertGreater(data["iterations"], 1000)
         self.assertGreaterEqual(data["win"] + data["tie"] + data["lose"], 99.9)
 
     def test_simulate_range_notation(self):
-        """Test that range notation (KK+) is accepted and expanded."""
+        """Range notation (KK) is accepted and expanded."""
         resp = self.client.post(
             "/api/equity/simulate",
             json={"hero": "AA", "range": "KK", "iterations": 1000},
         )
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
-        # AA vs KK should be heavily dominant (~80/20).
+        # AA vs KK exact equity is ~82.36% (dominant).
         self.assertGreater(data["win"], 70.0)
-        # Verify the range was expanded into a single hand breakdown.
         self.assertEqual(len(data["by_hand"]), 1)
         self.assertEqual(data["by_hand"][0]["hand"], "KK")
+
+    def test_simulate_reproducible(self):
+        """Two calls return bit-identical equity (exact table path)."""
+        body = {"hero": "AKs", "range": "QQ", "iterations": 1000}
+        r1 = self.client.post("/api/equity/simulate", json=body).get_json()
+        r2 = self.client.post("/api/equity/simulate", json=body).get_json()
+        self.assertEqual(r1["win"], r2["win"])
+        self.assertEqual(r1["tie"], r2["tie"])
+        self.assertEqual(r1["lose"], r2["lose"])
 
     def test_missing_hero_returns_400(self):
         """Test that a missing hero field returns 400."""
@@ -324,4 +345,3 @@ class TestEquityEndpoint(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
