@@ -134,12 +134,13 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
           const Icon = getIcon(entry.icon);
           const isActive = activeModule === entry.slug;
           const route = moduleRoute(entry.slug);
+          const disabled = !route || !!entry.soon;
           return (
             <ListItem key={entry.slug} disablePadding>
               <ListItemButton
                 selected={isActive}
-                disabled={!route}
-                onClick={() => route && navigate(route)}
+                disabled={disabled}
+                onClick={() => route && !disabled && navigate(route)}
               >
                 <ListItemIcon sx={{ color: isActive ? entry.accent : 'inherit', minWidth: 38 }}>
                   <Icon fontSize="medium" />
