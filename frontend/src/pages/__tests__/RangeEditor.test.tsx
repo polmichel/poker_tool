@@ -22,6 +22,7 @@ const mockRange: Range = {
 const mockUpdateRange = jest.fn();
 
 jest.mock('../../hooks', () => ({
+  ...jest.requireActual('../../hooks'),
   useRanges: () => ({
     loading: false,
     error: null,

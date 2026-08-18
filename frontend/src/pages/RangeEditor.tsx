@@ -9,8 +9,8 @@ import {
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { RangeGrid, RangeStats } from '../components';
-import { useRanges } from '../hooks';
-import { Range, ActionType } from '../types';
+import { useRanges, useHistory } from '../hooks';
+import { Range, ActionType, RangeGridCell } from '../types';
 import { generateRangeGrid, gridToHands } from '../utils/helpers';
 import { ACTION_COLORS, ACTION_LABELS } from '../utils/constants';
 
@@ -24,9 +24,8 @@ const RangeEditor: React.FC = () => {
     useRanges(undefined, false);
 
   const [range, setRange] = useState<Range | null>(null);
-  const [grid, setGrid] = useState<any[][]>([]);
-  const [history, setHistory] = useState<any[][][]>([]);
-  const [historyIndex, setHistoryIndex] = useState<number>(-1);
+  const { current: grid, canUndo, canRedo, reset: resetHistory, push: pushHistory, undo, redo } =
+    useHistory<RangeGridCell[][]>();
   // Indique si on a tenté de charger la range (fetchRange appelé au moins une
   // fois). Sert à ne pas afficher « Range non trouvée » pendant le tout premier
   // rendu, avant même que le fetch n'ait commencé.
@@ -47,16 +46,15 @@ const RangeEditor: React.FC = () => {
   useEffect(() => {
     if (selectedRange) {
       setRange(selectedRange);
-      setGrid(generateRangeGrid(selectedRange.hands));
-      setHistory([generateRangeGrid(selectedRange.hands)]);
-      setHistoryIndex(0);
+      resetHistory(generateRangeGrid(selectedRange.hands));
     }
-  }, [selectedRange]);
+  }, [selectedRange, resetHistory]);
 
   // Gérer le clic/glissé sur une cellule de la grille : applique directement
   // l'action sélectionnée dans la légende (au lieu de cycler les actions).
   const handleCellClick = useCallback(
     (hand: string, _currentAction: ActionType) => {
+      if (!grid) return;
       // Trouver la position de la main dans la grille
       const newGrid = grid.map((row) => row.map((cell: any) => ({ ...cell })));
       let found = false;
@@ -75,45 +73,23 @@ const RangeEditor: React.FC = () => {
       }
 
       if (found) {
-        // Sauvegarder dans l'historique
-        const newHistory = [...history.slice(0, historyIndex + 1), newGrid];
-        setHistory(newHistory);
-        setHistoryIndex(newHistory.length - 1);
-        setGrid(newGrid);
+        pushHistory(newGrid);
       }
     },
-    [grid, history, historyIndex, selectedAction],
+    [grid, selectedAction, pushHistory],
   );
-
-  // Annuler la dernière modification
-  const handleUndo = useCallback(() => {
-    if (historyIndex > 0) {
-      setHistoryIndex(historyIndex - 1);
-      setGrid(history[historyIndex - 1]);
-    }
-  }, [history, historyIndex]);
-
-  // Rétablir la dernière modification
-  const handleRedo = useCallback(() => {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex(historyIndex + 1);
-      setGrid(history[historyIndex + 1]);
-    }
-  }, [history, historyIndex]);
 
   // Sauvegarder la range
   const handleSave = useCallback(async () => {
     if (!range || !id) return;
 
-    const hands = gridToHands(grid);
+    const hands = gridToHands(grid ?? []);
     const updatedRange = range.id ? await updateRange(range.id, { hands }) : null;
 
     if (updatedRange) {
       setRange(updatedRange);
       setSelectedRange(updatedRange);
-      // Réinitialiser l'historique
-      setHistory([generateRangeGrid(updatedRange.hands)]);
-      setHistoryIndex(0);
+      resetHistory(generateRangeGrid(updatedRange.hands));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [range, id, grid, updateRange]);
@@ -141,6 +117,7 @@ const RangeEditor: React.FC = () => {
 
   // Compter le nombre de mains par action
   const countHandsByAction = useCallback(() => {
+    if (!grid) return {};
     const counts: Record<string, number> = {};
     for (const row of grid) {
       for (const cell of row) {
@@ -207,8 +184,8 @@ const RangeEditor: React.FC = () => {
             <Button
               variant="outlined"
               startIcon={<UndoIcon />}
-              onClick={handleUndo}
-              disabled={historyIndex <= 0}
+              onClick={undo}
+              disabled={!canUndo}
               size="small"
             >
               Annuler
@@ -219,8 +196,8 @@ const RangeEditor: React.FC = () => {
             <Button
               variant="outlined"
               startIcon={<RedoIcon />}
-              onClick={handleRedo}
-              disabled={historyIndex >= history.length - 1}
+              onClick={redo}
+              disabled={!canRedo}
               size="small"
             >
               Rétablir
@@ -279,7 +256,7 @@ const RangeEditor: React.FC = () => {
         </Typography>
         <Box sx={{ overflow: 'auto' }}>
           <RangeGrid
-            grid={grid}
+            grid={grid ?? []}
             onCellClick={handleCellClick}
             editable={true}
             cellSize={40}
@@ -291,7 +268,7 @@ const RangeEditor: React.FC = () => {
 
       {/* Statistiques détaillées */}
       <Paper sx={{ p: 2 }}>
-        <RangeStats range={{ ...range, hands: gridToHands(grid) }} />
+        <RangeStats range={{ ...range, hands: gridToHands(grid ?? []) }} />
       </Paper>
     </Box>
   );

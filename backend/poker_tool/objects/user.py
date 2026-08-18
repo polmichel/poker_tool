@@ -38,15 +38,24 @@ class User:
         """Password hash."""
         return self._password_hash
 
+    def _identity(self):
+        """Stable identity: the id once persisted, else the username.
+
+        Using the id alone made two unsaved users compare equal (both have
+        id ``None``) and collide in sets; falling back to the username keeps
+        unsaved users distinguishable.
+        """
+        return self._id if self._id is not None else self._username
+
     def __eq__(self, other: object) -> bool:
-        """Equality comparison."""
+        """Equality comparison based on the stable identity."""
         if not isinstance(other, User):
             return False
-        return self._id == other._id
+        return self._identity() == other._identity()
 
     def __hash__(self) -> int:
-        """Hash for use in sets/dicts."""
-        return hash(self._id)
+        """Hash for use in sets/dicts, consistent with __eq__."""
+        return hash(self._identity())
 
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
