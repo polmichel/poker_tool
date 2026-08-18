@@ -149,6 +149,11 @@ poker_tool/
 - Classement des utilisateurs
 - Progression par range
 
+### 📊 Calculateur d'Équité
+- **Équité exacte** : énumération exhaustive de tous les runouts (C(48,5) boards) via l'adaptateur `phevaluator` — résultats précis et **reproductibles au bit près** (aucune variance, recalcul identique).
+- **Table pré-calculée** : les 169×169 équités preflop sont générées une fois (`backend/poker_tool/scripts/generate_equity_table.py`) et stockées dans `backend/data/equity_table.json`, lues en O(1) à l'exécution.
+- **Monte-Carlo conservé** : `SimulateEquity` reste disponible pour les cas futurs (postflop, range vs range) non couverts par l'énumération preflop.
+
 ### 🔄 Import/Export
 - **Formats supportés** : JSON, CSV, Texte
 - **Export** : Téléchargez vos ranges dans différents formats

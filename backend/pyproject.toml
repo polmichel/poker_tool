@@ -11,4 +11,6 @@ dependencies = [
     "flask-sqlalchemy==3.1.1",
     "python-dotenv==1.0.1",
     "werkzeug==3.0.3",
+    "treys==0.1.8",
+    "phevaluator==0.6.0",
 ]
