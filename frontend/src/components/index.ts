@@ -10,3 +10,4 @@ export { default as RangeStats } from './RangeStats';
 export { default as ImportExportDialog } from './ImportExportDialog';
 export { default as AppCard } from './AppCard';
 export { default as EquityHeatmapGrid } from './EquityHeatmapGrid';
+export { default as DonationDialog } from './DonationDialog';

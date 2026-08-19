@@ -1,9 +1,10 @@
-import React from 'react';
-import { Box, Typography, Grid, Container, Skeleton, Chip, Stack } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, Grid, Container, Skeleton, Chip, Stack, Button } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useNavigate } from 'react-router-dom';
-import { AppCard } from '../components';
+import { AppCard, DonationDialog } from '../components';
 import { useStats } from '../hooks';
 import { useAuthContext } from '../auth/AuthContext';
 import { APP_ENTRIES, moduleRoute, type AppEntry } from '../app/theme';
@@ -20,11 +21,15 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { globalStats, loading } = useStats();
   const { isAuthenticated, user } = useAuthContext();
+  const [donationOpen, setDonationOpen] = useState(false);
 
   const handleSelect = (entry: AppEntry) => {
     const route = moduleRoute(entry.slug);
     if (route) navigate(route);
   };
+
+  const handleDonationOpen = () => setDonationOpen(true);
+  const handleDonationClose = () => setDonationOpen(false);
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
@@ -69,7 +74,7 @@ const Home: React.FC = () => {
           sx={{ mt: 1.5, maxWidth: 680, fontWeight: 400 }}
         >
           {isAuthenticated
-            ? `Bonjour ${user?.username}, reprenez là où vous vous étiez arrêté.`
+            ? `Bonjour ${user?.username}, reprenez là où vous vous êtes arrêté.`
             : 'Construisez vos ranges, entraînez-vous et suivez vos progrès — chaque outil dans son espace dédié.'}
         </Typography>
 
@@ -131,9 +136,39 @@ const Home: React.FC = () => {
           color: THEME_COLORS.textMuted,
         }}
       >
-        <Typography variant="body2">D’autres modules poker arrivent bientôt.</Typography>
+        <Typography variant="body2">D'autres modules poker arrivent bientôt.</Typography>
         <ArrowForwardIcon sx={{ fontSize: 16 }} />
       </Box>
+
+      {/* Donation button */}
+      <Box
+        sx={{
+          mt: 4,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Button
+          variant="outlined"
+          startIcon={<FavoriteIcon />}
+          onClick={handleDonationOpen}
+          sx={{
+            borderColor: THEME_COLORS.borderStrong,
+            color: THEME_COLORS.textSecondary,
+            '&:hover': {
+              borderColor: THEME_COLORS.primary,
+              backgroundColor: 'rgba(16,185,129,0.08)',
+              color: THEME_COLORS.primaryLight,
+            },
+          }}
+        >
+          Faire un don au développeur
+        </Button>
+      </Box>
+
+      {/* Donation Dialog */}
+      <DonationDialog open={donationOpen} onClose={handleDonationClose} />
     </Container>
   );
 };
