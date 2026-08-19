@@ -19,7 +19,8 @@ beforeAll(() => {
     writable: true,
     value: mockWindowOpen,
   });
-  global.fetch = mockFetch;
+  // Mock fetch globally - this is the key fix
+  jest.spyOn(global, 'fetch').mockImplementation(mockFetch);
   // Mock Stripe on window
   window.Stripe = jest.fn().mockImplementation(() => ({
     redirectToCheckout: jest.fn().mockResolvedValue({ error: null }),
@@ -29,8 +30,13 @@ beforeAll(() => {
 beforeEach(() => {
   mockWindowOpen.mockClear();
   mockFetch.mockClear();
+  // Set environment variables for each test
   process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY = 'pk_test_mock_key';
   process.env.REACT_APP_API_URL = 'http://localhost:5000';
+});
+
+afterAll(() => {
+  jest.restoreAllMocks();
 });
 
 // Mock MUI icons
@@ -75,12 +81,15 @@ describe('DonationDialog', () => {
     expect(screen.getByText(/Montant s.*lectionn./i)).toBeInTheDocument();
   });
 
-  test('entering custom amount displays it', () => {
+  test('entering custom amount displays it', async () => {
     render(<DonationDialog open={true} onClose={mockOnClose} />);
     const input = screen.getByPlaceholderText(/Montant personnalis./i);
     fireEvent.change(input, { target: { value: '10' } });
     expect(screen.getByText(/Montant s.*lectionn./i)).toBeInTheDocument();
-    expect(screen.getByText('10 €')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Montant s.*lectionn.*10.*€/)).toBeInTheDocument();
+    });
   });
 
   test('custom amount only accepts numbers', () => {

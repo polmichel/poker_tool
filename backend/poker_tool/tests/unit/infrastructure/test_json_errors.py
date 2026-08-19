@@ -32,6 +32,7 @@ from poker_tool.use_cases.user_stats import UserStats
 
 from ...unit.use_cases.fakes import (
     FakeAuth,
+    FakeConfig,
     FakeEquityCalculator,
     FakeRanges,
     FakeSessions,
@@ -46,6 +47,7 @@ class TestJsonErrorHandling(unittest.TestCase):
         """Compose a real Flask app from in-memory fakes (no mocks)."""
         self.app = Flask(__name__)
         self.app.config['TESTING'] = True
+        self.config = FakeConfig()
 
         # In-memory ports.
         self.users = FakeUsers()
@@ -85,6 +87,7 @@ class TestJsonErrorHandling(unittest.TestCase):
             user_stats=self.user_stats,
             table_equity=FakeEquityCalculator(),
             monte_carlo_equity=FakeEquityCalculator(),
+            config=self.config,
         )
 
     def test_bad_request_returns_json(self):
