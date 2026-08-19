@@ -1,0 +1,185 @@
+/**
+ * Unit tests for the DonationDialog component.
+ *
+ * Verifies that the donation dialog renders correctly, handles amount selection,
+ * custom amount input, and submission.
+ */
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import DonationDialog from '../DonationDialog';
+
+// Mock window.open
+const mockWindowOpen = jest.fn();
+
+beforeAll(() => {
+  Object.defineProperty(window, 'open', {
+    writable: true,
+    value: mockWindowOpen,
+  });
+});
+
+beforeEach(() => {
+  mockWindowOpen.mockClear();
+});
+
+// Mock MUI icons
+jest.mock('@mui/icons-material/Close', () => () => <span>Close</span>);
+jest.mock('@mui/icons-material/Euro', () => () => <span>Euro</span>);
+
+describe('DonationDialog', () => {
+  const mockOnClose = jest.fn();
+
+  beforeEach(() => {
+    mockOnClose.mockClear();
+  });
+
+  test('renders donation dialog when open', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    expect(screen.getByText('Soutenir le d\u00e9veloppeur')).toBeInTheDocument();
+    expect(screen.getByText('Merci pour votre soutien !')).toBeInTheDocument();
+  });
+
+  test('does not render when closed', () => {
+    render(
+      <DonationDialog open={false} onClose={mockOnClose} />
+    );
+    expect(screen.queryByText('Soutenir le d\u00e9veloppeur')).not.toBeInTheDocument();
+  });
+
+  test('renders predefined amount buttons', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    expect(screen.getByText('1 \u20ac')).toBeInTheDocument();
+    expect(screen.getByText('2 \u20ac')).toBeInTheDocument();
+    expect(screen.getByText('5 \u20ac')).toBeInTheDocument();
+  });
+
+  test('renders custom amount input', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    expect(screen.getByPlaceholderText('Montant personnalis\u00e9')).toBeInTheDocument();
+  });
+
+  test('selecting a predefined amount displays it', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    fireEvent.click(screen.getByText('2 \u20ac'));
+    expect(screen.getByText('Montant s\u00e9lectionn\u00e9')).toBeInTheDocument();
+    expect(screen.getByText('2 \u20ac')).toBeInTheDocument();
+  });
+
+  test('entering custom amount displays it', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    const input = screen.getByPlaceholderText('Montant personnalis\u00e9');
+    fireEvent.change(input, { target: { value: '10' } });
+    expect(screen.getByText('Montant s\u00e9lectionn\u00e9')).toBeInTheDocument();
+    expect(screen.getByText('10 \u20ac')).toBeInTheDocument();
+  });
+
+  test('custom amount only accepts numbers', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    const input = screen.getByPlaceholderText('Montant personnalis\u00e9');
+    
+    // Should accept numbers
+    fireEvent.change(input, { target: { value: '15.50' } });
+    expect(input).toHaveValue('15.50');
+    
+    // Should reject letters
+    fireEvent.change(input, { target: { value: 'abc' } });
+    expect(input).not.toHaveValue('abc');
+  });
+
+  test('cancel button calls onClose', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    fireEvent.click(screen.getByText('Annuler'));
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
+  test('submit button is disabled when no amount selected', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    const submitButton = screen.getByText('Faire un don');
+    expect(submitButton).toBeDisabled();
+  });
+
+  test('submit button is enabled when amount selected', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    fireEvent.click(screen.getByText('1 \u20ac'));
+    const submitButton = screen.getByText('Faire un don');
+    expect(submitButton).not.toBeDisabled();
+  });
+
+  test('submit button is enabled when custom amount entered', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    const input = screen.getByPlaceholderText('Montant personnalis\u00e9');
+    fireEvent.change(input, { target: { value: '10' } });
+    const submitButton = screen.getByText('Faire un don');
+    expect(submitButton).not.toBeDisabled();
+  });
+
+  test('submitting with predefined amount opens PayPal window', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    fireEvent.click(screen.getByText('5 \u20ac'));
+    fireEvent.click(screen.getByText('Faire un don'));
+    
+    expect(mockWindowOpen).toHaveBeenCalledWith(
+      'https://www.paypal.me/polmichel/5eur',
+      '_blank'
+    );
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
+  test('submitting with custom amount opens PayPal window', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    const input = screen.getByPlaceholderText('Montant personnalis\u00e9');
+    fireEvent.change(input, { target: { value: '15.50' } });
+    fireEvent.click(screen.getByText('Faire un don'));
+    
+    expect(mockWindowOpen).toHaveBeenCalledWith(
+      'https://www.paypal.me/polmichel/15.5eur',
+      '_blank'
+    );
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
+  test('submitting with zero amount does nothing', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    const input = screen.getByPlaceholderText('Montant personnalis\u00e9');
+    fireEvent.change(input, { target: { value: '0' } });
+    fireEvent.click(screen.getByText('Faire un don'));
+    
+    expect(mockWindowOpen).not.toHaveBeenCalled();
+    expect(mockOnClose).not.toHaveBeenCalled();
+  });
+
+  test('closing dialog calls onClose', () => {
+    render(
+      <DonationDialog open={true} onClose={mockOnClose} />
+    );
+    // Click the close button (icon)
+    fireEvent.click(screen.getByText('Close'));
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+});

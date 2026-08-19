@@ -69,8 +69,6 @@ export const DonationDialog: React.FC<DonationDialogProps> = ({ open, onClose })
 
     // TODO: Intégrer avec un vrai service de paiement (Stripe, PayPal, etc.)
     // Pour l'instant, on simule une redirection vers PayPal avec le montant
-    const paypalEmail = 'developpeur@example.com'; // À remplacer par l'email PayPal réel
-    const amountInCents = Math.round(amount * 100);
     
     // URL PayPal pour un paiement direct
     // Format: https://www.paypal.me/nomUtilisateur/montant
