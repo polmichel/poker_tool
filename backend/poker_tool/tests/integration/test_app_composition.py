@@ -264,8 +264,10 @@ class TestInterfaceImplementations(unittest.TestCase):
 class TestEquityEndpoint(unittest.TestCase):
     """Integration tests for the /api/equity/simulate endpoint.
 
-    The default equity strategy is the exact pre-computed table (instant,
-    bit-identical); the Monte-Carlo engine is kept as a fallback.
+    A plain "Simulate" (no iterations) uses the exact pre-computed table
+    (instant, bit-identical). If the table is incomplete the endpoint returns
+    409 with the missing opponent hands. Sending ``iterations`` explicitly
+    runs the Monte-Carlo engine.
     """
 
     def setUp(self):
@@ -273,26 +275,26 @@ class TestEquityEndpoint(unittest.TestCase):
         self.app = PokerTool()
         self.client = self.app.app.test_client()
 
-    def test_simulate_returns_equity(self):
-        """The endpoint returns win/tie/lose percentages via the exact table."""
+    def test_simulate_returns_exact_equity(self):
+        """Without iterations, the endpoint returns the exact table equity."""
         resp = self.client.post(
             "/api/equity/simulate",
-            json={"hero": "AKs", "range": "QQ", "iterations": 1000},
+            json={"hero": "AKs", "range": "QQ"},
         )
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
         self.assertEqual(data["hero"], "AKs")
         for key in ("win", "tie", "lose", "iterations", "by_hand"):
             self.assertIn(key, data)
-        # Exact table path: iterations is the table size, not the MC count.
+        # Exact table path: iterations is the table size, far above any MC count.
         self.assertGreater(data["iterations"], 1000)
         self.assertGreaterEqual(data["win"] + data["tie"] + data["lose"], 99.9)
 
     def test_simulate_range_notation(self):
-        """Range notation (KK) is accepted and expanded."""
+        """Range notation (KK) is accepted and expanded (exact path)."""
         resp = self.client.post(
             "/api/equity/simulate",
-            json={"hero": "AA", "range": "KK", "iterations": 1000},
+            json={"hero": "AA", "range": "KK"},
         )
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
@@ -302,13 +304,25 @@ class TestEquityEndpoint(unittest.TestCase):
         self.assertEqual(data["by_hand"][0]["hand"], "KK")
 
     def test_simulate_reproducible(self):
-        """Two calls return bit-identical equity (exact table path)."""
-        body = {"hero": "AKs", "range": "QQ", "iterations": 1000}
+        """Two exact-path calls return bit-identical equity."""
+        body = {"hero": "AKs", "range": "QQ"}
         r1 = self.client.post("/api/equity/simulate", json=body).get_json()
         r2 = self.client.post("/api/equity/simulate", json=body).get_json()
         self.assertEqual(r1["win"], r2["win"])
         self.assertEqual(r1["tie"], r2["tie"])
         self.assertEqual(r1["lose"], r2["lose"])
+
+    def test_simulate_with_iterations_runs_monte_carlo(self):
+        """Sending iterations runs the Monte-Carlo engine (sample count)."""
+        resp = self.client.post(
+            "/api/equity/simulate",
+            json={"hero": "AKs", "range": "QQ", "iterations": 2000},
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        # MC path: iterations echoes the requested sample count.
+        self.assertEqual(data["iterations"], 2000)
+        self.assertGreaterEqual(data["win"] + data["tie"] + data["lose"], 99.9)
 
     def test_missing_hero_returns_400(self):
         """Test that a missing hero field returns 400."""
@@ -339,6 +353,14 @@ class TestEquityEndpoint(unittest.TestCase):
         resp = self.client.post(
             "/api/equity/simulate",
             json={"hero": "AKs", "range": "ZZ"},
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_invalid_iterations_returns_400(self):
+        """Test that an out-of-range iterations value returns 400."""
+        resp = self.client.post(
+            "/api/equity/simulate",
+            json={"hero": "AKs", "range": "QQ", "iterations": 0},
         )
         self.assertEqual(resp.status_code, 400)
 

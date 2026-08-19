@@ -111,7 +111,8 @@ class TestFlaskApp(unittest.TestCase):
             end_training=self.end_training,
             global_stats=global_stats or self.global_stats,
             user_stats=user_stats or self.user_stats,
-            equity_calculator=equity_calculator or FakeEquityCalculator(),
+            table_equity=equity_calculator or FakeEquityCalculator(),
+            monte_carlo_equity=FakeEquityCalculator(),
         )
 
     def test_flask_app_creation(self):

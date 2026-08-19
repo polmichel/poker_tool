@@ -21,9 +21,11 @@ class ExactWithMonteCarloFallback(EquityCalculator):
         self._primary = primary
         self._fallback = fallback
 
-    def compute(self, hero: str, range_hands: list[str]) -> EquityResult:
+    def compute(
+        self, hero: str, range_hands: list[str], iterations: int | None = None,
+    ) -> EquityResult:
         """Return primary result; on a missing entry, return the fallback result."""
         try:
-            return self._primary.compute(hero, range_hands)
+            return self._primary.compute(hero, range_hands, iterations)
         except (ValueError, FileNotFoundError):
-            return self._fallback.compute(hero, range_hands)
+            return self._fallback.compute(hero, range_hands, iterations)

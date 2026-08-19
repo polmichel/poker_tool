@@ -1,6 +1,11 @@
 /**
  * Equity simulator page: compute the equity of a hero hand against an opposing
  * range expressed as PokerStove-style notation (e.g. "QQ+, ATs+, KTs-JTs").
+ *
+ * Par défaut, un clic sur « Simuler » renvoie l'équité exacte issue de la table
+ * pré-calculée (instant, reproductible). Si la table ne couvre pas toute la
+ * range, une pop-up propose à l'utilisateur de renseigner un nombre
+ * d'itérations Monte-Carlo puis de lancer le calcul.
  */
 import React, { useState, useCallback } from 'react';
 import {
@@ -12,6 +17,10 @@ import {
   Divider,
   LinearProgress,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Table,
   TableBody,
   TableCell,
@@ -22,18 +31,41 @@ import {
 import { PlayArrow as PlayArrowIcon } from '@mui/icons-material';
 import { useEquity } from '../hooks';
 import { EquityHeatmapGrid } from '../components';
+import { EquityMissingError } from '../api';
 import { isValidHand } from '../utils/helpers';
+
+const DEFAULT_MONTE_CARLO_ITERATIONS = 10000;
 
 const Equity: React.FC = () => {
   const { result, loading, error, simulate, reset } = useEquity();
 
   const [hero, setHero] = useState<string>('AKs');
   const [rangeText, setRangeText] = useState<string>('QQ+, AKs');
-  const [iterations, setIterations] = useState<number>(5000);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const handleSimulate = useCallback(async () => {
-    setValidationError(null);
+  // Pop-up Monte-Carlo (ouverte quand la table exacte est incomplète).
+  const [mcDialogOpen, setMcDialogOpen] = useState(false);
+  const [mcIterations, setMcIterations] = useState<number>(DEFAULT_MONTE_CARLO_ITERATIONS);
+  const [mcMissing, setMcMissing] = useState<string[]>([]);
+  const [mcRunning, setMcRunning] = useState(false);
+
+  const runSimulate = useCallback(
+    async (iterations?: number) => {
+      setValidationError(null);
+      try {
+        await simulate(hero.trim(), rangeText.trim(), iterations);
+      } catch (err) {
+        if (err instanceof EquityMissingError) {
+          setMcMissing(err.missing);
+          setMcIterations(DEFAULT_MONTE_CARLO_ITERATIONS);
+          setMcDialogOpen(true);
+        }
+      }
+    },
+    [hero, rangeText, simulate],
+  );
+
+  const handleSimulate = useCallback(() => {
     const trimmedHero = hero.trim();
     const trimmedRange = rangeText.trim();
     if (!isValidHand(trimmedHero)) {
@@ -44,8 +76,20 @@ const Equity: React.FC = () => {
       setValidationError('Veuillez saisir une range adverse.');
       return;
     }
-    await simulate(trimmedHero, trimmedRange, iterations);
-  }, [hero, rangeText, iterations, simulate]);
+    void runSimulate();
+  }, [hero, rangeText, runSimulate]);
+
+  const handleRunMonteCarlo = useCallback(async () => {
+    setMcRunning(true);
+    try {
+      await simulate(hero.trim(), rangeText.trim(), mcIterations);
+      setMcDialogOpen(false);
+    } catch {
+      // Une erreur ici (hors 409) est déjà surfaced via le hook `error`.
+    } finally {
+      setMcRunning(false);
+    }
+  }, [hero, rangeText, mcIterations, simulate]);
 
   const handleReset = useCallback(() => {
     reset();
@@ -90,20 +134,6 @@ const Equity: React.FC = () => {
             helperText="Notation PokerStove : QQ+, ATs+, KTs-JTs, AKs…"
             inputProps={{ 'data-testid': 'equity-range-input' }}
           />
-          <TextField
-            label="Itérations"
-            type="number"
-            value={iterations}
-            onChange={(e) => setIterations(Number(e.target.value))}
-            size="small"
-            sx={{ width: 140 }}
-            inputProps={{
-              min: 100,
-              max: 100000,
-              step: 500,
-              'data-testid': 'equity-iterations-input',
-            }}
-          />
         </Box>
 
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -139,6 +169,56 @@ const Equity: React.FC = () => {
           </Typography>
         )}
       </Paper>
+
+      {/* Pop-up Monte-Carlo : la table exacte ne couvre pas toute la range. */}
+      <Dialog
+        open={mcDialogOpen}
+        onClose={() => setMcDialogOpen(false)}
+        data-testid="equity-mc-dialog"
+      >
+        <DialogTitle>Équité exacte indisponible</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            Certaines mains adverses ne sont pas dans la table d'équité exacte. Vous pouvez lancer
+            une simulation Monte-Carlo à la place.
+          </Typography>
+          {mcMissing.length > 0 && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: 2 }}
+              data-testid="equity-mc-missing"
+            >
+              Mains manquantes : {mcMissing.join(', ')}
+            </Typography>
+          )}
+          <TextField
+            label="Itérations Monte-Carlo"
+            type="number"
+            value={mcIterations}
+            onChange={(e) => setMcIterations(Number(e.target.value))}
+            size="small"
+            fullWidth
+            inputProps={{
+              min: 100,
+              max: 100000,
+              step: 500,
+              'data-testid': 'equity-mc-iterations-input',
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMcDialogOpen(false)}>Annuler</Button>
+          <Button
+            variant="contained"
+            onClick={handleRunMonteCarlo}
+            disabled={mcRunning || mcIterations <= 0}
+            data-testid="equity-mc-run-button"
+          >
+            {mcRunning ? 'Calcul…' : 'Lancer le calcul'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Résultats agrégés */}
       {result && (

@@ -55,11 +55,8 @@ test.describe('Equity simulator', () => {
     const rangeInput = page.getByTestId('equity-range-input');
     await rangeInput.fill('QQ');
 
-    // Lower iterations to keep the test fast.
-    const iterationsInput = page.getByTestId('equity-iterations-input');
-    await iterationsInput.fill('500');
-
-    // Launch the simulation.
+    // A plain "Simuler" click runs the exact equity table (no iterations).
+    // If the table were incomplete, a Monte-Carlo pop-up would open instead.
     await page.getByTestId('equity-simulate-button').click();
 
     // The aggregated results block should appear.

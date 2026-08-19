@@ -50,7 +50,8 @@ class FlaskApp:
         end_training: EndTrainingSession,
         global_stats: GlobalStats,
         user_stats: UserStats,
-        equity_calculator: EquityCalculator,
+        table_equity: EquityCalculator,
+        monte_carlo_equity: EquityCalculator,
     ):
         """Initialize the Flask app with its use cases (DI)."""
         self.app = flask_app
@@ -66,7 +67,7 @@ class FlaskApp:
             AuthController(register_user, login_user, current_user),
             TrainingController(sessions, start_training, answer_question, end_training),
             StatsController(global_stats, user_stats),
-            EquityController(equity_calculator),
+            EquityController(table_equity, monte_carlo_equity),
         ]
         self._register_routes()
 

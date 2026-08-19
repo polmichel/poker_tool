@@ -23,8 +23,15 @@ class MonteCarloEquityCalculator(EquityCalculator):
         self._simulate_equity = simulate_equity
         self._iterations = iterations
 
-    def compute(self, hero: str, range_hands: list[str]) -> EquityResult:
-        """Run the Monte-Carlo simulation with the configured iteration count."""
+    def compute(
+        self, hero: str, range_hands: list[str], iterations: int | None = None,
+    ) -> EquityResult:
+        """Run the Monte-Carlo simulation with the requested iteration count.
+
+        Falls back to the configured default when ``iterations`` is None.
+        """
         return self._simulate_equity.simulate(
-            hero=hero, range_hands=range_hands, iterations=self._iterations,
+            hero=hero,
+            range_hands=range_hands,
+            iterations=self._iterations if iterations is None else iterations,
         )
