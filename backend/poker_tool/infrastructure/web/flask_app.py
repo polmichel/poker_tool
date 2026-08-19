@@ -9,6 +9,7 @@ from flask import Blueprint, Flask, jsonify
 from werkzeug.exceptions import BadRequest, NotFound
 
 from ...interfaces.auth import Auth
+from ...config import Config
 from ...interfaces.equity_calculator import EquityCalculator
 from ...interfaces.ranges import Ranges
 from ...interfaces.training_sessions import TrainingSessions
@@ -24,6 +25,7 @@ from ...use_cases.start_training_session import StartTrainingSession
 from ...use_cases.update_range import UpdateRange
 from ...use_cases.user_stats import UserStats
 from .controllers.auth import AuthController, UserController
+from .controllers.donations import DonationController
 from .controllers.equity import EquityController
 from .controllers.ranges import RangeController
 from .controllers.stats import StatsController
@@ -52,6 +54,7 @@ class FlaskApp:
         user_stats: UserStats,
         table_equity: EquityCalculator,
         monte_carlo_equity: EquityCalculator,
+        config: Config,
     ):
         """Initialize the Flask app with its use cases (DI)."""
         self.app = flask_app
@@ -59,6 +62,7 @@ class FlaskApp:
         self.ranges = ranges
         self.sessions = sessions
         self.auth = auth
+        self.config = config
 
         # Build the controllers (each owns a resource's routes).
         self._controllers = [
@@ -68,6 +72,7 @@ class FlaskApp:
             TrainingController(sessions, start_training, answer_question, end_training),
             StatsController(global_stats, user_stats),
             EquityController(table_equity, monte_carlo_equity),
+            DonationController(config),
         ]
         self._register_routes()
 

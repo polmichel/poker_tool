@@ -43,3 +43,15 @@ class Config:
             return int(self._env.get("JWT_ACCESS_TOKEN_EXPIRES", "3600"))
         except ValueError:
             return 3600
+
+    @property
+    def stripe_secret_key(self) -> str:
+        return self._env.get("STRIPE_SECRET_KEY", "")
+
+    @property
+    def stripe_webhook_secret(self) -> str:
+        return self._env.get("STRIPE_WEBHOOK_SECRET", "")
+
+    @property
+    def frontend_url(self) -> str:
+        return self._env.get("FRONTEND_URL", "http://localhost:3000")

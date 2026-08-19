@@ -72,7 +72,7 @@ jest.mock('../../components', () => ({
       {entry.title}
     </button>
   ),
-  DonationDialog: ({ open }: { open: boolean; onClose: () => void }) => (
+  DonationDialog: ({ open, onClose }: { open: boolean; onClose: () => void }) => (
     open ? <div data-testid="donation-dialog">Donation Dialog</div> : null
   ),
 }));
