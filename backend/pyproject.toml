@@ -13,4 +13,5 @@ dependencies = [
     "werkzeug==3.0.3",
     "treys==0.1.8",
     "phevaluator==0.6.0",
+    "stripe==10.0.0",
 ]
