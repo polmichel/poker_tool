@@ -11,6 +11,9 @@ class ActionType(Enum):
     CALL = auto()
     FOLD = auto()
     ALL_IN = auto()
+    DEFENSE = auto()
+    DEFENSE_3BET = auto()
+    DEFENSE_4BET = auto()
     UNDEFINED = auto()
 
 
@@ -34,6 +37,9 @@ class Action:
             ActionType.CALL: "#FF9800",
             ActionType.FOLD: "#F44336",
             ActionType.ALL_IN: "#9C27B0",
+            ActionType.DEFENSE: "#FF5722",
+            ActionType.DEFENSE_3BET: "#E91E63",
+            ActionType.DEFENSE_4BET: "#9C27B0",
             ActionType.UNDEFINED: "#607D8B",
         }
         return colors[self._type]
@@ -47,6 +53,9 @@ class Action:
             ActionType.CALL: "Suivre",
             ActionType.FOLD: "Passer",
             ActionType.ALL_IN: "All-In",
+            ActionType.DEFENSE: "Défense",
+            ActionType.DEFENSE_3BET: "Défense 3Bet",
+            ActionType.DEFENSE_4BET: "Défense 4Bet",
             ActionType.UNDEFINED: "Non défini",
         }
         return labels[self._type]

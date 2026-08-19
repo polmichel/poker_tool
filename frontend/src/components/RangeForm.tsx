@@ -13,7 +13,7 @@ import {
   Chip,
 } from '@mui/material';
 import { Range, RangeType, Position } from '../types';
-import { RANGE_TYPES, POSITIONS, ACTION_LABELS } from '../utils/constants';
+import { RANGE_TYPES, POSITIONS, ACTION_LABELS, EFFECTIVE_STACK_VALUES } from '../utils/constants';
 import { generateUniqueRangeName } from '../utils/helpers';
 
 interface RangeFormProps {
@@ -33,6 +33,7 @@ const RangeForm: React.FC<RangeFormProps> = ({
   const [description, setDescription] = useState<string>('');
   const [rangeType, setRangeType] = useState<RangeType>('preflop');
   const [position, setPosition] = useState<Position>('UTG');
+  const [effectiveStackBB, setEffectiveStackBB] = useState<number | ''>(100);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Initialiser le formulaire avec les valeurs de la range existante
@@ -42,12 +43,14 @@ const RangeForm: React.FC<RangeFormProps> = ({
       setDescription(range.description || '');
       setRangeType(range.range_type);
       setPosition(range.position);
+      setEffectiveStackBB(range.effective_stack_bb || 100);
     } else {
       // Générer un nom unique pour une nouvelle range
       setName(generateUniqueRangeName(existingRangeNames));
       setDescription('');
       setRangeType('preflop');
       setPosition('UTG');
+      setEffectiveStackBB(100);
     }
   }, [range, existingRangeNames]);
 
@@ -76,11 +79,12 @@ const RangeForm: React.FC<RangeFormProps> = ({
           description,
           range_type: rangeType,
           position,
+          effective_stack_bb: effectiveStackBB === '' ? null : Number(effectiveStackBB),
           hands: range?.hands || {},
         });
       }
     },
-    [name, description, rangeType, position, range, validate, onSubmit],
+    [name, description, rangeType, position, effectiveStackBB, range, validate, onSubmit],
   );
 
   const handleCancel = useCallback(() => {
@@ -163,6 +167,23 @@ const RangeForm: React.FC<RangeFormProps> = ({
                     <Chip label={pos.value} size="small" />
                     {pos.label}
                   </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Stack Effectif en BB */}
+          <FormControl fullWidth size="small">
+            <InputLabel>Stack Effectif (BB)</InputLabel>
+            <Select
+              value={effectiveStackBB}
+              onChange={(e) => setEffectiveStackBB(e.target.value as number | '')}
+              label="Stack Effectif (BB)"
+              data-testid="range-stack-select"
+            >
+              {EFFECTIVE_STACK_VALUES.map((value) => (
+                <MenuItem key={value} value={value}>
+                  {value} BB
                 </MenuItem>
               ))}
             </Select>

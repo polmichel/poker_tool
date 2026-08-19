@@ -24,6 +24,7 @@ class SqlRanges(Ranges):
                 model.description = range_obj.description
                 model.range_type = range_obj.type.name.lower()
                 model.position = range_obj.position.name
+                model.effective_stack_bb = range_obj.effective_stack_bb
                 model.hands = hands_dict
                 model.user_id = range_obj.user_id
         else:
@@ -32,6 +33,7 @@ class SqlRanges(Ranges):
                 description=range_obj.description,
                 range_type=range_obj.type.name.lower(),
                 position=range_obj.position.name,
+                effective_stack_bb=range_obj.effective_stack_bb,
                 hands=hands_dict,
                 user_id=range_obj.user_id,
             )

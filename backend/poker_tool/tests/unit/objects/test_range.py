@@ -22,6 +22,7 @@ class TestRange(unittest.TestCase):
             hands={"AKs": Action(ActionType.RAISE)},
             user_id=1,
             range_id=1,
+            effective_stack_bb=100,
         )
 
         self.assertEqual(range_obj.name, "Test Range")
@@ -31,6 +32,7 @@ class TestRange(unittest.TestCase):
         self.assertEqual(range_obj.hands, {"AKs": Action(ActionType.RAISE)})
         self.assertEqual(range_obj.user_id, 1)
         self.assertEqual(range_obj.id, 1)
+        self.assertEqual(range_obj.effective_stack_bb, 100)
 
     def test_range_creation_minimal(self):
         """Test Range creation with minimal parameters."""
@@ -43,15 +45,17 @@ class TestRange(unittest.TestCase):
         self.assertEqual(range_obj.hands, {})
         self.assertIsNone(range_obj.user_id)
         self.assertIsNone(range_obj.id)
+        self.assertIsNone(range_obj.effective_stack_bb)
 
     def test_range_with_hand(self):
         """Test with_hand method (immutable)."""
-        range_obj = Range(name="Test Range")
+        range_obj = Range(name="Test Range", effective_stack_bb=50)
 
         new_range = range_obj.with_hand("AKs", Action(ActionType.RAISE))
 
         self.assertEqual(len(new_range.hands), 1)
         self.assertEqual(new_range.hands["AKs"].type, ActionType.RAISE)
+        self.assertEqual(new_range.effective_stack_bb, 50)
         # Original should be unchanged
         self.assertEqual(len(range_obj.hands), 0)
 
@@ -60,6 +64,7 @@ class TestRange(unittest.TestCase):
         range_obj = Range(
             name="Test Range",
             hands={"AKs": Action(ActionType.RAISE), "TT": Action(ActionType.OPEN)},
+            effective_stack_bb=30,
         )
 
         new_range = range_obj.without_hand("AKs")
@@ -67,6 +72,7 @@ class TestRange(unittest.TestCase):
         self.assertEqual(len(new_range.hands), 1)
         self.assertNotIn("AKs", new_range.hands)
         self.assertIn("TT", new_range.hands)
+        self.assertEqual(new_range.effective_stack_bb, 30)
         # Original should be unchanged
         self.assertEqual(len(range_obj.hands), 2)
 
@@ -120,6 +126,7 @@ class TestRange(unittest.TestCase):
             hands={"AKs": Action(ActionType.RAISE)},
             user_id=1,
             range_id=1,
+            effective_stack_bb=100,
         )
 
         range_dict = range_obj.to_dict()
@@ -131,6 +138,23 @@ class TestRange(unittest.TestCase):
         self.assertEqual(range_dict["position"], "BTN")
         self.assertEqual(range_dict["hands"], {"AKs": "raise"})
         self.assertEqual(range_dict["user_id"], 1)
+        self.assertEqual(range_dict["effective_stack_bb"], 100)
+
+    def test_range_to_dict_without_effective_stack(self):
+        """Test serialization to dictionary without effective_stack_bb."""
+        range_obj = Range(
+            name="Test Range",
+            description="A test range",
+            range_type=RangeType.PREFLOP,
+            position=Position.BTN,
+            hands={"AKs": Action(ActionType.RAISE)},
+            user_id=1,
+            range_id=1,
+        )
+
+        range_dict = range_obj.to_dict()
+
+        self.assertNotIn("effective_stack_bb", range_dict)
 
     def test_range_from_dict(self):
         """Test creation from dictionary."""
@@ -142,6 +166,7 @@ class TestRange(unittest.TestCase):
             "position": "BTN",
             "hands": {"AKs": "raise", "TT": "open"},
             "user_id": 1,
+            "effective_stack_bb": 50,
         }
 
         range_obj = Range.from_dict(data)
@@ -155,6 +180,23 @@ class TestRange(unittest.TestCase):
         self.assertEqual(range_obj.hands["AKs"].type, ActionType.RAISE)
         self.assertEqual(range_obj.hands["TT"].type, ActionType.OPEN)
         self.assertEqual(range_obj.user_id, 1)
+        self.assertEqual(range_obj.effective_stack_bb, 50)
+
+    def test_range_from_dict_without_effective_stack(self):
+        """Test creation from dictionary without effective_stack_bb."""
+        data = {
+            "id": 1,
+            "name": "Test Range",
+            "description": "A test range",
+            "range_type": "preflop",
+            "position": "BTN",
+            "hands": {"AKs": "raise", "TT": "open"},
+            "user_id": 1,
+        }
+
+        range_obj = Range.from_dict(data)
+
+        self.assertIsNone(range_obj.effective_stack_bb)
 
 
 if __name__ == '__main__':

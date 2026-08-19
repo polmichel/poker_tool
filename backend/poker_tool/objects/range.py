@@ -20,6 +20,7 @@ class Range:
         hands: dict[str, Action] | None = None,
         user_id: int | None = None,
         range_id: int | None = None,
+        effective_stack_bb: int | None = None,
     ):
         self._name = name
         self._description = description
@@ -28,6 +29,7 @@ class Range:
         self._hands = hands or {}
         self._user_id = user_id
         self._id = range_id
+        self._effective_stack_bb = effective_stack_bb
 
     @property
     def id(self) -> int | None:
@@ -64,6 +66,11 @@ class Range:
         """User ID."""
         return self._user_id
 
+    @property
+    def effective_stack_bb(self) -> int | None:
+        """Effective stack in BB."""
+        return self._effective_stack_bb
+
     def with_hand(self, hand_str: str, action: Action) -> 'Range':
         """Return new Range with added/updated hand (immutable)."""
         new_hands = dict(self._hands)
@@ -76,6 +83,7 @@ class Range:
             hands=new_hands,
             user_id=self._user_id,
             range_id=self._id,
+            effective_stack_bb=self._effective_stack_bb,
         )
 
     def without_hand(self, hand_str: str) -> 'Range':
@@ -90,6 +98,7 @@ class Range:
             hands=new_hands,
             user_id=self._user_id,
             range_id=self._id,
+            effective_stack_bb=self._effective_stack_bb,
         )
 
     def grid(self) -> list[list[dict]]:
@@ -123,7 +132,7 @@ class Range:
 
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
-        return {
+        result = {
             "id": self._id,
             "name": self._name,
             "description": self._description,
@@ -132,6 +141,9 @@ class Range:
             "hands": {k: str(v) for k, v in self._hands.items()},
             "user_id": self._user_id,
         }
+        if self._effective_stack_bb is not None:
+            result["effective_stack_bb"] = self._effective_stack_bb
+        return result
 
     @classmethod
     def from_dict(cls, data: dict) -> 'Range':
@@ -148,4 +160,5 @@ class Range:
             hands=hands,
             user_id=data.get("user_id"),
             range_id=data.get("id"),
+            effective_stack_bb=data.get("effective_stack_bb"),
         )

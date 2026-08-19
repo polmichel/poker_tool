@@ -54,6 +54,13 @@ const RangeStats: React.FC<RangeStatsProps> = ({ range }) => {
         />
         <Chip label={`Type: ${range.range_type}`} color="info" variant="outlined" />
         <Chip label={`Position: ${range.position}`} color="success" variant="outlined" />
+        {range.effective_stack_bb && (
+          <Chip
+            label={`Stack: ${range.effective_stack_bb} BB`}
+            color="warning"
+            variant="outlined"
+          />
+        )}
       </Box>
 
       {/* Graphique en secteurs */}
