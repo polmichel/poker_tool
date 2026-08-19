@@ -10,6 +10,9 @@ export const ACTION_COLORS = {
   all_in: '#F44336', // Rouge
   fold: '#9E9E9E', // Gris
   check: '#FFEB3B', // Jaune
+  defense: '#FF5722', // Orange foncé
+  defense_3bet: '#E91E63', // Rose
+  defense_4bet: '#9C27B0', // Violet
   undefined: '#607D8B', // Gris-bleu (visible sur fond clair et foncé)
 };
 
@@ -21,13 +24,18 @@ export const ACTION_LABELS: Record<string, string> = {
   all_in: 'All-In',
   fold: 'Passer',
   check: 'Checker',
+  defense: 'Défense',
+  defense_3bet: 'Défense 3Bet',
+  defense_4bet: 'Défense 4Bet',
   undefined: 'Non défini',
 };
 
 // Positions
 export const POSITIONS = [
   { value: 'UTG', label: 'UTG' },
-  { value: 'MP', label: 'MP' },
+  { value: 'UTG+1', label: 'UTG+1' },
+  { value: 'LJ', label: 'LJ' },
+  { value: 'HJ', label: 'HJ' },
   { value: 'CO', label: 'CO' },
   { value: 'BTN', label: 'BTN' },
   { value: 'SB', label: 'SB' },
@@ -54,6 +62,11 @@ export const TRAINING_MODES = [
   { value: 'fill', label: 'Remplir une range' },
   { value: 'guess', label: 'Deviner une range' },
   { value: 'complete', label: 'Compléter une range' },
+];
+
+// Valeurs de stack effectif en BB
+export const EFFECTIVE_STACK_VALUES = [
+  100, 50, 30, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5,
 ];
 
 // Ranks (ordres des cartes)
@@ -142,6 +155,7 @@ export const DEFAULT_RANGE = {
   description: '',
   range_type: 'preflop' as const,
   position: 'UTG' as const,
+  effective_stack_bb: 100 as const,
   hands: {} as Record<string, string>,
 };
 

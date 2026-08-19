@@ -12,7 +12,9 @@ class TestPosition(unittest.TestCase):
     def test_position_values(self):
         """Test Position enum values."""
         self.assertEqual(Position.UTG.name, "UTG")
-        self.assertEqual(Position.MP.name, "MP")
+        self.assertEqual(Position.UTG_PLUS_1.name, "UTG_PLUS_1")
+        self.assertEqual(Position.LJ.name, "LJ")
+        self.assertEqual(Position.HJ.name, "HJ")
         self.assertEqual(Position.CO.name, "CO")
         self.assertEqual(Position.BTN.name, "BTN")
         self.assertEqual(Position.SB.name, "SB")
@@ -23,7 +25,9 @@ class TestPosition(unittest.TestCase):
         """Test label property."""
         labels = {
             Position.UTG: "UTG",
-            Position.MP: "MP",
+            Position.UTG_PLUS_1: "UTG+1",
+            Position.LJ: "LJ",
+            Position.HJ: "HJ",
             Position.CO: "CO",
             Position.BTN: "BTN",
             Position.SB: "SB",
@@ -38,8 +42,10 @@ class TestPosition(unittest.TestCase):
         """Test color property."""
         colors = {
             Position.UTG: "#FF5722",
-            Position.MP: "#FF9800",
-            Position.CO: "#FFC107",
+            Position.UTG_PLUS_1: "#FF7043",
+            Position.LJ: "#FF9800",
+            Position.HJ: "#FFC107",
+            Position.CO: "#FFE0B2",
             Position.BTN: "#4CAF50",
             Position.SB: "#2196F3",
             Position.BB: "#9C27B0",
@@ -57,6 +63,21 @@ class TestPosition(unittest.TestCase):
 
         position = Position.from_string("utg")
         self.assertEqual(position, Position.UTG)
+
+        position = Position.from_string("UTG+1")
+        self.assertEqual(position, Position.UTG_PLUS_1)
+
+        position = Position.from_string("utg_plus_1")
+        self.assertEqual(position, Position.UTG_PLUS_1)
+
+        position = Position.from_string("LJ")
+        self.assertEqual(position, Position.LJ)
+
+        position = Position.from_string("lj")
+        self.assertEqual(position, Position.LJ)
+
+        position = Position.from_string("HJ")
+        self.assertEqual(position, Position.HJ)
 
         position = Position.from_string("BTN")
         self.assertEqual(position, Position.BTN)

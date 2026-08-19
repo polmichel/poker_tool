@@ -53,7 +53,6 @@ const RangeView: React.FC = () => {
   // Supprimer la range
   const handleDelete = useCallback(async () => {
     if (!range) return;
-
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer la range "${range.name}" ?`)) {
       await deleteRange(range.id!);
       navigate('/ranges');
@@ -63,7 +62,6 @@ const RangeView: React.FC = () => {
   // Dupliquer la range
   const handleDuplicate = useCallback(() => {
     if (!range) return;
-
     navigate('/ranges/new', {
       state: {
         duplicateFrom: range,
@@ -124,6 +122,9 @@ const RangeView: React.FC = () => {
       all_in: 0,
       fold: 0,
       check: 0,
+      defense: 0,
+      defense_3bet: 0,
+      defense_4bet: 0,
       undefined: 0,
     };
     for (const action of Object.values(range.hands)) {
@@ -149,7 +150,6 @@ const RangeView: React.FC = () => {
             {range.name}
           </Typography>
         </Box>
-
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Exporter">
             <Button
@@ -162,7 +162,6 @@ const RangeView: React.FC = () => {
               Exporter
             </Button>
           </Tooltip>
-
           <Tooltip title="Dupliquer">
             <Button
               variant="outlined"
@@ -174,7 +173,6 @@ const RangeView: React.FC = () => {
               Dupliquer
             </Button>
           </Tooltip>
-
           <Tooltip title="Modifier">
             <Button
               variant="contained"
@@ -186,7 +184,6 @@ const RangeView: React.FC = () => {
               Modifier
             </Button>
           </Tooltip>
-
           <Tooltip title="Supprimer">
             <IconButton onClick={handleDelete} color="error">
               <DeleteIcon />
@@ -206,6 +203,13 @@ const RangeView: React.FC = () => {
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
           <Chip label={`Type: ${range.range_type}`} color="primary" variant="outlined" />
           <Chip label={`Position: ${range.position}`} color="secondary" variant="outlined" />
+          {range.effective_stack_bb && (
+            <Chip
+              label={`Stack: ${range.effective_stack_bb} BB`}
+              color="warning"
+              variant="outlined"
+            />
+          )}
           <Chip
             label={`Créée: ${new Date(range.created_at || '').toLocaleDateString()}`}
             color="info"
@@ -229,7 +233,12 @@ const RangeView: React.FC = () => {
               sx={{
                 backgroundColor: ACTION_COLORS[action as ActionType] || 'grey.500',
                 color:
-                  action === 'open' || action === 'raise' || action === 'all_in'
+                  action === 'open' ||
+                  action === 'raise' ||
+                  action === 'all_in' ||
+                  action === 'defense' ||
+                  action === 'defense_3bet' ||
+                  action === 'defense_4bet'
                     ? 'white'
                     : 'black',
               }}

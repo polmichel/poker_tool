@@ -24,6 +24,7 @@ class RangeModel(db.Model):
     description = db.Column(db.Text, default='')
     range_type = db.Column(db.String(20), default='preflop')
     position = db.Column(db.String(20), default='undefined')
+    effective_stack_bb = db.Column(db.Integer, nullable=True)
     hands = db.Column(db.JSON, default={})  # Dict[str, str] (hand_str -> action_str)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=_utcnow_naive)
@@ -48,6 +49,7 @@ class RangeModel(db.Model):
             hands=hands,
             user_id=self.user_id,
             range_id=self.id,
+            effective_stack_bb=self.effective_stack_bb,
         )
 
 

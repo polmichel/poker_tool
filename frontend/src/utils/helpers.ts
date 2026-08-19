@@ -237,6 +237,9 @@ export function calculateRangeStats(hands: Record<string, ActionType>): {
   const total = Object.keys(hands).length;
   const byAction: Record<ActionType, number> = {
     open: 0,
+    defense: 0,
+    defense_3bet: 0,
+    defense_4bet: 0,
     call: 0,
     raise: 0,
     all_in: 0,
