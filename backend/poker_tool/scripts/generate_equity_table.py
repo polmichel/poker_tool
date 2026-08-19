@@ -4,8 +4,13 @@ Generate the exact preflop equity table (hero vs opponent, canonical hands).
 The table holds the exact preflop equity of every canonical hero hand (169)
 against every canonical opponent hand (169): 169 x 169 = 28 561 entries. Each
 entry is computed by *exhaustive* enumeration of all C(48,5) = 1 712 304
-runouts for a single representative combo-pair (the result is identical for
-every valid combo-pair by suit symmetry, which was verified empirically).
+runouts for **every disjoint combo-pair** of the canonical pairing, then
+averaged. Averaging over all disjoint combo-pairs is required for exactness:
+suit symmetry does **not** hold in general, because some combo-pairs share a
+rank between hero and opponent (e.g. AKo vs AKo, AKo vs AQo, AA vs AKs), and
+the card-removal effect of the shared rank depends on the exact suits dealt.
+A single representative combo-pair would therefore yield a non-representative
+value; only the average over all disjoint combo-pairs is the exact equity.
 
 Same-hand pairings (e.g. AA vs AA) are valid and included: four cards of a
 rank are enough to deal two disjoint 2-card hands.
@@ -50,20 +55,23 @@ def _canonical_hands() -> list[str]:
     return [str(h) for h in generate_all_hands()]
 
 
-def _disjoint_combo(hero_hand: str, opp_hand: str) -> tuple[tuple[str, str], tuple[str, str]] | None:
-    """A representative disjoint (hero, opp) combo-pair, or None if impossible.
+def _disjoint_combos(hero_hand: str, opp_hand: str) -> list[tuple[tuple[str, str], tuple[str, str]]]:
+    """All disjoint (hero, opp) combo-pairs for a canonical pairing.
 
-    Most canonical pairings have at least one disjoint combo-pair (e.g. AA vs
-    AA: four aces suffice for AsAh vs AdAc). Only truly impossible pairings
-    (none in the 169x169 grid, since every canonical hand has at least one
-    disjoint combo against itself or any other) return None.
+    Every valid combo-pair is enumerated (not just a representative one) so
+    the equity can be averaged over them: suit symmetry does not hold for
+    pairings that share a rank (card removal depends on the exact suits).
+    Returns an empty list only for truly impossible pairings (none exist in
+    the 169x169 grid, since every canonical hand has at least one disjoint
+    combo against itself or any other).
     """
+    pairs = []
     for hero_combo in _all_combos(hero_hand):
         hero_used = {hero_combo[0], hero_combo[1]}
         for opp_combo in _all_combos(opp_hand):
             if opp_combo[0] not in hero_used and opp_combo[1] not in hero_used:
-                return (hero_combo, opp_combo)
-    return None
+                pairs.append((hero_combo, opp_combo))
+    return pairs
 
 
 def _all_combos(hand_str: str) -> list[tuple[str, str]]:
@@ -84,16 +92,8 @@ def _all_combos(hand_str: str) -> list[tuple[str, str]]:
     ]
 
 
-def _enumerate_entry(args: tuple[str, str]) -> tuple[str, str, dict]:
-    """Enumerate one (hero, opp) canonical pair -> exact win/tie/lose.
-
-    Returns (hero_str, opp_str, {"win":..,"tie":..,"lose":..,"boards":..}).
-    """
-    hero_hand, opp_hand = args
-    pair = _disjoint_combo(hero_hand, opp_hand)
-    if pair is None:
-        return (hero_hand, opp_hand, {"win": 0.0, "tie": 0.0, "lose": 0.0, "boards": 0})
-    hero_combo, opp_combo = pair
+def _enumerate_combo(hero_combo, opp_combo) -> tuple[int, int, int]:
+    """Exhaustively enumerate one disjoint combo-pair -> (wins, ties, losses)."""
     hole = (_CARD_IDS[hero_combo[0]], _CARD_IDS[hero_combo[1]])
     opp = (_CARD_IDS[opp_combo[0]], _CARD_IDS[opp_combo[1]])
     used = {hero_combo[0], hero_combo[1], opp_combo[0], opp_combo[1]}
@@ -116,11 +116,35 @@ def _enumerate_entry(args: tuple[str, str]) -> tuple[str, str, dict]:
             ties += 1
         else:
             losses += 1
-    total = wins + ties + losses
+    return wins, ties, losses
+
+
+def _enumerate_entry(args: tuple[str, str]) -> tuple[str, str, dict]:
+    """Enumerate one (hero, opp) canonical pair -> exact win/tie/lose.
+
+    Averages the exhaustive enumeration over **all** disjoint combo-pairs of
+    the canonical pairing. Each combo-pair has exactly C(48,5) = 1 712 304
+    boards, so summing the raw counts and dividing by the total board count
+    yields the exact preflop equity of the canonical pairing. This is
+    required because suit symmetry does not hold for pairings sharing a rank.
+
+    Returns (hero_str, opp_str, {"win":..,"tie":..,"lose":..,"boards":..}).
+    """
+    hero_hand, opp_hand = args
+    pairs = _disjoint_combos(hero_hand, opp_hand)
+    if not pairs:
+        return (hero_hand, opp_hand, {"win": 0.0, "tie": 0.0, "lose": 0.0, "boards": 0})
+    total_wins = total_ties = total_losses = 0
+    for hero_combo, opp_combo in pairs:
+        wins, ties, losses = _enumerate_combo(hero_combo, opp_combo)
+        total_wins += wins
+        total_ties += ties
+        total_losses += losses
+    total = total_wins + total_ties + total_losses
     return (hero_hand, opp_hand, {
-        "win": wins / total * 100,
-        "tie": ties / total * 100,
-        "lose": losses / total * 100,
+        "win": total_wins / total * 100,
+        "tie": total_ties / total * 100,
+        "lose": total_losses / total * 100,
         "boards": total,
     })
 

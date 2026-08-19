@@ -5,13 +5,16 @@ Unlike :class:`SimulateEquity` (Monte-Carlo sampling), this use case enumerates
 *every* possible runout so the result is exact and fully reproducible: running
 the computation twice yields bit-identical values (no variance, no seed).
 
-Preflop, hero vs a single opposing hand, the number of 5-card boards is
-C(48, 5) = 1 712 304 once the two 2-card hands are fixed and disjoint. By suit
-symmetry (verified empirically: every valid combo-pair of a canonical hero-vs-
-opp pairing yields the same equity), it is sufficient to enumerate the boards
-for a single representative disjoint combo-pair per canonical pairing. The
-result is the exact preflop equity of the canonical hero hand against the
-canonical opponent hand.
+Preflop, hero vs a single opposing hand, the number of 5-card boards per
+disjoint combo-pair is C(48, 5) = 1 712 304. Suit symmetry does **not** hold
+in general: some combo-pairs share a rank between hero and opponent (e.g. AKo
+vs AKo, AKo vs AQo, AA vs AKs), and the card-removal effect of the shared rank
+depends on the exact suits dealt. A single representative combo-pair would
+therefore yield a non-representative value. This use case enumerates the
+boards for **every** disjoint combo-pair of the canonical pairing and averages
+them (summing the raw win/tie/lose counts over all combo-pairs, then dividing
+by the total board count), which is the exact preflop equity of the canonical
+hero hand against the canonical opponent hand.
 
 The evaluator is injected (Elegant Objects): this use case is free of any
 external library dependency and is testable with a fake evaluator. The output
@@ -47,18 +50,23 @@ def _all_combos(hand: Hand) -> list[tuple[str, str]]:
     ]
 
 
-def _disjoint_combo(hero_hand: Hand, opp_hand: Hand) -> tuple[tuple[str, str], tuple[str, str]] | None:
-    """A representative disjoint (hero, opp) combo-pair, or None if impossible.
+def _disjoint_combos(hero_hand: Hand, opp_hand: Hand) -> list[tuple[tuple[str, str], tuple[str, str]]]:
+    """All disjoint (hero, opp) combo-pairs for a canonical pairing.
 
-    Some canonical pairings have no disjoint combo (e.g. hero AA vs opp AA is
-    impossible: only 4 aces exist). Those are skipped.
+    Every valid combo-pair is enumerated (not just a representative one) so
+    the equity can be averaged over them: suit symmetry does not hold for
+    pairings that share a rank (card removal depends on the exact suits).
+    Returns an empty list for impossible pairings (none exist in the 169x169
+    grid, since every canonical hand has at least one disjoint combo against
+    itself or any other); callers treat an empty result as a zero equity.
     """
+    pairs = []
     for hero_combo in _all_combos(hero_hand):
         hero_used = {hero_combo[0], hero_combo[1]}
         for opp_combo in _all_combos(opp_hand):
             if opp_combo[0] not in hero_used and opp_combo[1] not in hero_used:
-                return (hero_combo, opp_combo)
-    return None
+                pairs.append((hero_combo, opp_combo))
+    return pairs
 
 
 def _remaining_deck(used: set[str]) -> list[str]:
@@ -80,7 +88,10 @@ class EnumerateEquity:
         ``range_hands`` is a list of canonical hand notations (already expanded).
         ``hero`` is a single canonical hand notation (e.g. 'AKs').
 
-        The result is exact (no sampling) and fully reproducible.
+        For each opposing hand, the boards are enumerated for **every**
+        disjoint combo-pair and averaged, so the result is exact even when
+        suit symmetry does not hold (pairings sharing a rank). The result is
+        fully reproducible (no sampling).
         """
         if not range_hands:
             raise ValueError("Range contains no hands")
@@ -93,28 +104,27 @@ class EnumerateEquity:
         for notation in range_hands:
             opp = Hand.from_string(notation)
             key = (opp.rank1, opp.rank2, opp.suited)
-            pair = _disjoint_combo(hero_hand, opp)
-            if pair is None:
+            pairs = _disjoint_combos(hero_hand, opp)
+            if not pairs:
                 per_hand[key] = {"win": 0, "tie": 0, "lose": 0}
                 continue
 
-            hero_combo, opp_combo = pair
-            used = {hero_combo[0], hero_combo[1], opp_combo[0], opp_combo[1]}
-            deck = _remaining_deck(used)
-            hole_hero = [hero_combo[0], hero_combo[1]]
-            hole_opp = [opp_combo[0], opp_combo[1]]
-
             wins = ties = losses = 0
-            for board in combinations(deck, 5):
-                board_list = list(board)
-                hero_eval = self._evaluator.evaluate(hole_hero, board_list)
-                opp_eval = self._evaluator.evaluate(hole_opp, board_list)
-                if hero_eval < opp_eval:
-                    wins += 1
-                elif hero_eval == opp_eval:
-                    ties += 1
-                else:
-                    losses += 1
+            for hero_combo, opp_combo in pairs:
+                used = {hero_combo[0], hero_combo[1], opp_combo[0], opp_combo[1]}
+                deck = _remaining_deck(used)
+                hole_hero = [hero_combo[0], hero_combo[1]]
+                hole_opp = [opp_combo[0], opp_combo[1]]
+                for board in combinations(deck, 5):
+                    board_list = list(board)
+                    hero_eval = self._evaluator.evaluate(hole_hero, board_list)
+                    opp_eval = self._evaluator.evaluate(hole_opp, board_list)
+                    if hero_eval < opp_eval:
+                        wins += 1
+                    elif hero_eval == opp_eval:
+                        ties += 1
+                    else:
+                        losses += 1
             per_hand[key] = {"win": wins, "tie": ties, "lose": losses}
             total_wins += wins
             total_ties += ties
