@@ -56,12 +56,22 @@ class Hand:
 
     @classmethod
     def from_string(cls, hand_str: str) -> 'Hand':
-        """Factory method from string."""
+        """Factory method from string.
+
+        Normalizes the hand so that rank1 >= rank2 (higher rank first).
+        E.g., 'KAs' becomes 'AKs', 'QK' becomes 'KQ'.
+        """
         hand_str = hand_str.upper()
         if len(hand_str) == 2:
-            return cls(hand_str[0], hand_str[1], False)
+            r1, r2 = hand_str[0], hand_str[1]
+            return cls(r1, r2, False) if RANKS.index(r1) < RANKS.index(r2) else cls(r2, r1, False)
         elif len(hand_str) == 3:
-            return cls(hand_str[0], hand_str[1], hand_str[2] == 'S')
+            r1, r2, suited_char = hand_str[0], hand_str[1], hand_str[2]
+            suited = suited_char == 'S'
+            if RANKS.index(r1) < RANKS.index(r2):
+                return cls(r1, r2, suited)
+            else:
+                return cls(r2, r1, suited)
         else:
             raise ValueError(f"Invalid hand string: {hand_str}")
 
