@@ -157,6 +157,29 @@ class TestHand(unittest.TestCase):
         expected_ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
         self.assertEqual(RANKS, expected_ranks)
 
+    def test_hand_from_string_normalizes_rank_order(self):
+        """Test that from_string normalizes ranks so higher rank is first."""
+        # KAs should be normalized to AKs (A > K)
+        hand = Hand.from_string("KAs")
+        self.assertEqual(str(hand), "AKs")
+        self.assertEqual(hand.rank1, "A")
+        self.assertEqual(hand.rank2, "K")
+        # QK should be normalized to KQ (K > Q)
+        hand = Hand.from_string("QK")
+        self.assertEqual(str(hand), "KQo")
+        self.assertEqual(hand.rank1, "K")
+        self.assertEqual(hand.rank2, "Q")
+        # KQo should be normalized to KQo (K > Q, already correct)
+        hand = Hand.from_string("KQo")
+        self.assertEqual(str(hand), "KQo")
+        self.assertEqual(hand.rank1, "K")
+        self.assertEqual(hand.rank2, "Q")
+        # QKo should be normalized to KQo (K > Q)
+        hand = Hand.from_string("QKo")
+        self.assertEqual(str(hand), "KQo")
+        self.assertEqual(hand.rank1, "K")
+        self.assertEqual(hand.rank2, "Q")
+
 
 if __name__ == '__main__':
     unittest.main()

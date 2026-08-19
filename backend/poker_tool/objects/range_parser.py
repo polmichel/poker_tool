@@ -45,8 +45,12 @@ def _expand_suited_plus(high: str, low: str) -> list[Hand]:
     low_idx = _rank_index(low)
     if high_idx >= low_idx:
         raise InvalidRangeNotation(f"Invalid plus range: {high}{low}s+")
-    # Kickers at least as good as `low` (index <= low_idx), excluding the pair.
-    kickers = [RANKS[k] for k in range(low_idx, -1, -1) if RANKS[k] != high]
+    # Kickers at least as good as `low` (index <= low_idx), excluding the pair,
+    # and lower than high in rank order (index > high_idx).
+    kickers = [
+        RANKS[k] for k in range(low_idx, -1, -1)
+        if RANKS[k] != high and k > high_idx
+    ]
     return [Hand(high, k, True) for k in kickers]
 
 
@@ -56,7 +60,7 @@ def _expand_offsuit_plus(high: str, low: str) -> list[Hand]:
     low_idx = _rank_index(low)
     if high_idx >= low_idx:
         raise InvalidRangeNotation(f"Invalid plus range: {high}{low}o+")
-    kickers = [RANKS[k] for k in range(low_idx, -1, -1) if RANKS[k] != high]
+    kickers = [RANKS[k] for k in range(low_idx, -1, -1) if RANKS[k] != high and k > high_idx]
     return [Hand(high, k, False) for k in kickers]
 
 

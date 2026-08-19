@@ -96,6 +96,56 @@ class TestRangeParser(unittest.TestCase):
         """Test that notation is case-insensitive."""
         self.assertEqual([str(h) for h in parse_range("aks")], ["AKs"])
 
+    def test_suited_plus_with_k_high(self):
+        """Test 'KJs+' expands to KJs, KQs only (not KAs).
+
+        KJs+ means suited hands with K as high and kicker >= J.
+        Valid kickers: Q (index 2), J (index 3) - both < K (index 1).
+        A (index 0) > K, so KAs is invalid (should be AKs).
+        """
+        self.assertEqual(
+            [str(h) for h in parse_range("KJs+")],
+            ["KJs", "KQs"],
+        )
+
+    def test_suited_plus_with_k_high_and_q_low(self):
+        """Test 'KQs+' expands to KQs only.
+
+        KQs+ means suited hands with K as high and kicker >= Q.
+        Valid kicker: Q (index 2) only.
+        J (index 3) < Q, so KJs is not included.
+        A (index 0) > K, so KAs is invalid.
+        """
+        self.assertEqual(
+            [str(h) for h in parse_range("KQs+")],
+            ["KQs"],
+        )
+
+    def test_offsuit_plus_with_k_high(self):
+        """Test 'KJo+' expands to KJo, KQo only (not KAo).
+
+        KJo+ means offsuit hands with K as high and kicker >= J.
+        Valid kickers: Q (index 2), J (index 3) - both < K (index 1).
+        A (index 0) > K, so KAo is invalid (should be AKo).
+        """
+        self.assertEqual(
+            [str(h) for h in parse_range("KJo+")],
+            ["KJo", "KQo"],
+        )
+
+    def test_offsuit_plus_with_k_high_and_q_low(self):
+        """Test 'KQo+' expands to KQo only.
+
+        KQo+ means offsuit hands with K as high and kicker >= Q.
+        Valid kicker: Q (index 2) only.
+        J (index 3) < Q, so KJo is not included.
+        A (index 0) > K, so KAo is invalid.
+        """
+        self.assertEqual(
+            [str(h) for h in parse_range("KQo+")],
+            ["KQo"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
