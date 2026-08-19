@@ -69,17 +69,15 @@ export const DonationDialog: React.FC<DonationDialogProps> = ({ open, onClose })
 
     // TODO: Intégrer avec un vrai service de paiement (Stripe, PayPal, etc.)
     // Pour l'instant, on simule une redirection vers PayPal avec le montant
-    const paypalEmail = 'developpeur@example.com'; // À remplacer par l'email PayPal réel
-    const amountInCents = Math.round(amount * 100);
-    
+
     // URL PayPal pour un paiement direct
     // Format: https://www.paypal.me/nomUtilisateur/montant
     // Ou utiliser l'API PayPal pour une intégration plus propre
     const paypalUrl = `https://www.paypal.me/polmichel/${amount}eur`;
-    
+
     // Ouvrir dans un nouvel onglet
     window.open(paypalUrl, '_blank');
-    
+
     setIsSubmitting(false);
     onClose();
   };
@@ -137,12 +135,19 @@ export const DonationDialog: React.FC<DonationDialogProps> = ({ open, onClose })
                 sx={{
                   py: 1.5,
                   borderRadius: 2,
-                  borderColor: selectedAmount === item.value ? THEME_COLORS.primary : THEME_COLORS.borderStrong,
-                  backgroundColor: selectedAmount === item.value ? THEME_COLORS.primary : 'transparent',
+                  borderColor:
+                    selectedAmount === item.value
+                      ? THEME_COLORS.primary
+                      : THEME_COLORS.borderStrong,
+                  backgroundColor:
+                    selectedAmount === item.value ? THEME_COLORS.primary : 'transparent',
                   color: selectedAmount === item.value ? '#fff' : THEME_COLORS.textPrimary,
                   '&:hover': {
                     borderColor: THEME_COLORS.primary,
-                    backgroundColor: selectedAmount === item.value ? THEME_COLORS.primaryDark : 'rgba(16,185,129,0.08)',
+                    backgroundColor:
+                      selectedAmount === item.value
+                        ? THEME_COLORS.primaryDark
+                        : 'rgba(16,185,129,0.08)',
                   },
                 }}
               >
