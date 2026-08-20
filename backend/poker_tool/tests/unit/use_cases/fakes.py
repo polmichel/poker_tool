@@ -181,3 +181,12 @@ class FakeHandEvaluator(HandEvaluator):
         # Lower is better; use the best (lowest) rank index of the two hole cards.
         ranks = [self._RANKS.index(c[0].upper()) for c in hole_cards]
         return min(ranks)
+
+
+class FakeConfig:
+    """Fake Config for testing."""
+
+    def __init__(self) -> None:
+        self.stripe_secret_key = "fake_stripe_secret_key"
+        self.stripe_webhook_secret = "fake_stripe_webhook_secret"
+        self.frontend_url = "http://localhost:3000"

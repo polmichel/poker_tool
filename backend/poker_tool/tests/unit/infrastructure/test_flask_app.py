@@ -26,6 +26,7 @@ from poker_tool.use_cases.user_stats import UserStats
 
 from ...unit.use_cases.fakes import (
     FakeAuth,
+    FakeConfig,
     FakeEquityCalculator,
     FakeRanges,
     FakeSessions,
@@ -72,6 +73,7 @@ class TestFlaskApp(unittest.TestCase):
         """Set up test fixtures with in-memory ports and real use cases."""
         self.app = Flask(__name__)
         self.app.config['TESTING'] = True
+        self.config = FakeConfig()
         self.users = FakeUsers()
         self.ranges = FakeRanges()
         self.sessions = FakeSessions()
@@ -113,6 +115,7 @@ class TestFlaskApp(unittest.TestCase):
             user_stats=user_stats or self.user_stats,
             table_equity=equity_calculator or FakeEquityCalculator(),
             monte_carlo_equity=FakeEquityCalculator(),
+            config=self.config,
         )
 
     def test_flask_app_creation(self):

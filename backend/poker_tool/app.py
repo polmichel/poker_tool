@@ -106,6 +106,7 @@ class PokerTool:
             user_stats=self.user_stats,
             table_equity=self.table_equity,
             monte_carlo_equity=self.monte_carlo_equity,
+            config=self.config,
         )
 
     def _configure_flask(self) -> None:
