@@ -46,6 +46,15 @@ export const APP_ENTRIES: AppEntry[] = [
     icon: 'GridOn',
   },
   {
+    slug: 'range-manager',
+    title: 'Range Manager',
+    tagline: 'Gestion avancée des ranges avec dossiers',
+    description:
+      'Organisez vos ranges dans des dossiers hiérarchiques. Interface professionnelle avec vue à 3 panneaux pour une gestion optimale.',
+    accent: '#8b5cf6',
+    icon: 'Folder',
+  },
+  {
     slug: 'simulateur',
     title: 'Le Simulateur',
     tagline: "S'entraîner à reconnaître vos ranges",
@@ -103,6 +112,7 @@ export const APP_ENTRIES: AppEntry[] = [
  */
 export const MODULE_ROUTES: Record<string, { title: string; paths: string[] }> = {
   ranger: { title: 'Le Ranger', paths: ['/ranges'] },
+  'range-manager': { title: 'Range Manager', paths: ['/range-manager'] },
   simulateur: { title: 'Le Simulateur', paths: ['/training'] },
   stats: { title: 'Statistiques', paths: ['/stats'] },
   data: { title: 'Import / Export', paths: ['/import-export'] },
@@ -129,6 +139,8 @@ export function moduleRoute(slug: string): string | null {
   switch (slug) {
     case 'ranger':
       return '/ranges';
+    case 'range-manager':
+      return '/range-manager';
     case 'simulateur':
       return '/training';
     case 'stats':

@@ -19,6 +19,7 @@ import {
   Equity,
   Login,
   Register,
+  RangeManager,
 } from './pages';
 
 const App: React.FC = () => {
@@ -35,6 +36,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <Ranges />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/range-manager"
+              element={
+                <ProtectedRoute>
+                  <RangeManager />
                 </ProtectedRoute>
               }
             />
