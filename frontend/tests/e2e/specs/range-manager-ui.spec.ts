@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/prefer-screen-queries,testing-library/no-node-access -- Playwright E2E tests use DOM APIs */
 /**
  * Tests E2E pour la nouvelle interface de gestion des ranges (3 panneaux).
  *
@@ -10,6 +11,7 @@
  *  - Le bouton "Nouveau Dossier" crée un dossier dans l'arbre.
  *  - Le bouton "Importer/Exporter" ouvre le dialogue d'import/export.
  *  - Le bouton "Modifier" de l'aperçu navigue vers l'éditeur.
+ *  - Drag-and-drop des ranges dans les dossiers.
  */
 import { test, expect } from '@playwright/test';
 import { authenticatePage } from '../utils';
@@ -67,7 +69,7 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     await expect(page.getByText('Aucune range trouvée')).not.toBeVisible({ timeout: 5000 });
   });
 
-  test("sélectionner une range affiche l'aperçu avec la grille", async ({ page }) => {
+  test('sélectionner une range affiche l\'aperçu avec la grille', async ({ page }) => {
     // Attendre que la liste contienne au moins un élément cliquable (une range).
     // On cible le premier conteneur de range du panneau central.
     const firstRangeCard = page
@@ -180,5 +182,43 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     await refreshButton.click();
     // La page doit toujours afficher le titre principal
     await expect(page.getByText('Gestion des Ranges')).toBeVisible({ timeout: 5000 });
+  });
+
+  test('glisser-déposer une range dans un dossier la déplace', async ({ page }) => {
+    // Créer un dossier cible pour le dépôt.
+    const folderName = 'Dossier DnD ' + Date.now();
+    await page.evaluate((name) => {
+      window.prompt = () => name;
+    }, folderName);
+    const newFolderButton = page.getByRole('button', { name: 'Nouveau Dossier' });
+    await newFolderButton.waitFor({ state: 'visible', timeout: 5000 });
+    await newFolderButton.click();
+    await expect(page.getByText(folderName, { exact: true })).toBeVisible({ timeout: 5000 });
+
+    // Le panneau central doit lister au moins une range.
+    const rangeCard = page.locator('[draggable="true"]').filter({ hasText: /mains/ }).first();
+    await rangeCard.waitFor({ state: 'visible', timeout: 10000 });
+
+    // Déclencher la séquence DnD via l'API Playwright (fonctionne en headless).
+    const folderTarget = page.getByText(folderName, { exact: true }).first();
+    await folderTarget.waitFor({ state: 'visible', timeout: 5000 });
+
+    // Drag start sur la range
+    await rangeCard.dispatchEvent('dragstart');
+    // Drag over + drop sur le dossier
+    await folderTarget.dispatchEvent('dragover');
+    await folderTarget.dispatchEvent('drop');
+    await rangeCard.dispatchEvent('dragend');
+
+    // Sélectionner le dossier cible : masquer l'iframe webpack-dev-server qui intercepte les clics
+    await page.evaluate(() => {
+      const overlay = document.getElementById('webpack-dev-server-client-overlay');
+      if (overlay) overlay.style.display = 'none';
+    });
+    await folderTarget.click({ timeout: 5000 });
+
+    // Le compteur du panneau central doit indiquer au moins 1 range dans le
+    // dossier cible (le déplacement a réussi).
+    await expect(page.getByText(/Ranges \([1-9]\d*\)/)).toBeVisible({ timeout: 5000 });
   });
 });

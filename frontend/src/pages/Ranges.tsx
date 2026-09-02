@@ -24,19 +24,14 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { RangeForm, RangeGrid, ImportExportDialog } from '../components';
-import { useRanges } from '../hooks';
+import { useRanges, useRangeFolders } from '../hooks';
+import type { Folder as FolderType } from '../hooks';
 import { Range } from '../types';
 import { generateRangeGrid } from '../utils/helpers';
 import { THEME_COLORS } from '../utils/constants';
 
-// Types pour la gestion des dossiers
-interface Folder {
-  id: string;
-  name: string;
-  parentId: string | null;
-  children: Folder[];
-  rangeIds: number[];
-}
+// Types pour la gestion des dossiers (issus du hook de persistance)
+type Folder = FolderType;
 
 const Ranges: React.FC = () => {
   const navigate = useNavigate();
@@ -54,9 +49,15 @@ const Ranges: React.FC = () => {
     exportRange,
   } = useRanges();
 
-  // État pour les dossiers
-  const [folders, setFolders] = useState<Folder[]>([]);
+  // Dossiers : arbre persistant (localStorage, clé par utilisateur)
+  // géré par le hook useRangeFolders. La racine "Toutes les Ranges"
+  // contient toutes les ranges non assignées à un sous-dossier.
+  const allRangeIds = backendRanges.map((r) => r.id || 0);
+  const { folders, createFolder, moveRangeToFolder } = useRangeFolders(allRangeIds);
+
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [draggingRangeId, setDraggingRangeId] = useState<number | null>(null);
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
   const [selectedRangeId, setSelectedRangeId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [panelSizes] = useState({ left: 250, middle: 350, right: 500 });
@@ -67,28 +68,34 @@ const Ranges: React.FC = () => {
   const [editingRange, setEditingRange] = useState<Range | null>(null);
   const [rangeToExport, setRangeToExport] = useState<Range | null>(null);
 
-  // Initialiser avec un dossier racine
+  // Sélectionner la racine par défaut une fois l'arbre disponible.
   useEffect(() => {
-    const rootFolder: Folder = {
-      id: 'root',
-      name: 'Toutes les Ranges',
-      parentId: null,
-      children: [],
-      rangeIds: backendRanges.map((r) => r.id || 0),
-    };
-    setFolders([rootFolder]);
-    setSelectedFolderId('root');
-  }, [backendRanges]);
+    if (!selectedFolderId && folders.length > 0) {
+      setSelectedFolderId(folders[0].id);
+    }
+  }, [selectedFolderId, folders]);
 
   // Charger les ranges au montage
   useEffect(() => {
     fetchRanges();
   }, [fetchRanges]);
 
+  // Trouve un dossier par id en parcourant l'arbre.
+  const findFolder = useCallback((nodes: Folder[], id: string | null): Folder | null => {
+    if (!id) return null;
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      const found = findFolder(n.children, id);
+      if (found) return found;
+    }
+    return null;
+  }, []);
+
   // Obtenir le dossier sélectionné
-  const selectedFolder = useMemo(() => {
-    return folders.find((f) => f.id === selectedFolderId) || null;
-  }, [folders, selectedFolderId]);
+  const selectedFolder = useMemo(
+    () => findFolder(folders, selectedFolderId) || null,
+    [folders, selectedFolderId, findFolder],
+  );
 
   // Obtenir les ranges du dossier sélectionné
   const rangesInSelectedFolder = useMemo(() => {
@@ -114,31 +121,54 @@ const Ranges: React.FC = () => {
     });
   }, [rangesInSelectedFolder, searchQuery]);
 
-  // Créer un nouveau dossier. Insère le dossier dans l'arbre (children du
-  // parent sélectionné) afin qu'il soit rendu par renderFolder, qui ne
-  // traverse que la hiérarchie children (les dossiers à parentId !== null ne
-  // sont jamais rendus directement par le filtre parentId === null).
+  // Créer un nouveau dossier (persistance via le hook). Insère dans le
+  // parent sélectionné, ou à la racine si aucun parent.
   const handleCreateFolder = useCallback(() => {
     const name = prompt('Nom du nouveau dossier:', 'Nouveau Dossier');
     if (!name) return;
-    const newFolder: Folder = {
-      id: `folder_${Date.now()}`,
-      name,
-      parentId: selectedFolderId,
-      children: [],
-      rangeIds: [],
-    };
-    setFolders((prev) => {
-      if (!selectedFolderId) return [...prev, newFolder];
-      const insert = (folders: Folder[]): Folder[] =>
-        folders.map((f) =>
-          f.id === selectedFolderId
-            ? { ...f, children: [...f.children, newFolder] }
-            : { ...f, children: insert(f.children) },
-        );
-      return insert(prev);
-    });
-  }, [selectedFolderId]);
+    // Crée dans le dossier sélectionné s'il existe, sinon sous la racine.
+    const parentId = selectedFolderId || folders[0]?.id || null;
+    createFolder(name, parentId);
+  }, [selectedFolderId, folders, createFolder]);
+
+  // --- Drag & drop : ranges -> dossiers (HTML5 natif, sans dépendance) ---
+  const handleRangeDragStart = useCallback((rangeId: number) => {
+    setDraggingRangeId(rangeId);
+  }, []);
+
+  const handleRangeDragEnd = useCallback(() => {
+    setDraggingRangeId(null);
+    setDragOverFolderId(null);
+  }, []);
+
+  const handleFolderDragOver = useCallback(
+    (e: React.DragEvent, folderId: string) => {
+      if (draggingRangeId === null) return;
+      e.preventDefault(); // autorise le drop
+      e.dataTransfer.dropEffect = 'move';
+      if (dragOverFolderId !== folderId) setDragOverFolderId(folderId);
+    },
+    [draggingRangeId, dragOverFolderId],
+  );
+
+  const handleFolderDragLeave = useCallback((folderId: string) => {
+    setDragOverFolderId((prev) => (prev === folderId ? null : prev));
+  }, []);
+
+  const handleFolderDrop = useCallback(
+    (e: React.DragEvent, folderId: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (draggingRangeId !== null) {
+        moveRangeToFolder(draggingRangeId, folderId);
+        // Sélectionne le dossier cible pour montrer le résultat.
+        setSelectedFolderId(folderId);
+      }
+      setDraggingRangeId(null);
+      setDragOverFolderId(null);
+    },
+    [draggingRangeId, moveRangeToFolder],
+  );
 
   // Sélectionner un dossier
   const handleSelectFolder = useCallback((folderId: string) => {
@@ -243,31 +273,49 @@ const Ranges: React.FC = () => {
     setOpenFormDialog(true);
   }, []);
 
-  // Rendu d'un dossier dans l'arbre
-  const renderFolder = (folder: Folder, depth = 0) => (
-    <Box key={folder.id} sx={{ pl: depth * 2 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          p: 1,
-          borderRadius: 1,
-          cursor: 'pointer',
-          backgroundColor:
-            selectedFolderId === folder.id ? 'rgba(16, 185, 129, 0.14)' : 'transparent',
-          '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.04)',
-          },
-        }}
-        onClick={() => handleSelectFolder(folder.id)}
-      >
-        <FolderIcon fontSize="small" />
-        <Typography variant="body2">{folder.name}</Typography>
+  // Rendu d'un dossier dans l'arbre. Cible de drop pour le drag-and-drop des
+  // ranges : on met en surbrillance le dossier survolé pendant le drag.
+  const renderFolder = (folder: Folder, depth = 0) => {
+    const isDropTarget = draggingRangeId !== null && dragOverFolderId === folder.id;
+    return (
+      <Box key={folder.id} sx={{ pl: depth * 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            p: 1,
+            borderRadius: 1,
+            cursor: 'pointer',
+            backgroundColor: isDropTarget
+              ? 'rgba(16, 185, 129, 0.24)'
+              : selectedFolderId === folder.id
+                ? 'rgba(16, 185, 129, 0.14)'
+                : 'transparent',
+            border: isDropTarget ? `1px dashed ${THEME_COLORS.primary}` : '1px solid transparent',
+            transition: 'background-color 0.15s ease, border-color 0.15s ease',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.04)',
+            },
+          }}
+          draggable={false}
+          onClick={() => handleSelectFolder(folder.id)}
+          onDragOver={(e) => handleFolderDragOver(e, folder.id)}
+          onDragLeave={() => handleFolderDragLeave(folder.id)}
+          onDrop={(e) => handleFolderDrop(e, folder.id)}
+        >
+          <FolderIcon fontSize="small" />
+          <Typography variant="body2">{folder.name}</Typography>
+          {folder.rangeIds.length > 0 && (
+            <Typography variant="caption" color="text.disabled" sx={{ ml: 'auto' }}>
+              {folder.rangeIds.length}
+            </Typography>
+          )}
+        </Box>
+        {folder.children.map((child) => renderFolder(child, depth + 1))}
       </Box>
-      {folder.children.map((child) => renderFolder(child, depth + 1))}
-    </Box>
-  );
+    );
+  };
 
   // Panneau gauche (arbre des dossiers)
   const LeftPanel = () => (
@@ -346,12 +394,16 @@ const Ranges: React.FC = () => {
           filteredRanges.map((range) => (
             <Box
               key={range.id}
+              draggable
+              onDragStart={() => handleRangeDragStart(range.id || 0)}
+              onDragEnd={handleRangeDragEnd}
               sx={{
                 p: 1.5,
                 mb: 1,
                 border: `1px solid ${THEME_COLORS.border}`,
                 borderRadius: 1,
-                cursor: 'pointer',
+                cursor: draggingRangeId === range.id ? 'grabbing' : 'grab',
+                opacity: draggingRangeId === range.id ? 0.5 : 1,
                 backgroundColor:
                   selectedRangeId === range.id ? 'rgba(16, 185, 129, 0.08)' : THEME_COLORS.paper,
                 transition: 'all 0.2s ease',
