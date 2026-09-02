@@ -223,10 +223,14 @@ const Ranges: React.FC = () => {
     setRangeToExport(null);
   }, []);
 
-  // Créer une nouvelle range (pour le bouton du panneau central)
+  // Ouvrir le formulaire de création pour le bouton du panneau central.
+  // On conserve le comportement dialog de l'ancienne page Ranges (et les
+  // contrats des tests E2E qui attendent l'ouverture d'un .MuiDialog-root)
+  // plutôt que la navigation vers /ranges/new.
   const handleCreateRangeNew = useCallback(() => {
-    navigate('/ranges/new');
-  }, [navigate]);
+    setEditingRange(null);
+    setOpenFormDialog(true);
+  }, []);
 
   // Rendu d'un dossier dans l'arbre
   const renderFolder = (folder: Folder, depth = 0) => (
