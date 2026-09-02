@@ -5,3 +5,5 @@ export { useAuth } from './useAuth';
 export { useEquity } from './useEquity';
 export { useAsyncState } from './useAsyncState';
 export { useHistory } from './useHistory';
+export { useRangeFolders } from './useRangeFolders';
+export type { Folder } from './useRangeFolders';

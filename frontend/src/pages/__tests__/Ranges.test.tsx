@@ -3,7 +3,7 @@
  * Tests the new folder-based range management functionality.
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import Ranges from '../Ranges';
@@ -55,6 +55,32 @@ jest.mock('../../hooks/useRanges', () => ({
   useRanges: () => mockUseRanges(),
 }));
 
+// Mock useRangeFolders (depends on AuthContext + localStorage). Exposes a
+// single root folder containing all mock ranges, mirroring real behavior.
+const mockCreateFolder = jest.fn(() => `folder_${Date.now()}`);
+const mockMoveRangeToFolder = jest.fn();
+const mockRenameFolder = jest.fn();
+const mockDeleteFolder = jest.fn();
+// Folders state can be overridden per-test via mockFoldersState.
+let mockFoldersState: any[] = [
+  {
+    id: 'root',
+    name: 'Toutes les Ranges',
+    parentId: null,
+    rangeIds: [1, 2],
+    children: [],
+  },
+];
+jest.mock('../../hooks/useRangeFolders', () => ({
+  useRangeFolders: () => ({
+    folders: mockFoldersState,
+    createFolder: mockCreateFolder,
+    moveRangeToFolder: mockMoveRangeToFolder,
+    renameFolder: mockRenameFolder,
+    deleteFolder: mockDeleteFolder,
+  }),
+}));
+
 // Mock generateRangeGrid
 jest.mock('../../utils/helpers', () => ({
   generateRangeGrid: jest.fn(() => []),
@@ -93,6 +119,15 @@ const renderRanges = () =>
 describe('Ranges page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFoldersState = [
+      {
+        id: 'root',
+        name: 'Toutes les Ranges',
+        parentId: null,
+        rangeIds: [1, 2],
+        children: [],
+      },
+    ];
     mockUseRanges.mockReturnValue({
       ranges: mockRanges,
       loading: false,
@@ -231,5 +266,74 @@ describe('Ranges page', () => {
     // The range info is displayed in the list items
     const rangeItems = screen.getAllByText(/preflop/);
     expect(rangeItems.length).toBeGreaterThan(0);
+  });
+
+  it('makes range list items draggable', () => {
+    renderRanges();
+    // eslint-disable-next-line testing-library/no-node-access
+    const utgItem = screen.getByText('UTG Range').closest('[draggable]');
+    expect(utgItem).toBeTruthy();
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(utgItem?.getAttribute('draggable')).toBe('true');
+  });
+
+  it('drops a dragged range onto a folder and calls moveRangeToFolder', async () => {
+    // Provide a target subfolder to drop onto.
+    mockFoldersState = [
+      {
+        id: 'root',
+        name: 'Toutes les Ranges',
+        parentId: null,
+        rangeIds: [1, 2],
+        children: [{ id: 'folder_btn', name: 'BTN', parentId: 'root', rangeIds: [], children: [] }],
+      },
+    ];
+    renderRanges();
+
+    // eslint-disable-next-line testing-library/no-node-access
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const folderItem = screen.getByText('BTN');
+    expect(rangeItem).toBeTruthy();
+    expect(folderItem).toBeTruthy();
+
+    // Simulate the native HTML5 DnD event sequence. dragOver + drop must fire
+    // in the same act batch so the drop handler sees the updated dragging state.
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      // eslint-disable-next-line testing-library/no-node-access
+      fireEvent.dragStart(rangeItem!);
+    });
+    const folderTarget = screen.getByText('BTN');
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragOver(folderTarget, {
+        dataTransfer: { dropEffect: 'move' },
+      });
+      fireEvent.drop(folderTarget, {
+        dataTransfer: { dropEffect: 'move' },
+      });
+    });
+
+    expect(mockMoveRangeToFolder).toHaveBeenCalledWith(1, 'folder_btn');
+  });
+
+  it('does not move a range when dragOver happens without an active drag', async () => {
+    mockFoldersState = [
+      {
+        id: 'root',
+        name: 'Toutes les Ranges',
+        parentId: null,
+        rangeIds: [1, 2],
+        children: [{ id: 'folder_btn', name: 'BTN', parentId: 'root', rangeIds: [], children: [] }],
+      },
+    ];
+    renderRanges();
+    const folderItem = screen.getByText('BTN');
+    // drop without a preceding dragStart: nothing should be moved.
+    // eslint-disable-next-line testing-library/no-unnecessary-act, testing-library/no-node-access
+    await act(async () => {
+      fireEvent.drop(folderItem!, { dataTransfer: { dropEffect: 'move' } });
+    });
+    expect(mockMoveRangeToFolder).not.toHaveBeenCalled();
   });
 });

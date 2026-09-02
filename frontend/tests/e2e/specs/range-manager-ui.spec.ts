@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/prefer-screen-queries,testing-library/no-node-access -- Playwright E2E tests use DOM APIs */
 /**
  * Tests E2E pour la nouvelle interface de gestion des ranges (3 panneaux).
  *
@@ -10,6 +11,7 @@
  *  - Le bouton "Nouveau Dossier" crée un dossier dans l'arbre.
  *  - Le bouton "Importer/Exporter" ouvre le dialogue d'import/export.
  *  - Le bouton "Modifier" de l'aperçu navigue vers l'éditeur.
+ *  - Drag-and-drop des ranges dans les dossiers.
  */
 import { test, expect } from '@playwright/test';
 import { authenticatePage } from '../utils';
@@ -180,5 +182,57 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     await refreshButton.click();
     // La page doit toujours afficher le titre principal
     await expect(page.getByText('Gestion des Ranges')).toBeVisible({ timeout: 5000 });
+  });
+
+  test('glisser-déposer une range dans un dossier la déplace', async ({ page }) => {
+    // Créer un dossier cible pour le dépôt.
+    const folderName = 'Dossier DnD ' + Date.now();
+    await page.evaluate((name) => {
+      window.prompt = () => name;
+    }, folderName);
+    const newFolderButton = page.getByRole('button', { name: 'Nouveau Dossier' });
+    await newFolderButton.waitFor({ state: 'visible', timeout: 5000 });
+    await newFolderButton.click();
+    await expect(page.getByText(folderName, { exact: true })).toBeVisible({ timeout: 5000 });
+
+    // Le panneau central doit lister au moins une range.
+    const rangeCard = page.locator('[draggable="true"]').filter({ hasText: /mains/ }).first();
+    await rangeCard.waitFor({ state: 'visible', timeout: 10000 });
+
+    // Le HTML5 DnD natif n'est pas fiable en headless Playwright : on déclenche
+    // manuellement la séquence dragstart -> dragover -> drop via l'API DOM.
+    const folderTarget = page.getByText(folderName, { exact: true }).first();
+    await folderTarget.waitFor({ state: 'visible', timeout: 5000 });
+
+    const moved = await page.evaluate(
+      ({ srcSel, dstText }) => {
+        const src = document.querySelector(srcSel) as HTMLElement | null;
+        if (!src) return false;
+        const dstEls = Array.from(document.querySelectorAll('*')).filter(
+          (el) => el.children.length === 0 && el.textContent === dstText,
+        );
+        // Remonter vers le conteneur du dossier (le parent gère onDrop).
+        let dst: HTMLElement | null = dstEls[0] as HTMLElement | null;
+        while (dst && !dst.onDrop) dst = dst.parentElement;
+        if (!dst) return false;
+        const dt = new DataTransfer();
+        src.dispatchEvent(new DragEvent('dragstart', { dataTransfer: dt, bubbles: true }));
+        dst.dispatchEvent(new DragEvent('dragover', { dataTransfer: dt, bubbles: true }));
+        dst.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true }));
+        src.dispatchEvent(new DragEvent('dragend', { dataTransfer: dt, bubbles: true }));
+        return true;
+      },
+      { srcSel: '[draggable="true"]', dstText: folderName },
+    );
+    expect(moved).toBeTruthy();
+
+    // Sélectionner le dossier cible : la range déplacée ne doit plus être
+    // listée dans la racine, mais présente dans le dossier cible.
+    const folderRow = page.getByText(folderName, { exact: true }).first();
+    await folderRow.click({ timeout: 5000 });
+
+    // Le compteur du panneau central doit indiquer au moins 1 range dans le
+    // dossier cible (le déplacement a réussi).
+    await expect(page.getByText(/Ranges \([1-9]\d*\)/)).toBeVisible({ timeout: 5000 });
   });
 });
