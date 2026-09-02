@@ -114,19 +114,30 @@ const Ranges: React.FC = () => {
     });
   }, [rangesInSelectedFolder, searchQuery]);
 
-  // Créer un nouveau dossier
+  // Créer un nouveau dossier. Insère le dossier dans l'arbre (children du
+  // parent sélectionné) afin qu'il soit rendu par renderFolder, qui ne
+  // traverse que la hiérarchie children (les dossiers à parentId !== null ne
+  // sont jamais rendus directement par le filtre parentId === null).
   const handleCreateFolder = useCallback(() => {
     const name = prompt('Nom du nouveau dossier:', 'Nouveau Dossier');
-    if (name) {
-      const newFolder: Folder = {
-        id: `folder_${Date.now()}`,
-        name,
-        parentId: selectedFolderId,
-        children: [],
-        rangeIds: [],
-      };
-      setFolders((prev) => [...prev, newFolder]);
-    }
+    if (!name) return;
+    const newFolder: Folder = {
+      id: `folder_${Date.now()}`,
+      name,
+      parentId: selectedFolderId,
+      children: [],
+      rangeIds: [],
+    };
+    setFolders((prev) => {
+      if (!selectedFolderId) return [...prev, newFolder];
+      const insert = (folders: Folder[]): Folder[] =>
+        folders.map((f) =>
+          f.id === selectedFolderId
+            ? { ...f, children: [...f.children, newFolder] }
+            : { ...f, children: insert(f.children) },
+        );
+      return insert(prev);
+    });
   }, [selectedFolderId]);
 
   // Sélectionner un dossier
