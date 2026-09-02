@@ -8,4 +8,3 @@ export { default as ImportExport } from './ImportExport';
 export { default as Equity } from './Equity';
 export { default as Login } from './Login';
 export { default as Register } from './Register';
-export { default as RangeManager } from './RangeManager';

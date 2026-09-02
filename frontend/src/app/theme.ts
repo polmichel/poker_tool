@@ -41,18 +41,9 @@ export const APP_ENTRIES: AppEntry[] = [
     title: 'Le Ranger',
     tagline: 'Créer, éditer & visualiser vos ranges',
     description:
-      'Construisez vos ranges préflop/postflop sur la grille 13x13, peignez à la souris et organisez votre bibliothèque de positions.',
+      'Construisez vos ranges préflop/postflop sur la grille 13x13, peignez à la souris et organisez votre bibliothèque de positions. Interface professionnelle avec gestion par dossiers.',
     accent: '#10b981',
     icon: 'GridOn',
-  },
-  {
-    slug: 'range-manager',
-    title: 'Range Manager',
-    tagline: 'Gestion avancée des ranges avec dossiers',
-    description:
-      'Organisez vos ranges dans des dossiers hiérarchiques. Interface professionnelle avec vue à 3 panneaux pour une gestion optimale.',
-    accent: '#8b5cf6',
-    icon: 'Folder',
   },
   {
     slug: 'simulateur',
@@ -112,7 +103,6 @@ export const APP_ENTRIES: AppEntry[] = [
  */
 export const MODULE_ROUTES: Record<string, { title: string; paths: string[] }> = {
   ranger: { title: 'Le Ranger', paths: ['/ranges'] },
-  'range-manager': { title: 'Range Manager', paths: ['/range-manager'] },
   simulateur: { title: 'Le Simulateur', paths: ['/training'] },
   stats: { title: 'Statistiques', paths: ['/stats'] },
   data: { title: 'Import / Export', paths: ['/import-export'] },
@@ -139,8 +129,6 @@ export function moduleRoute(slug: string): string | null {
   switch (slug) {
     case 'ranger':
       return '/ranges';
-    case 'range-manager':
-      return '/range-manager';
     case 'simulateur':
       return '/training';
     case 'stats':
