@@ -16,6 +16,7 @@ import {
   Folder as FolderIcon,
   Edit as EditIcon,
   Close as CloseIcon,
+  Delete as DeleteIcon,
   ImportExport as ImportExportIcon,
   Settings as SettingsIcon,
   Refresh as RefreshIcon,
@@ -73,7 +74,7 @@ const Ranges: React.FC = () => {
       name: 'Toutes les Ranges',
       parentId: null,
       children: [],
-      rangeIds: backendRanges.map(r => r.id || 0),
+      rangeIds: backendRanges.map((r) => r.id || 0),
     };
     setFolders([rootFolder]);
     setSelectedFolderId('root');
@@ -86,28 +87,30 @@ const Ranges: React.FC = () => {
 
   // Obtenir le dossier sélectionné
   const selectedFolder = useMemo(() => {
-    return folders.find(f => f.id === selectedFolderId) || null;
+    return folders.find((f) => f.id === selectedFolderId) || null;
   }, [folders, selectedFolderId]);
 
   // Obtenir les ranges du dossier sélectionné
   const rangesInSelectedFolder = useMemo(() => {
     if (!selectedFolder) return [];
-    return backendRanges.filter(r => selectedFolder.rangeIds.includes(r.id || 0));
+    return backendRanges.filter((r) => selectedFolder.rangeIds.includes(r.id || 0));
   }, [selectedFolder, backendRanges]);
 
   // Obtenir la range sélectionnée
   const selectedRangeFromState = useMemo(() => {
-    return backendRanges.find(r => r.id === selectedRangeId) || null;
+    return backendRanges.find((r) => r.id === selectedRangeId) || null;
   }, [backendRanges, selectedRangeId]);
 
   // Filtrer les ranges
   const filteredRanges = useMemo(() => {
-    return rangesInSelectedFolder.filter(range => {
+    return rangesInSelectedFolder.filter((range) => {
       const query = searchQuery.toLowerCase();
-      return range.name.toLowerCase().includes(query) ||
+      return (
+        range.name.toLowerCase().includes(query) ||
         range.description?.toLowerCase().includes(query) ||
         range.position.toLowerCase().includes(query) ||
-        range.range_type.toLowerCase().includes(query);
+        range.range_type.toLowerCase().includes(query)
+      );
     });
   }, [rangesInSelectedFolder, searchQuery]);
 
@@ -122,7 +125,7 @@ const Ranges: React.FC = () => {
         children: [],
         rangeIds: [],
       };
-      setFolders(prev => [...prev, newFolder]);
+      setFolders((prev) => [...prev, newFolder]);
     }
   }, [selectedFolderId]);
 
@@ -138,9 +141,12 @@ const Ranges: React.FC = () => {
   }, []);
 
   // Ouvrir une range dans l'éditeur
-  const handleOpenRange = useCallback((rangeId: number) => {
-    navigate(`/ranges/${rangeId}/edit`);
-  }, [navigate]);
+  const handleOpenRange = useCallback(
+    (rangeId: number) => {
+      navigate(`/ranges/${rangeId}/edit`);
+    },
+    [navigate],
+  );
 
   // Créer une nouvelle range
   const handleCreateRange = useCallback(
@@ -233,7 +239,8 @@ const Ranges: React.FC = () => {
           p: 1,
           borderRadius: 1,
           cursor: 'pointer',
-          backgroundColor: selectedFolderId === folder.id ? 'rgba(16, 185, 129, 0.14)' : 'transparent',
+          backgroundColor:
+            selectedFolderId === folder.id ? 'rgba(16, 185, 129, 0.14)' : 'transparent',
           '&:hover': {
             backgroundColor: 'rgba(255, 255, 255, 0.04)',
           },
@@ -243,7 +250,7 @@ const Ranges: React.FC = () => {
         <FolderIcon fontSize="small" />
         <Typography variant="body2">{folder.name}</Typography>
       </Box>
-      {folder.children.map(child => renderFolder(child, depth + 1))}
+      {folder.children.map((child) => renderFolder(child, depth + 1))}
     </Box>
   );
 
@@ -263,9 +270,9 @@ const Ranges: React.FC = () => {
           Dossiers
         </Typography>
       </Box>
-      
+
       <Box sx={{ flex: 1, overflow: 'auto', p: 1 }}>
-        {folders.filter(f => f.parentId === null).map(folder => renderFolder(folder))}
+        {folders.filter((f) => f.parentId === null).map((folder) => renderFolder(folder))}
       </Box>
 
       <Box sx={{ p: 1, pt: 0 }}>
@@ -321,7 +328,7 @@ const Ranges: React.FC = () => {
             Aucune range trouvée
           </Typography>
         ) : (
-          filteredRanges.map(range => (
+          filteredRanges.map((range) => (
             <Box
               key={range.id}
               sx={{
@@ -330,7 +337,8 @@ const Ranges: React.FC = () => {
                 border: `1px solid ${THEME_COLORS.border}`,
                 borderRadius: 1,
                 cursor: 'pointer',
-                backgroundColor: selectedRangeId === range.id ? 'rgba(16, 185, 129, 0.08)' : THEME_COLORS.paper,
+                backgroundColor:
+                  selectedRangeId === range.id ? 'rgba(16, 185, 129, 0.08)' : THEME_COLORS.paper,
                 transition: 'all 0.2s ease',
                 '&:hover': {
                   backgroundColor: 'rgba(255, 255, 255, 0.04)',
@@ -369,10 +377,23 @@ const Ranges: React.FC = () => {
     </Paper>
   );
 
+  // Supprimer une range depuis l'aperçu
+  const handleDeleteFromPreview = useCallback(
+    async (range: Range) => {
+      if (range.id && window.confirm('Êtes-vous sûr de vouloir supprimer cette range ?')) {
+        await deleteRange(range.id);
+        setSelectedRangeId(null);
+        setSelectedRange(null);
+        fetchRanges();
+      }
+    },
+    [deleteRange, setSelectedRange, fetchRanges],
+  );
+
   // Panneau droit (aperçu de la range)
   const RightPanel = () => {
     const displayRange = selectedRangeFromState || selectedRange;
-    
+
     return (
       <Paper
         sx={{
@@ -391,19 +412,22 @@ const Ranges: React.FC = () => {
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <Tooltip title="Modifier">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleOpenRange(displayRange.id || 0)}
-                    >
+                    <IconButton size="small" onClick={() => handleOpenRange(displayRange.id || 0)}>
                       <EditIcon />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Exporter">
+                    <IconButton size="small" onClick={() => handleOpenImportExport(displayRange)}>
+                      <ImportExportIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Supprimer">
                     <IconButton
                       size="small"
-                      onClick={() => handleOpenImportExport(displayRange)}
+                      color="error"
+                      onClick={() => handleDeleteFromPreview(displayRange)}
                     >
-                      <ImportExportIcon />
+                      <DeleteIcon />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Fermer">
@@ -415,9 +439,25 @@ const Ranges: React.FC = () => {
               </Box>
 
               <Box sx={{ mt: 1 }}>
-                <Chip label={displayRange.range_type} size="small" variant="outlined" color="primary" />
-                <Chip label={displayRange.position} size="small" variant="outlined" color="secondary" sx={{ ml: 1 }} />
-                <Chip label={`${Object.keys(displayRange.hands).length} mains`} size="small" variant="outlined" sx={{ ml: 1 }} />
+                <Chip
+                  label={displayRange.range_type}
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                />
+                <Chip
+                  label={displayRange.position}
+                  size="small"
+                  variant="outlined"
+                  color="secondary"
+                  sx={{ ml: 1 }}
+                />
+                <Chip
+                  label={`${Object.keys(displayRange.hands).length} mains`}
+                  size="small"
+                  variant="outlined"
+                  sx={{ ml: 1 }}
+                />
               </Box>
             </Box>
 
@@ -462,8 +502,8 @@ const Ranges: React.FC = () => {
   if (error) {
     return (
       <Box sx={{ p: 3 }}>
-      <Typography color="error">{error}</Typography>
-    </Box>
+        <Typography color="error">{error}</Typography>
+      </Box>
     );
   }
 
@@ -529,7 +569,7 @@ const Ranges: React.FC = () => {
         >
           <LeftPanel />
         </Box>
-        
+
         <Box
           sx={{
             flex: `0 0 ${panelSizes.middle}px`,
@@ -542,7 +582,7 @@ const Ranges: React.FC = () => {
         >
           <MiddlePanel />
         </Box>
-        
+
         <Box
           sx={{
             flex: 1,

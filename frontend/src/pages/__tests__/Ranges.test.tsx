@@ -3,7 +3,7 @@
  * Tests the new folder-based range management functionality.
  */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import Ranges from '../Ranges';
@@ -192,10 +192,10 @@ describe('Ranges page', () => {
   it('filters ranges based on search query', async () => {
     const user = userEvent.setup();
     renderRanges();
-    
+
     const searchInput = screen.getByPlaceholderText('Rechercher une range...');
     await user.type(searchInput, 'UTG');
-    
+
     // Should only show UTG Range
     expect(screen.getByText('UTG Range')).toBeInTheDocument();
     expect(screen.queryByText('BTN Range')).not.toBeInTheDocument();
@@ -214,10 +214,10 @@ describe('Ranges page', () => {
   it('calls fetchRanges when refresh button is clicked', async () => {
     const user = userEvent.setup();
     renderRanges();
-    
+
     const refreshButtons = screen.getAllByRole('button', { name: /actualiser/i });
     await user.click(refreshButtons[0]);
-    
+
     expect(mockFetchRanges).toHaveBeenCalledTimes(2);
   });
 

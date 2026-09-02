@@ -130,6 +130,13 @@ jobs:
           BASE_URL: http://localhost:3000
           CI: true
 
+      - name: Run range manager UI tests
+        working-directory: frontend
+        run: npx playwright test --config tests/e2e range-manager-ui.spec.ts
+        env:
+          BASE_URL: http://localhost:3000
+          CI: true
+
       - name: Stop servers
         if: always()
         run: |
