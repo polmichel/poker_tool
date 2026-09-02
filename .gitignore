@@ -64,3 +64,8 @@ coverage/
 # Ignorer les fichiers Python cache
 **/__pycache__/
 **/*.py[cod]
+
+# Ignorer les node_modules à la racine du projet (pas seulement frontend)
+node_modules/
+package.json
+package-lock.json
