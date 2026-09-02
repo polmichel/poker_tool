@@ -41,7 +41,7 @@ export const APP_ENTRIES: AppEntry[] = [
     title: 'Le Ranger',
     tagline: 'Créer, éditer & visualiser vos ranges',
     description:
-      'Construisez vos ranges préflop/postflop sur la grille 13x13, peignez à la souris et organisez votre bibliothèque de positions.',
+      'Construisez vos ranges préflop/postflop sur la grille 13x13, peignez à la souris et organisez votre bibliothèque de positions. Interface professionnelle avec gestion par dossiers.',
     accent: '#10b981',
     icon: 'GridOn',
   },
