@@ -19,6 +19,7 @@ import {
   Stop as StopIcon,
   Replay as ReplayIcon,
   Settings as SettingsIcon,
+  Fullscreen as FullscreenIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -29,9 +30,11 @@ import {
 } from '../components';
 import { useTraining, useRanges } from '../hooks';
 import { TrainingMode, Range } from '../types';
+import { useFocusMode } from '../contexts/FocusModeContext';
 
 const Training: React.FC = () => {
   const navigate = useNavigate();
+  const { setFocusMode } = useFocusMode();
   const {
     currentSession,
     currentQuestion,
@@ -184,6 +187,11 @@ const Training: React.FC = () => {
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="Mode Focus (Ctrl+M)">
+            <IconButton onClick={() => setFocusMode(true)} color="inherit">
+              <FullscreenIcon />
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Paramètres">
             <Button
               variant="outlined"

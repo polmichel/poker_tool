@@ -22,8 +22,10 @@ import {
   Timeline as TimelineIcon,
   Leaderboard as LeaderboardIcon,
   Download as DownloadIcon,
+  Fullscreen as FullscreenIcon,
 } from '@mui/icons-material';
 import { useStats } from '../hooks';
+import { useFocusMode } from '../contexts/FocusModeContext';
 import { StatsCard } from '../components';
 import {
   BarChart,
@@ -39,6 +41,7 @@ import {
 } from 'recharts';
 
 const Stats: React.FC = () => {
+  const { setFocusMode } = useFocusMode();
   const {
     globalStats,
     loading,
@@ -177,17 +180,23 @@ const Stats: React.FC = () => {
         <Typography variant="h4" component="h1">
           Statistiques
         </Typography>
-
-        <Tooltip title="Exporter les statistiques">
-          <Button
-            variant="outlined"
-            startIcon={<DownloadIcon />}
-            onClick={handleExportStats}
-            color="inherit"
-          >
-            Exporter
-          </Button>
-        </Tooltip>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Tooltip title="Mode Focus (Ctrl+M)">
+            <IconButton onClick={() => setFocusMode(true)} color="inherit">
+              <FullscreenIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Exporter les statistiques">
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              onClick={handleExportStats}
+              color="inherit"
+            >
+              Exporter
+            </Button>
+          </Tooltip>
+        </Box>
       </Box>
 
       {/* Onglets */}

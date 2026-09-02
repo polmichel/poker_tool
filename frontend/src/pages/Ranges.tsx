@@ -21,6 +21,7 @@ import {
   Settings as SettingsIcon,
   Refresh as RefreshIcon,
   MoreVert as MoreVertIcon,
+  Fullscreen as FullscreenIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { RangeForm, RangeGrid, ImportExportDialog } from '../components';
@@ -29,12 +30,14 @@ import type { Folder as FolderType } from '../hooks';
 import { Range } from '../types';
 import { generateRangeGrid } from '../utils/helpers';
 import { THEME_COLORS } from '../utils/constants';
+import { useFocusMode } from '../contexts/FocusModeContext';
 
 // Types pour la gestion des dossiers (issus du hook de persistance)
 type Folder = FolderType;
 
 const Ranges: React.FC = () => {
   const navigate = useNavigate();
+  const { setFocusMode } = useFocusMode();
   const {
     ranges: backendRanges,
     loading,
@@ -611,6 +614,11 @@ const Ranges: React.FC = () => {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Tooltip title="Mode Focus (Ctrl+M)">
+            <IconButton size="small" onClick={() => setFocusMode(true)}>
+              <FullscreenIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Paramètres">
             <IconButton size="small">
               <SettingsIcon fontSize="small" />

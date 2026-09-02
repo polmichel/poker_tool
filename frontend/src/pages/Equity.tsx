@@ -28,16 +28,19 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { PlayArrow as PlayArrowIcon } from '@mui/icons-material';
+import { PlayArrow as PlayArrowIcon, Fullscreen as FullscreenIcon } from '@mui/icons-material';
 import { useEquity } from '../hooks';
 import { EquityHeatmapGrid } from '../components';
 import { EquityMissingError } from '../api';
 import { isValidHand } from '../utils/helpers';
+import { useFocusMode } from '../contexts/FocusModeContext';
+import { IconButton, Tooltip } from '@mui/material';
 
 const DEFAULT_MONTE_CARLO_ITERATIONS = 10000;
 
 const Equity: React.FC = () => {
   const { result, loading, error, simulate, reset } = useEquity();
+  const { setFocusMode } = useFocusMode();
 
   const [hero, setHero] = useState<string>('AKs');
   const [rangeText, setRangeText] = useState<string>('QQ+, AKs');
@@ -105,6 +108,11 @@ const Equity: React.FC = () => {
         <Typography variant="h4" component="h1">
           Calculateur d'Équité
         </Typography>
+        <Tooltip title="Mode Focus (Ctrl+M)">
+          <IconButton onClick={() => setFocusMode(true)} color="inherit">
+            <FullscreenIcon />
+          </IconButton>
+        </Tooltip>
       </Box>
 
       {/* Configuration */}

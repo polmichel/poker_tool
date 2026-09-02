@@ -18,11 +18,14 @@ import {
   Upload as UploadIcon,
   Download as DownloadIcon,
   ContentCopy as ContentCopyIcon,
+  Fullscreen as FullscreenIcon,
 } from '@mui/icons-material';
 import { useRanges } from '../hooks';
 import { RangeList } from '../components';
+import { useFocusMode } from '../contexts/FocusModeContext';
 
 const ImportExport: React.FC = () => {
+  const { setFocusMode } = useFocusMode();
   const { ranges, selectedRange, setSelectedRange, fetchRanges, importRange, exportRange } =
     useRanges();
 
@@ -196,6 +199,11 @@ JJ,raise`;
         <Typography variant="h4" component="h1">
           Importer/Exporter
         </Typography>
+        <Tooltip title="Mode Focus (Ctrl+M)">
+          <IconButton onClick={() => setFocusMode(true)} color="inherit">
+            <FullscreenIcon />
+          </IconButton>
+        </Tooltip>
       </Box>
 
       {/* Onglets Import/Export */}
