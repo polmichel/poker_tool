@@ -231,7 +231,11 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     await rangeCard.dispatchEvent('dragstart');
 
     // Attendre que le ghost element apparaisse (position: fixed)
-    const ghostElement = page.locator('[style*="position: fixed"]').filter({ hasText: /Range/ });
+    // Le ghost element a position: fixed, z-index: 9999, et contient le nom de la range
+    const ghostElement = page.locator('div').filter({
+      hasText: /Range/,
+      has: page.locator('[style*="z-index: 9999"]'),
+    }).first();
     await ghostElement.waitFor({ state: 'visible', timeout: 5000 });
 
     // Simuler un mouvement de drag à une position connue (ex: 500, 300)
