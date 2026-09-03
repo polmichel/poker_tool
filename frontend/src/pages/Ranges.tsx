@@ -659,6 +659,7 @@ const Ranges: React.FC = () => {
         {/* Ghost range element for drag visual feedback */}
         {ghostRange && isDragging && (
           <Box
+            data-testid="range-ghost-element"
             sx={{
               position: 'fixed',
               left: `${ghostRange.x}px`,

@@ -227,12 +227,7 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     const rangeCard = page.locator('[draggable="true"]').filter({ hasText: /mains/ }).first();
     await rangeCard.waitFor({ state: 'visible', timeout: 10000 });
 
-    // Obtenir la position initiale de la range card
-    const rangeBox = await rangeCard.boundingBox();
-    const startX = rangeBox!.x + rangeBox!.width / 2;
-    const startY = rangeBox!.y + rangeBox!.height / 2;
-
-    // Simuler un vrai drag avec la souris (déclenche les événements natifs)
+    // Simuler un vrai drag avec la souris
     await rangeCard.hover();
     await page.mouse.down();
     
@@ -241,8 +236,8 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     const testY = 300;
     await page.mouse.move(testX, testY);
 
-    // Attendre que le ghost element apparaisse - il a position: fixed et z-index: 9999
-    const ghostElement = page.locator('[style*="z-index: 9999"]').first();
+    // Attendre que le ghost element apparaisse par son data-testid
+    const ghostElement = page.locator('[data-testid="range-ghost-element"]');
     await ghostElement.waitFor({ state: 'visible', timeout: 5000 });
 
     // Le ghost element (280x60px) doit être centré sous le curseur
