@@ -150,7 +150,8 @@ const Ranges: React.FC = () => {
   const handleRangeDrag = useCallback(
     (e: React.DragEvent) => {
       if (ghostRange && isDragging) {
-        setGhostRange({ ...ghostRange, x: e.clientX - 150, y: e.clientY - 20 });
+        // Ghost element is 280x60px, so offset by half width (140) and half height (30)
+        setGhostRange({ ...ghostRange, x: e.clientX - 140, y: e.clientY - 30 });
       }
     },
     [ghostRange, isDragging],
