@@ -227,24 +227,23 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     const rangeCard = page.locator('[draggable="true"]').filter({ hasText: /mains/ }).first();
     await rangeCard.waitFor({ state: 'visible', timeout: 10000 });
 
-    // Déclencher le drag start
-    await rangeCard.dispatchEvent('dragstart');
+    // Obtenir la position initiale de la range card
+    const rangeBox = await rangeCard.boundingBox();
+    const startX = rangeBox!.x + rangeBox!.width / 2;
+    const startY = rangeBox!.y + rangeBox!.height / 2;
 
-    // Attendre que le ghost element apparaisse (position: fixed)
-    // Le ghost element a position: fixed, z-index: 9999, et contient le nom de la range
-    const ghostElement = page.locator('div').filter({
-      hasText: /Range/,
-      has: page.locator('[style*="z-index: 9999"]'),
-    }).first();
-    await ghostElement.waitFor({ state: 'visible', timeout: 5000 });
-
-    // Simuler un mouvement de drag à une position connue (ex: 500, 300)
+    // Simuler un vrai drag avec la souris (déclenche les événements natifs)
+    await rangeCard.hover();
+    await page.mouse.down();
+    
+    // Bouger la souris à une position connue (ex: 500, 300)
     const testX = 500;
     const testY = 300;
-    await rangeCard.dispatchEvent('drag', {
-      clientX: testX,
-      clientY: testY,
-    });
+    await page.mouse.move(testX, testY);
+
+    // Attendre que le ghost element apparaisse - il a position: fixed et z-index: 9999
+    const ghostElement = page.locator('[style*="z-index: 9999"]').first();
+    await ghostElement.waitFor({ state: 'visible', timeout: 5000 });
 
     // Le ghost element (280x60px) doit être centré sous le curseur
     // Offset attendu: x = testX - 140 (280/2), y = testY - 30 (60/2)
@@ -261,7 +260,7 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     expect(ghostBox?.height).toBeCloseTo(60, 1);
 
     // Nettoyer : terminer le drag
-    await rangeCard.dispatchEvent('dragend');
+    await page.mouse.up();
   });
 
 });
