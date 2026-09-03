@@ -164,8 +164,8 @@ const Ranges: React.FC = () => {
       e.stopPropagation();
       if (draggingRangeId !== null) {
         moveRangeToFolder(draggingRangeId, folderId);
-        // Sélectionne le dossier cible pour montrer le résultat.
-        setSelectedFolderId(folderId);
+        // Ne pas changer de dossier, garder la sélection actuelle
+        // pour que l'image reste visible dans le panneau droit
       }
       setDraggingRangeId(null);
       setDragOverFolderId(null);
