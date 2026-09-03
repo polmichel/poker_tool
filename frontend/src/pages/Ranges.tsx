@@ -22,6 +22,7 @@ import {
   Refresh as RefreshIcon,
   MoreVert as MoreVertIcon,
   Fullscreen as FullscreenIcon,
+  DragHandle as DragHandleIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { RangeForm, RangeGrid, ImportExportDialog } from '../components';
@@ -64,6 +65,8 @@ const Ranges: React.FC = () => {
   const [selectedRangeId, setSelectedRangeId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [panelSizes] = useState({ left: 250, middle: 350, right: 500 });
+  const [ghostRange, setGhostRange] = useState<{ id: number; x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // État pour les dialogues (compatibilité avec l'ancienne version)
   const [openFormDialog, setOpenFormDialog] = useState<boolean>(false);
@@ -135,13 +138,29 @@ const Ranges: React.FC = () => {
   }, [selectedFolderId, folders, createFolder]);
 
   // --- Drag & drop : ranges -> dossiers (HTML5 natif, sans dépendance) ---
-  const handleRangeDragStart = useCallback((rangeId: number) => {
+  const handleRangeDragStart = useCallback((rangeId: number, e: React.DragEvent) => {
     setDraggingRangeId(rangeId);
+    setIsDragging(true);
+    // Create ghost element for visual feedback
+    const rangeElement = e.currentTarget as HTMLElement;
+    const rect = rangeElement.getBoundingClientRect();
+    setGhostRange({ id: rangeId, x: e.clientX - rect.width / 2, y: e.clientY - rect.height / 2 });
   }, []);
+
+  const handleRangeDrag = useCallback(
+    (e: React.DragEvent) => {
+      if (ghostRange && isDragging) {
+        setGhostRange({ ...ghostRange, x: e.clientX - 150, y: e.clientY - 20 });
+      }
+    },
+    [ghostRange, isDragging],
+  );
 
   const handleRangeDragEnd = useCallback(() => {
     setDraggingRangeId(null);
     setDragOverFolderId(null);
+    setGhostRange(null);
+    setIsDragging(false);
   }, []);
 
   const handleFolderDragOver = useCallback(
@@ -164,8 +183,8 @@ const Ranges: React.FC = () => {
       e.stopPropagation();
       if (draggingRangeId !== null) {
         moveRangeToFolder(draggingRangeId, folderId);
-        // Sélectionne le dossier cible pour montrer le résultat.
-        setSelectedFolderId(folderId);
+        // Ne pas changer de dossier, garder la sélection actuelle
+        // pour que l'image reste visible dans le panneau droit
       }
       setDraggingRangeId(null);
       setDragOverFolderId(null);
@@ -398,7 +417,8 @@ const Ranges: React.FC = () => {
             <Box
               key={range.id}
               draggable
-              onDragStart={() => handleRangeDragStart(range.id || 0)}
+              onDragStart={(e) => handleRangeDragStart(range.id || 0, e)}
+              onDrag={handleRangeDrag}
               onDragEnd={handleRangeDragEnd}
               sx={{
                 p: 1.5,
@@ -417,6 +437,7 @@ const Ranges: React.FC = () => {
               }}
               onClick={() => handleSelectRangeNew(range.id || 0)}
             >
+              <DragHandleIcon sx={{ mr: 1, opacity: 0.6, fontSize: 16 }} />
               <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                 {range.name}
               </Typography>
@@ -633,7 +654,35 @@ const Ranges: React.FC = () => {
       </Box>
 
       {/* Contenu principal */}
-      <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
+        {/* Ghost range element for drag visual feedback */}
+        {ghostRange && isDragging && (
+          <Box
+            sx={{
+              position: 'fixed',
+              left: `${ghostRange.x}px`,
+              top: `${ghostRange.y}px`,
+              width: 280,
+              height: 60,
+              backgroundColor: THEME_COLORS.paper,
+              border: `1px dashed ${THEME_COLORS.primary}`,
+              borderRadius: 1,
+              opacity: 0.7,
+              pointerEvents: 'none',
+              zIndex: 9999,
+              boxShadow: `0 4px 12px rgba(0, 0, 0, 0.3)`,
+              display: 'flex',
+              alignItems: 'center',
+              p: 1.5,
+            }}
+          >
+            <DragHandleIcon sx={{ mr: 1, opacity: 0.6, fontSize: 16 }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+              {backendRanges.find((r) => r.id === ghostRange.id)?.name || 'Range'}
+            </Typography>
+          </Box>
+        )}
+
         <Box
           sx={{
             flex: `0 0 ${panelSizes.left}px`,
