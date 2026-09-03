@@ -15,6 +15,7 @@ class TestActionType(unittest.TestCase):
         self.assertEqual(ActionType.RAISE.name, "RAISE")
         self.assertEqual(ActionType.CALL.name, "CALL")
         self.assertEqual(ActionType.FOLD.name, "FOLD")
+        self.assertEqual(ActionType.CHECK.name, "CHECK")
         self.assertEqual(ActionType.ALL_IN.name, "ALL_IN")
         self.assertEqual(ActionType.DEFENSE.name, "DEFENSE")
         self.assertEqual(ActionType.DEFENSE_3BET.name, "DEFENSE_3BET")
@@ -37,6 +38,7 @@ class TestAction(unittest.TestCase):
             ActionType.RAISE: "#2196F3",
             ActionType.CALL: "#FF9800",
             ActionType.FOLD: "#F44336",
+            ActionType.CHECK: "#FFEB3B",
             ActionType.ALL_IN: "#9C27B0",
             ActionType.DEFENSE: "#FF5722",
             ActionType.DEFENSE_3BET: "#E91E63",
@@ -55,11 +57,12 @@ class TestAction(unittest.TestCase):
             ActionType.RAISE: "Relancer",
             ActionType.CALL: "Suivre",
             ActionType.FOLD: "Passer",
+            ActionType.CHECK: "Checker",
             ActionType.ALL_IN: "All-In",
-            ActionType.DEFENSE: "Défense",
-            ActionType.DEFENSE_3BET: "Défense 3Bet",
-            ActionType.DEFENSE_4BET: "Défense 4Bet",
-            ActionType.UNDEFINED: "Non défini",
+            ActionType.DEFENSE: "D\u00e9fense",
+            ActionType.DEFENSE_3BET: "D\u00e9fense 3Bet",
+            ActionType.DEFENSE_4BET: "D\u00e9fense 4Bet",
+            ActionType.UNDEFINED: "Non d\u00e9fini",
         }
 
         for action_type, expected_label in labels.items():
@@ -82,6 +85,9 @@ class TestAction(unittest.TestCase):
 
         action = Action(ActionType.DEFENSE_4BET)
         self.assertEqual(str(action), "defense_4bet")
+
+        action = Action(ActionType.CHECK)
+        self.assertEqual(str(action), "check")
 
     def test_action_equality(self):
         """Test equality comparison."""
@@ -126,6 +132,12 @@ class TestAction(unittest.TestCase):
 
         action = Action.from_string("DEFENSE_4BET")
         self.assertEqual(action.type, ActionType.DEFENSE_4BET)
+
+        action = Action.from_string("check")
+        self.assertEqual(action.type, ActionType.CHECK)
+
+        action = Action.from_string("CHECK")
+        self.assertEqual(action.type, ActionType.CHECK)
 
         # Invalid action string
         action = Action.from_string("INVALID")

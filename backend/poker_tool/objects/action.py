@@ -10,6 +10,7 @@ class ActionType(Enum):
     RAISE = auto()
     CALL = auto()
     FOLD = auto()
+    CHECK = auto()
     ALL_IN = auto()
     DEFENSE = auto()
     DEFENSE_3BET = auto()
@@ -36,6 +37,7 @@ class Action:
             ActionType.RAISE: "#2196F3",
             ActionType.CALL: "#FF9800",
             ActionType.FOLD: "#F44336",
+            ActionType.CHECK: "#FFEB3B",
             ActionType.ALL_IN: "#9C27B0",
             ActionType.DEFENSE: "#FF5722",
             ActionType.DEFENSE_3BET: "#E91E63",
@@ -52,6 +54,7 @@ class Action:
             ActionType.RAISE: "Relancer",
             ActionType.CALL: "Suivre",
             ActionType.FOLD: "Passer",
+            ActionType.CHECK: "Checker",
             ActionType.ALL_IN: "All-In",
             ActionType.DEFENSE: "Défense",
             ActionType.DEFENSE_3BET: "Défense 3Bet",
