@@ -221,4 +221,43 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     // dossier cible (le déplacement a réussi).
     await expect(page.getByText(/Ranges \([1-9]\d*\)/)).toBeVisible({ timeout: 5000 });
   });
+
+  test('le ghost element est correctement centré pendant le drag', async ({ page }) => {
+    // Le panneau central doit lister au moins une range.
+    const rangeCard = page.locator('[draggable="true"]').filter({ hasText: /mains/ }).first();
+    await rangeCard.waitFor({ state: 'visible', timeout: 10000 });
+
+    // Déclencher le drag start
+    await rangeCard.dispatchEvent('dragstart');
+
+    // Attendre que le ghost element apparaisse (position: fixed)
+    const ghostElement = page.locator('[style*="position: fixed"]').filter({ hasText: /Range/ });
+    await ghostElement.waitFor({ state: 'visible', timeout: 5000 });
+
+    // Simuler un mouvement de drag à une position connue (ex: 500, 300)
+    const testX = 500;
+    const testY = 300;
+    await rangeCard.dispatchEvent('drag', {
+      clientX: testX,
+      clientY: testY,
+    });
+
+    // Le ghost element (280x60px) doit être centré sous le curseur
+    // Offset attendu: x = testX - 140 (280/2), y = testY - 30 (60/2)
+    const expectedX = testX - 140;
+    const expectedY = testY - 30;
+
+    // Vérifier les coordonnées du ghost element
+    const ghostBox = await ghostElement.boundingBox();
+    expect(ghostBox?.x).toBeCloseTo(expectedX, 1); // Tolérance de 1px pour le rendering
+    expect(ghostBox?.y).toBeCloseTo(expectedY, 1);
+
+    // Vérifier que le ghost element a les bonnes dimensions
+    expect(ghostBox?.width).toBeCloseTo(280, 1);
+    expect(ghostBox?.height).toBeCloseTo(60, 1);
+
+    // Nettoyer : terminer le drag
+    await rangeCard.dispatchEvent('dragend');
+  });
+
 });
