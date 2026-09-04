@@ -291,17 +291,24 @@ describe('Ranges page', () => {
     renderRanges();
 
     // eslint-disable-next-line testing-library/no-node-access
-    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable="true"]');
     const folderItem = screen.getByText('BTN');
     expect(rangeItem).toBeTruthy();
     expect(folderItem).toBeTruthy();
+
+    // Mock dataTransfer for the dragStart event
+    const mockDataTransfer = { setData: jest.fn() };
+    Object.defineProperty(rangeItem!, 'dataTransfer', {
+      value: mockDataTransfer,
+      writable: true,
+    });
 
     // Simulate the native HTML5 DnD event sequence. dragOver + drop must fire
     // in the same act batch so the drop handler sees the updated dragging state.
     // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       // eslint-disable-next-line testing-library/no-node-access
-      fireEvent.dragStart(rangeItem!);
+      fireEvent.dragStart(rangeItem!, { dataTransfer: mockDataTransfer });
     });
     const folderTarget = screen.getByText('BTN');
     // eslint-disable-next-line testing-library/no-unnecessary-act
@@ -336,4 +343,6 @@ describe('Ranges page', () => {
     });
     expect(mockMoveRangeToFolder).not.toHaveBeenCalled();
   });
+
+
 });

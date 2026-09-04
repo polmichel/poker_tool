@@ -141,6 +141,8 @@ const Ranges: React.FC = () => {
   const handleRangeDragStart = useCallback((rangeId: number, e: React.DragEvent) => {
     setDraggingRangeId(rangeId);
     setIsDragging(true);
+    // Required for HTML5 DnD to work in most browsers
+    e.dataTransfer.setData('text/plain', rangeId.toString());
     // Create ghost element for visual feedback
     const rangeElement = e.currentTarget as HTMLElement;
     const rect = rangeElement.getBoundingClientRect();
@@ -417,7 +419,7 @@ const Ranges: React.FC = () => {
           filteredRanges.map((range) => (
             <Box
               key={range.id}
-              draggable
+              draggable="true"
               onDragStart={(e) => handleRangeDragStart(range.id || 0, e)}
               onDrag={handleRangeDrag}
               onDragEnd={handleRangeDragEnd}
