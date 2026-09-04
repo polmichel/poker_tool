@@ -2,6 +2,7 @@
 import unittest
 
 from poker_tool.interfaces.hand_evaluator import HandEvaluator
+from poker_tool.objects.equity import EquityByHand, EquityResult
 from poker_tool.use_cases.enumerate_equity import (
     EnumerateEquity,
     _all_combos,
@@ -12,13 +13,13 @@ from poker_tool.use_cases.enumerate_equity import (
 
 class FakeHandEvaluator(HandEvaluator):
     """Deterministic fake evaluator for fast testing.
-    
+
     Returns a simple rank-based value without actual hand evaluation.
     This makes tests fast but still exercises the enumeration logic.
     """
-    
-    _RANKS = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
-    
+
+    _RANKS: list[str] = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']  # noqa: RUF012
+
     def evaluate(self, hole_cards, board):
         ranks = [self._RANKS.index(c[0].upper()) for c in hole_cards]
         return min(ranks)
@@ -30,6 +31,7 @@ class TestHelperFunctions(unittest.TestCase):
     def test_all_combos_pair(self):
         """A pair hand has 6 combos (4 suits choose 2)."""
         from poker_tool.objects.hand import Hand
+
         hand = Hand.from_string("AA")
         combos = _all_combos(hand)
         self.assertEqual(len(combos), 6)
@@ -40,6 +42,7 @@ class TestHelperFunctions(unittest.TestCase):
     def test_all_combos_suited(self):
         """A suited hand has 4 combos (one for each suit)."""
         from poker_tool.objects.hand import Hand
+
         hand = Hand.from_string("AKs")
         combos = _all_combos(hand)
         self.assertEqual(len(combos), 4)
@@ -49,6 +52,7 @@ class TestHelperFunctions(unittest.TestCase):
     def test_all_combos_offsuit(self):
         """An offsuit hand has 12 combos (4 suits * 3 remaining suits)."""
         from poker_tool.objects.hand import Hand
+
         hand = Hand.from_string("AKo")
         combos = _all_combos(hand)
         self.assertEqual(len(combos), 12)
@@ -58,6 +62,7 @@ class TestHelperFunctions(unittest.TestCase):
     def test_disjoint_combos_same_hand_pair(self):
         """AA vs AA: only disjoint combos where all 4 cards are distinct."""
         from poker_tool.objects.hand import Hand
+
         hero = Hand.from_string("AA")
         opp = Hand.from_string("AA")
         pairs = _disjoint_combos(hero, opp)
@@ -66,6 +71,7 @@ class TestHelperFunctions(unittest.TestCase):
     def test_disjoint_combos_different_hands(self):
         """AA vs KK: all 6*6=36 combos are disjoint (no shared ranks)."""
         from poker_tool.objects.hand import Hand
+
         hero = Hand.from_string("AA")
         opp = Hand.from_string("KK")
         pairs = _disjoint_combos(hero, opp)
@@ -74,6 +80,7 @@ class TestHelperFunctions(unittest.TestCase):
     def test_disjoint_combos_shared_rank(self):
         """AKs vs AQs: share rank A, so fewer disjoint combos."""
         from poker_tool.objects.hand import Hand
+
         hero = Hand.from_string("AKs")
         opp = Hand.from_string("AQs")
         pairs = _disjoint_combos(hero, opp)
@@ -97,7 +104,7 @@ class TestHelperFunctions(unittest.TestCase):
 
 class TestEnumerateEquityWithFakeEvaluator(unittest.TestCase):
     """Tests using a fast fake evaluator - these test the structure only.
-    
+
     Note: These tests use a FakeHandEvaluator which is much faster than
     the real evaluator, but still exercises the enumeration logic.
     """
@@ -121,7 +128,6 @@ class TestEnumerateEquityStructure(unittest.TestCase):
 
     def test_equity_result_structure(self):
         """Test that EquityResult has expected attributes."""
-        from poker_tool.objects.equity import EquityResult, EquityByHand
         result = EquityResult(
             hero="AA",
             win=50.0,
@@ -139,7 +145,6 @@ class TestEnumerateEquityStructure(unittest.TestCase):
 
     def test_equity_by_hand_structure(self):
         """Test that EquityByHand has expected attributes."""
-        from poker_tool.objects.equity import EquityByHand
         by_hand = EquityByHand("KK", 6, 50.0, 10.0, 40.0)
         self.assertEqual(by_hand.hand, "KK")
         self.assertEqual(by_hand.combos, 6)
@@ -150,7 +155,7 @@ class TestEnumerateEquityStructure(unittest.TestCase):
 
 class TestEnumerateEquityWithRealEvaluator(unittest.TestCase):
     """Tests using the real Phevaluator.
-    
+
     Note: These tests are slow because they do full enumeration.
     They are skipped by default in CI.
     """
@@ -158,6 +163,7 @@ class TestEnumerateEquityWithRealEvaluator(unittest.TestCase):
     def setUp(self):
         try:
             from poker_tool.adapters.phevaluator.evaluator import Phevaluator
+
             self.ev = Phevaluator()
         except ImportError:
             self.skipTest("phevaluator not available")

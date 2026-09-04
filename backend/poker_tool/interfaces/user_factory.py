@@ -15,12 +15,12 @@ class UserFactory(ABC):
     @abstractmethod
     def create_user(self, username: str, email: str, password: str) -> User:
         """Create a new user entity with hashed password.
-        
+
         Args:
             username: The username for the new user.
             email: The email address for the new user.
             password: The plaintext password to hash and store.
-        
+
         Returns:
             A new User entity with the password hash set.
         """

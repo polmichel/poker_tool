@@ -9,17 +9,17 @@ separated interfaces:
 
 This interface is kept for backward compatibility with existing code.
 """
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
+from ..objects.user import User
 from .authenticator import Authenticator
 from .current_user_resolver import CurrentUserResolver
 from .user_factory import UserFactory
-from ..objects.user import User
 
 
 class Auth(UserFactory, Authenticator, CurrentUserResolver):
     """Abstract authentication interface (legacy combined interface).
-    
+
     This combines UserFactory, Authenticator, and CurrentUserResolver for
     backward compatibility. New code should prefer the separated interfaces.
     """

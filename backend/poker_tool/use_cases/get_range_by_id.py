@@ -17,7 +17,7 @@ class GetRangeById:
 
     def get(self, range_id: int) -> Range:
         """Return the range with the given ID.
-        
+
         Raises:
             RangeNotFound: If no range exists with the given ID.
         """

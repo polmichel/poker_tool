@@ -16,7 +16,7 @@ class CurrentUserResolver(ABC):
     @abstractmethod
     def current_user(self) -> User | None:
         """Get the currently authenticated user from the request context.
-        
+
         Returns:
             The User entity for the currently authenticated user, or None
             if no user is authenticated.
