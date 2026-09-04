@@ -1,11 +1,28 @@
-"""Auth interface (Port) for Poker Tool."""
+"""
+Auth interface (Port) for Poker Tool.
+
+This is the legacy combined interface. For new code, prefer using the
+separated interfaces:
+- UserFactory for user creation
+- Authenticator for token generation and password checking
+- CurrentUserResolver for resolving the current user
+
+This interface is kept for backward compatibility with existing code.
+"""
 from abc import ABC, abstractmethod
 
+from .authenticator import Authenticator
+from .current_user_resolver import CurrentUserResolver
+from .user_factory import UserFactory
 from ..objects.user import User
 
 
-class Auth(ABC):
-    """Abstract authentication interface."""
+class Auth(UserFactory, Authenticator, CurrentUserResolver):
+    """Abstract authentication interface (legacy combined interface).
+    
+    This combines UserFactory, Authenticator, and CurrentUserResolver for
+    backward compatibility. New code should prefer the separated interfaces.
+    """
 
     @abstractmethod
     def create_user(self, username: str, email: str, password: str) -> User:
