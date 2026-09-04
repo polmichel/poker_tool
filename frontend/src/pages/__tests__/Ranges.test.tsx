@@ -301,7 +301,13 @@ describe('Ranges page', () => {
     // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       // eslint-disable-next-line testing-library/no-node-access
-      fireEvent.dragStart(rangeItem!);
+      // Mock dataTransfer for dragStart event
+      const mockDataTransfer = { setData: jest.fn() };
+      Object.defineProperty(rangeItem!, 'dataTransfer', {
+        value: mockDataTransfer,
+        writable: true,
+      });
+      fireEvent.dragStart(rangeItem!, { dataTransfer: mockDataTransfer });
     });
     const folderTarget = screen.getByText('BTN');
     // eslint-disable-next-line testing-library/no-unnecessary-act
