@@ -7,7 +7,7 @@ persisting the new session and computing the response payload. Dependencies
 """
 from ..interfaces.training_sessions import TrainingSessions
 from ..objects.training.session import TrainingSession
-from .training_errors import SessionNotFound
+from .errors import SessionNotFound
 
 
 class AnsweredQuestion:

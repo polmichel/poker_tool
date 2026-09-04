@@ -23,7 +23,7 @@ from ...use_cases.register_user import RegisterUser
 from ...use_cases.start_training_session import StartTrainingSession
 from ...use_cases.update_range import UpdateRange
 from ...use_cases.user_stats import UserStats
-from .controllers.auth import AuthController, UserController
+from .controllers.auth import AuthController
 from .controllers.equity import EquityController
 from .controllers.ranges import RangeController
 from .controllers.stats import StatsController
@@ -45,6 +45,10 @@ class FlaskApp:
         current_user: CurrentUser,
         create_range: CreateRange,
         update_range: UpdateRange,
+        get_all_ranges,
+        get_range_by_id,
+        get_ranges_by_user,
+        delete_range,
         start_training: StartTrainingSession,
         answer_question: AnswerQuestion,
         end_training: EndTrainingSession,
@@ -55,15 +59,13 @@ class FlaskApp:
     ):
         """Initialize the Flask app with its use cases (DI)."""
         self.app = flask_app
-        self.users = users
-        self.ranges = ranges
-        self.sessions = sessions
-        self.auth = auth
 
         # Build the controllers (each owns a resource's routes).
         self._controllers = [
-            RangeController(ranges, auth, create_range, update_range),
-            UserController(users, auth),
+            RangeController(
+                ranges, auth, create_range, update_range,
+                get_all_ranges, get_range_by_id, get_ranges_by_user, delete_range,
+            ),
             AuthController(register_user, login_user, current_user),
             TrainingController(sessions, start_training, answer_question, end_training),
             StatsController(global_stats, user_stats),

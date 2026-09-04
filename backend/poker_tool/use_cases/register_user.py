@@ -8,10 +8,7 @@ so this is unit-testable with fakes.
 from ..interfaces.auth import Auth
 from ..interfaces.users import Users
 from ..objects.user import User
-
-
-class UserAlreadyExists(Exception):
-    """Raised when the username or email is already taken."""
+from .errors import UserAlreadyExists
 
 
 class RegisteredUser:

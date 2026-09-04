@@ -5,14 +5,8 @@ from werkzeug.exceptions import BadRequest, NotFound
 from ....interfaces.training_sessions import TrainingSessions
 from ....use_cases.answer_question import AnswerQuestion
 from ....use_cases.end_training_session import EndTrainingSession
-from ....use_cases.start_training_session import (
-    RangeHasNoHands,
-    StartTrainingSession,
-    UserRequired,
-)
-from ....use_cases.start_training_session import (
-    RangeNotFound as StartRangeNotFound,
-)
+from ....use_cases.errors import RangeHasNoHands, RangeNotFound, UserRequired
+from ....use_cases.start_training_session import StartTrainingSession
 from ....use_cases.training_errors import SessionNotFound
 
 
@@ -41,7 +35,7 @@ class TrainingController:
                     total_questions=data.get("total_questions", 10),
                     user_id=data.get("user_id"),
                 )
-            except StartRangeNotFound:
+            except RangeNotFound:
                 raise NotFound(f"Range {data['range_id']} not found")
             except RangeHasNoHands as e:
                 raise BadRequest(str(e))

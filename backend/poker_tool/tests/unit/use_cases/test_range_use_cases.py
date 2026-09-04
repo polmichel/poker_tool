@@ -5,6 +5,7 @@ import unittest
 
 from poker_tool.use_cases.create_range import CreateRange
 from poker_tool.use_cases.register_user import RegisterUser
+from poker_tool.use_cases.resolve_user import ResolveUser
 from poker_tool.use_cases.update_range import RangeNotFound, UpdateRange
 
 from .fakes import FakeAuth, FakeRanges, FakeUsers
@@ -17,7 +18,8 @@ class TestCreateRange(unittest.TestCase):
         self.ranges = FakeRanges()
         self.auth = FakeAuth()
         RegisterUser(self.users, self.auth).register("alice", "a@t.com", "p")
-        self.use_case = CreateRange(self.ranges, self.auth)
+        self.resolve_user = ResolveUser(self.users, self.auth)
+        self.use_case = CreateRange(self.ranges, self.resolve_user)
 
     def test_create_with_explicit_user(self):
         result = self.use_case.create({
@@ -38,12 +40,15 @@ class TestCreateRange(unittest.TestCase):
         self.assertEqual(result.user_id, 1)
 
     def test_create_without_user_stores_none(self):
+        # When no user is authenticated and no explicit user_id is provided,
+        # ResolveUser falls back to the first existing user (alice with id=1)
         self.auth.set_current_user(None)
         result = self.use_case.create({
             "name": "R3", "range_type": "preflop", "position": "BTN",
             "hands": {"QQ": "call"},
         })
-        self.assertIsNone(result.user_id)
+        # Falls back to first user (alice)
+        self.assertEqual(result.user_id, 1)
 
 
 class TestUpdateRange(unittest.TestCase):

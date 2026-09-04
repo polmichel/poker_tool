@@ -22,10 +22,15 @@ from poker_tool.infrastructure.web.flask_app import FlaskApp
 from poker_tool.use_cases.answer_question import AnswerQuestion
 from poker_tool.use_cases.create_range import CreateRange
 from poker_tool.use_cases.current_user import CurrentUser
+from poker_tool.use_cases.delete_range import DeleteRange
 from poker_tool.use_cases.end_training_session import EndTrainingSession
+from poker_tool.use_cases.get_all_ranges import GetAllRanges
+from poker_tool.use_cases.get_range_by_id import GetRangeById
+from poker_tool.use_cases.get_ranges_by_user import GetRangesByUser
 from poker_tool.use_cases.global_stats import GlobalStats
 from poker_tool.use_cases.login_user import LoginUser
 from poker_tool.use_cases.register_user import RegisterUser
+from poker_tool.use_cases.resolve_user import ResolveUser
 from poker_tool.use_cases.start_training_session import StartTrainingSession
 from poker_tool.use_cases.update_range import UpdateRange
 from poker_tool.use_cases.user_stats import UserStats
@@ -52,15 +57,20 @@ class TestJsonErrorHandling(unittest.TestCase):
         self.ranges = FakeRanges()
         self.sessions = FakeSessions()
         self.auth = FakeAuth()
+        self.resolve_user = ResolveUser(self.users, self.auth)
 
         # Real use cases wired to the in-memory ports.
         self.register_user = RegisterUser(self.users, self.auth)
         self.login_user = LoginUser(self.users, self.auth)
         self.current_user = CurrentUser(self.users, self.auth)
-        self.create_range = CreateRange(self.ranges, self.auth)
+        self.create_range = CreateRange(self.ranges, self.resolve_user)
         self.update_range = UpdateRange(self.ranges)
+        self.get_all_ranges = GetAllRanges(self.ranges)
+        self.get_range_by_id = GetRangeById(self.ranges)
+        self.get_ranges_by_user = GetRangesByUser(self.ranges)
+        self.delete_range = DeleteRange(self.ranges)
         self.start_training = StartTrainingSession(
-            self.ranges, self.users, self.sessions, self.auth,
+            self.ranges, self.sessions, self.resolve_user,
         )
         self.answer_question = AnswerQuestion(self.sessions)
         self.end_training = EndTrainingSession(self.sessions)
@@ -78,6 +88,10 @@ class TestJsonErrorHandling(unittest.TestCase):
             current_user=self.current_user,
             create_range=self.create_range,
             update_range=self.update_range,
+            get_all_ranges=self.get_all_ranges,
+            get_range_by_id=self.get_range_by_id,
+            get_ranges_by_user=self.get_ranges_by_user,
+            delete_range=self.delete_range,
             start_training=self.start_training,
             answer_question=self.answer_question,
             end_training=self.end_training,
