@@ -13,10 +13,7 @@ export const TrainingModeSchema = z.enum(['fill', 'guess', 'complete']);
 export type TrainingMode = z.infer<typeof TrainingModeSchema>;
 
 // Extended question types include grid_paint
-export const TrainingQuestionKindSchema = z.union([
-  TrainingModeSchema,
-  z.literal('grid_paint'),
-]);
+export const TrainingQuestionKindSchema = z.union([TrainingModeSchema, z.literal('grid_paint')]);
 export type TrainingQuestionKind = z.infer<typeof TrainingQuestionKindSchema>;
 
 // ============================================================================
@@ -48,11 +45,13 @@ export const TrainingSessionSchema = z.object({
   total_questions: z.number(),
   correct_answers: z.number(),
   time_spent: z.number(),
-  details: z.object({
-    questions: z.array(TrainingQuestionSchema).optional(),
-    current_question: z.number().optional(),
-    start_time: z.string().optional(),
-  }).optional(),
+  details: z
+    .object({
+      questions: z.array(TrainingQuestionSchema).optional(),
+      current_question: z.number().optional(),
+      start_time: z.string().optional(),
+    })
+    .optional(),
   created_at: z.string().optional(),
 });
 export type TrainingSession = z.infer<typeof TrainingSessionSchema>;

@@ -98,9 +98,7 @@ export class EquityApi {
           }
         }
       }
-      throw new Error(
-        extractErrorMessage(error, 'Failed to calculate equity with board')
-      );
+      throw new Error(extractErrorMessage(error, 'Failed to calculate equity with board'));
     }
   }
 
@@ -122,9 +120,7 @@ export class EquityApi {
       });
       return validateApiResponse(EquityResultSchema, response.data);
     } catch (error) {
-      throw new Error(
-        extractErrorMessage(error, 'Failed to calculate range vs range equity')
-      );
+      throw new Error(extractErrorMessage(error, 'Failed to calculate range vs range equity'));
     }
   }
 
@@ -146,9 +142,7 @@ export class EquityApi {
       });
       return validateApiResponse(EquityResultSchema, response.data);
     } catch (error) {
-      throw new Error(
-        extractErrorMessage(error, 'Failed to calculate range vs hand equity')
-      );
+      throw new Error(extractErrorMessage(error, 'Failed to calculate range vs hand equity'));
     }
   }
 
@@ -160,25 +154,20 @@ export class EquityApi {
     board?: string,
   ): Promise<Record<string, EquityResult>> {
     try {
-      const response = await api.post<Record<string, EquityResult>>(
-        '/equity/table',
-        {
-          hero_range: heroRange,
-          board,
-        },
-      );
-      
+      const response = await api.post<Record<string, EquityResult>>('/equity/table', {
+        hero_range: heroRange,
+        board,
+      });
+
       // Validate each entry in the table
       const table: Record<string, EquityResult> = {};
       for (const [hand, result] of Object.entries(response.data)) {
         table[hand] = validate(EquityResultSchema, result);
       }
-      
+
       return table;
     } catch (error) {
-      throw new Error(
-        extractErrorMessage(error, 'Failed to get equity table')
-      );
+      throw new Error(extractErrorMessage(error, 'Failed to get equity table'));
     }
   }
 }

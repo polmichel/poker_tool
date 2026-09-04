@@ -9,7 +9,6 @@
  */
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Custom error type for our API
@@ -46,13 +45,14 @@ api.interceptors.response.use(
   },
   (error: AxiosError) => {
     // Create a standardized error object
-    const errorMessage = error.response?.data?.message ||
+    const errorMessage =
+      error.response?.data?.message ||
       error.response?.statusText ||
       error.message ||
       'An unknown error occurred';
-    
+
     const apiError: ApiErrorExtended = new Error(errorMessage) as ApiErrorExtended;
-    
+
     apiError.name = 'ApiError';
     apiError.isApiError = true;
     apiError.status = error.response?.status;
@@ -79,11 +79,11 @@ export function extractErrorMessage(error: unknown, fallbackMessage: string): st
     }
     return error.message || fallbackMessage;
   }
-  
+
   if (typeof error === 'string') {
     return error || fallbackMessage;
   }
-  
+
   return fallbackMessage;
 }
 
@@ -120,11 +120,7 @@ export function isNetworkError(error: unknown): boolean {
  */
 export function isTimeoutError(error: unknown): boolean {
   const err = error as { code?: string };
-  return (
-    error instanceof Error &&
-    'code' in error &&
-    err.code === 'ECONNABORTED'
-  );
+  return error instanceof Error && 'code' in error && err.code === 'ECONNABORTED';
 }
 
 /**

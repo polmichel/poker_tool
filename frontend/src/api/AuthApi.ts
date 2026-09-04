@@ -8,10 +8,7 @@ import { UserSchema } from '../types/domain/auth';
 import { LoginRequestSchema, RegisterRequestSchema } from '../types/api/requests';
 import { LoginResponseSchema, RegisterResponseSchema } from '../types/api/responses';
 import type { User, AuthResponse } from '../types/domain/auth';
-import type {
-  LoginRequest,
-  RegisterRequest,
-} from '../types/api/requests';
+import type { LoginRequest, RegisterRequest } from '../types/api/requests';
 import type { LoginResponse, RegisterResponse } from '../types/api/responses';
 
 /**

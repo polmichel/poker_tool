@@ -40,9 +40,7 @@ export class RangesApi {
       const data = validateApiResponse<RangeResponse>(RangeResponseSchema, response.data);
       return data.range;
     } catch (error) {
-      throw new Error(
-        extractErrorMessage(error, `Failed to fetch range ${rangeId}`)
-      );
+      throw new Error(extractErrorMessage(error, `Failed to fetch range ${rangeId}`));
     }
   }
 
@@ -70,9 +68,7 @@ export class RangesApi {
       const data = validateApiResponse<RangeResponse>(RangeResponseSchema, response.data);
       return data.range;
     } catch (error) {
-      throw new Error(
-        extractErrorMessage(error, `Failed to update range ${rangeId}`)
-      );
+      throw new Error(extractErrorMessage(error, `Failed to update range ${rangeId}`));
     }
   }
 
@@ -84,9 +80,7 @@ export class RangesApi {
       const response = await api.delete<{ message: string }>(`/ranges/${rangeId}`);
       return response.data;
     } catch (error) {
-      throw new Error(
-        extractErrorMessage(error, `Failed to delete range ${rangeId}`)
-      );
+      throw new Error(extractErrorMessage(error, `Failed to delete range ${rangeId}`));
     }
   }
 
@@ -99,9 +93,7 @@ export class RangesApi {
       const data = validateApiResponse<RangeListResponse>(RangeListResponseSchema, response.data);
       return data.ranges;
     } catch (error) {
-      throw new Error(
-        extractErrorMessage(error, `Failed to fetch ranges for user ${userId}`)
-      );
+      throw new Error(extractErrorMessage(error, `Failed to fetch ranges for user ${userId}`));
     }
   }
 
@@ -114,9 +106,7 @@ export class RangesApi {
       const data = validateApiResponse<RangeListResponse>(RangeListResponseSchema, response.data);
       return data.ranges;
     } catch (error) {
-      throw new Error(
-        extractErrorMessage(error, `Failed to search ranges for query: ${query}`)
-      );
+      throw new Error(extractErrorMessage(error, `Failed to search ranges for query: ${query}`));
     }
   }
 }

@@ -8,9 +8,7 @@ import { z } from 'zod';
 // Basic Poker Types
 // ============================================================================
 
-export const RankSchema = z.enum([
-  'A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2',
-]);
+export const RankSchema = z.enum(['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']);
 export type Rank = z.infer<typeof RankSchema>;
 
 export const SuitSchema = z.enum(['s', 'h', 'd', 'c']);
@@ -93,12 +91,7 @@ export type Range = z.infer<typeof RangeSchema>;
 // Scenario Types
 // ============================================================================
 
-export const ScenarioTypeSchema = z.enum([
-  'cash_game',
-  'tournament',
-  'push_fold',
-  'heads_up',
-]);
+export const ScenarioTypeSchema = z.enum(['cash_game', 'tournament', 'push_fold', 'heads_up']);
 export type ScenarioType = z.infer<typeof ScenarioTypeSchema>;
 
 export const ScenarioSchema = z.object({

@@ -5,7 +5,17 @@
  * Hooks depend on these instead of touching axios directly.
  */
 
-export { api, API_BASE_URL, extractErrorMessage, isApiError, isNetworkError, isTimeoutError, isNotFoundError, isUnauthorizedError, isValidationError } from './client';
+export {
+  api,
+  API_BASE_URL,
+  extractErrorMessage,
+  isApiError,
+  isNetworkError,
+  isTimeoutError,
+  isNotFoundError,
+  isUnauthorizedError,
+  isValidationError,
+} from './client';
 export { RangesApi } from './RangesApi';
 export { AuthApi } from './AuthApi';
 export { TrainingApi } from './TrainingApi';
@@ -21,7 +31,4 @@ export type {
 } from './TrainingApi.types';
 
 // Re-export all types from the types directory
-export type {
-  GlobalStats,
-  UserStats,
-} from '../types/domain/stats';
+export type { GlobalStats, UserStats } from '../types/domain/stats';

@@ -153,8 +153,6 @@ export type UserStatsResponse = z.infer<typeof UserStatsResponseSchema>;
 export const EquityResultResponseSchema = EquityResultSchema;
 export type EquityResultResponse = z.infer<typeof EquityResultResponseSchema>;
 
-
-
 // ============================================================================
 // Error Response Types
 // ============================================================================

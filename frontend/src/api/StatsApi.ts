@@ -73,7 +73,7 @@ export class StatsApi {
       return response.data;
     } catch (error) {
       throw new Error(
-        extractErrorMessage(error, `Failed to fetch training stats for user ${userId}`)
+        extractErrorMessage(error, `Failed to fetch training stats for user ${userId}`),
       );
     }
   }
@@ -90,16 +90,17 @@ export class StatsApi {
       const response = await api.get(`/stats/ranges/${userId}`);
       return response.data;
     } catch (error) {
-      throw new Error(
-        extractErrorMessage(error, `Failed to fetch range stats for user ${userId}`)
-      );
+      throw new Error(extractErrorMessage(error, `Failed to fetch range stats for user ${userId}`));
     }
   }
 
   /**
    * Get recent activity for a user
    */
-  async recentActivity(userId: number, limit?: number): Promise<{
+  async recentActivity(
+    userId: number,
+    limit?: number,
+  ): Promise<{
     sessions: Array<{
       id: number;
       type: string;
@@ -118,7 +119,7 @@ export class StatsApi {
       return response.data;
     } catch (error) {
       throw new Error(
-        extractErrorMessage(error, `Failed to fetch recent activity for user ${userId}`)
+        extractErrorMessage(error, `Failed to fetch recent activity for user ${userId}`),
       );
     }
   }

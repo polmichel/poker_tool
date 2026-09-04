@@ -27,7 +27,10 @@ export function validate<T>(schema: ZodSchema<T>, data: unknown): T {
  * @param data - The data to validate
  * @returns Result object with success flag and data/error
  */
-export function safeValidate<T>(schema: ZodSchema<T>, data: unknown): {
+export function safeValidate<T>(
+  schema: ZodSchema<T>,
+  data: unknown,
+): {
   success: boolean;
   data?: T;
   error?: ZodError;
@@ -64,23 +67,20 @@ export function validateAndTransform<T, U>(
  * @param response - The full API response object
  * @returns The validated data from the response
  */
-export function validateApiResponse<T>(
-  schema: ZodSchema<T>,
-  response: unknown,
-): T {
+export function validateApiResponse<T>(schema: ZodSchema<T>, response: unknown): T {
   // Handle different response formats
   if (typeof response === 'object' && response !== null) {
     const obj = response as Record<string, unknown>;
-    
+
     // If response has a 'data' field, validate that
     if ('data' in obj) {
       return validate(schema, obj.data);
     }
-    
+
     // Otherwise, validate the whole response
     return validate(schema, response);
   }
-  
+
   return validate(schema, response);
 }
 
@@ -101,7 +101,7 @@ export function validatePaginatedResponse<T>(
     page: z.number(),
     per_page: z.number(),
   });
-  
+
   return validate(paginatedSchema, response);
 }
 
@@ -131,12 +131,12 @@ export function formatZodError(error: ZodError): string {
  */
 export function formatZodErrorByField(error: ZodError): Record<string, string> {
   const fieldErrors: Record<string, string> = {};
-  
+
   for (const err of error.errors) {
     const path = err.path.join('.');
     fieldErrors[path] = err.message;
   }
-  
+
   return fieldErrors;
 }
 
@@ -211,9 +211,7 @@ export function arraySchema<T>(itemSchema: ZodSchema<T>): ZodSchema<T[]> {
  * @param schema - The base schema
  * @returns A schema that accepts the base type or undefined
  */
-export function optionalSchema<T>(
-  schema: ZodSchema<T>,
-): ZodSchema<T | undefined> {
+export function optionalSchema<T>(schema: ZodSchema<T>): ZodSchema<T | undefined> {
   return schema.optional();
 }
 
@@ -233,9 +231,7 @@ export function nullableSchema<T>(schema: ZodSchema<T>): ZodSchema<T | null> {
  * @param schema - The base schema
  * @returns A schema that accepts the base type, null, or undefined
  */
-export function nullishSchema<T>(
-  schema: ZodSchema<T>,
-): ZodSchema<T | null | undefined> {
+export function nullishSchema<T>(schema: ZodSchema<T>): ZodSchema<T | null | undefined> {
   return schema.nullish();
 }
 
@@ -246,10 +242,7 @@ export function nullishSchema<T>(
  * @param defaultValue - The default value to use
  * @returns A schema with the default value
  */
-export function withDefault<T>(
-  schema: ZodSchema<T>,
-  defaultValue: T | (() => T),
-): ZodSchema<T> {
+export function withDefault<T>(schema: ZodSchema<T>, defaultValue: T | (() => T)): ZodSchema<T> {
   return schema.default(defaultValue);
 }
 
@@ -285,9 +278,7 @@ export const positiveNumber = z.number().positive({ message: 'Must be positive' 
 /**
  * Validate that a number is non-negative
  */
-export const nonNegativeNumber = z
-  .number()
-  .nonnegative({ message: 'Must be non-negative' });
+export const nonNegativeNumber = z.number().nonnegative({ message: 'Must be non-negative' });
 
 /**
  * Validate that a number is within a range
