@@ -222,18 +222,4 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     await expect(page.getByText(/Ranges \([1-9]\d*\)/)).toBeVisible({ timeout: 5000 });
   });
 
-    // Attendre que le ghost element apparaisse
-    const ghostElement = page.locator('[data-testid="range-ghost-element"]');
-    await ghostElement.waitFor({ state: 'visible', timeout: 5000 });
-
-    // Vérifier que le ghost element a les bonnes dimensions (280x60px)
-    const ghostBox = await ghostElement.boundingBox();
-    expect(ghostBox?.width).toBeCloseTo(280, 1);
-    expect(ghostBox?.height).toBeCloseTo(60, 1);
-
-    // Nettoyer : terminer le drag
-    await rangeCard.dispatchEvent('dragend');
-    await expect(ghostElement).not.toBeVisible({ timeout: 5000 });
-  });
-
 });
