@@ -1,5 +1,8 @@
 export { useRanges } from './useRanges';
 export { useTraining } from './useTraining';
+export { useTrainingSession } from './useTrainingSession';
+export { useTrainingQuestions } from './useTrainingQuestions';
+export { useTrainingModes } from './useTrainingModes';
 export { useStats } from './useStats';
 export { useAuth } from './useAuth';
 export { useEquity } from './useEquity';
@@ -7,3 +10,4 @@ export { useAsyncState } from './useAsyncState';
 export { useHistory } from './useHistory';
 export { useRangeFolders } from './useRangeFolders';
 export type { Folder } from './useRangeFolders';
+export type { Feedback } from './useTrainingQuestions';
