@@ -1,10 +1,9 @@
 """Shared exceptions for the training use cases.
 
-Keeping training-related errors in one place avoids the duplicate
-``SessionNotFound`` definitions that previously lived in both
-``answer_question`` and ``end_training_session``.
+This module re-exports training-related exceptions from the centralized
+errors module to maintain backward compatibility.
 """
 
+from .errors import SessionNotFound
 
-class SessionNotFound(Exception):
-    """Raised when a training session does not exist."""
+__all__ = ["SessionNotFound"]

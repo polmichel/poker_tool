@@ -2,29 +2,25 @@
 Resolve the current user (use case).
 
 Encapsulates: turning a JWT identity into a real User, with the fallback to
-the first existing user for anonymous / E2E sessions. Dependencies (Users
-port, Auth port) are injected.
+the first existing user for anonymous / E2E sessions. This is now a thin
+wrapper around ResolveUser for backward compatibility.
+
+Dependencies (Users port, Auth port) are injected.
 """
 
-from ..interfaces.auth import Auth
-from ..interfaces.users import Users
-from ..objects.user import User
+from .resolve_user import ResolveUser
 
 
 class CurrentUser:
-    """Resolve the authenticated (or fallback) user."""
+    """Resolve the authenticated (or fallback) user.
+    
+    This class is kept for backward compatibility but delegates to ResolveUser.
+    For new code, prefer using ResolveUser directly.
+    """
 
-    def __init__(self, users: Users, auth: Auth) -> None:
-        self._users = users
-        self._auth = auth
+    def __init__(self, users, auth) -> None:
+        self._resolve_user = ResolveUser(users, auth)
 
-    def user(self) -> User | None:
+    def user(self) -> object | None:
         """Return the current user, or the first existing user as fallback."""
-        current = self._auth.current_user()
-        if current:
-            user = self._users.user_by_id(current.id) if current.id else None
-            if user:
-                return user
-        # Fall back to the first user (anonymous / E2E sessions).
-        users = self._users.all()
-        return users[0] if users else None
+        return self._resolve_user.resolve()

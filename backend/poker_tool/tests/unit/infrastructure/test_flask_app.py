@@ -20,6 +20,7 @@ from poker_tool.use_cases.end_training_session import EndTrainingSession
 from poker_tool.use_cases.global_stats import GlobalStats
 from poker_tool.use_cases.login_user import LoginUser
 from poker_tool.use_cases.register_user import RegisterUser
+from poker_tool.use_cases.resolve_user import ResolveUser
 from poker_tool.use_cases.start_training_session import StartTrainingSession
 from poker_tool.use_cases.update_range import UpdateRange
 from poker_tool.use_cases.user_stats import UserStats
@@ -76,13 +77,14 @@ class TestFlaskApp(unittest.TestCase):
         self.ranges = FakeRanges()
         self.sessions = FakeSessions()
         self.auth = FakeAuth()
+        self.resolve_user = ResolveUser(self.users, self.auth)
         self.register_user = RegisterUser(self.users, self.auth)
         self.login_user = LoginUser(self.users, self.auth)
         self.current_user = CurrentUser(self.users, self.auth)
-        self.create_range = CreateRange(self.ranges, self.auth)
+        self.create_range = CreateRange(self.ranges, self.resolve_user)
         self.update_range = UpdateRange(self.ranges)
         self.start_training = StartTrainingSession(
-            self.ranges, self.users, self.sessions, self.auth,
+            self.ranges, self.sessions, self.resolve_user,
         )
         self.answer_question = AnswerQuestion(self.sessions)
         self.end_training = EndTrainingSession(self.sessions)
@@ -116,12 +118,10 @@ class TestFlaskApp(unittest.TestCase):
         )
 
     def test_flask_app_creation(self):
-        """Test FlaskApp creation exposes the injected app and ports."""
+        """Test FlaskApp creation exposes the injected app."""
         flask_app = self._make_app()
         self.assertEqual(flask_app.app, self.app)
-        self.assertEqual(flask_app.users, self.users)
-        self.assertEqual(flask_app.ranges, self.ranges)
-        self.assertEqual(flask_app.auth, self.auth)
+        # FlaskApp no longer stores ports directly, only the app
 
     def test_flask_app_registers_routes(self):
         """Test that FlaskApp registers routes."""

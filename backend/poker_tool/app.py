@@ -30,6 +30,7 @@ from .use_cases.end_training_session import EndTrainingSession
 from .use_cases.global_stats import GlobalStats
 from .use_cases.login_user import LoginUser
 from .use_cases.register_user import RegisterUser
+from .use_cases.resolve_user import ResolveUser
 from .use_cases.simulate_equity import SimulateEquity
 from .use_cases.start_training_session import StartTrainingSession
 from .use_cases.update_range import UpdateRange
@@ -56,13 +57,14 @@ class PokerTool:
         self.auth = JwtAuth(self.app, self.config)
 
         # Create use cases (each receives its dependencies via constructor)
+        self.resolve_user = ResolveUser(self.users, self.auth)
         self.register_user = RegisterUser(self.users, self.auth)
         self.login_user = LoginUser(self.users, self.auth)
         self.current_user = CurrentUser(self.users, self.auth)
-        self.create_range = CreateRange(self.ranges, self.auth)
+        self.create_range = CreateRange(self.ranges, self.resolve_user)
         self.update_range = UpdateRange(self.ranges)
         self.start_training = StartTrainingSession(
-            self.ranges, self.users, self.sessions, self.auth,
+            self.ranges, self.sessions, self.resolve_user,
         )
         self.answer_question = AnswerQuestion(self.sessions)
         self.end_training = EndTrainingSession(self.sessions)

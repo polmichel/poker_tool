@@ -5,7 +5,8 @@ from werkzeug.exceptions import BadRequest, NotFound
 from ....interfaces.auth import Auth
 from ....interfaces.ranges import Ranges
 from ....use_cases.create_range import CreateRange
-from ....use_cases.update_range import RangeNotFound, UpdateRange
+from ....use_cases.errors import RangeNotFound
+from ....use_cases.update_range import UpdateRange
 
 
 class RangeController:

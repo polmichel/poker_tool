@@ -7,10 +7,7 @@ generation. Dependencies (Users port, Auth port) are injected.
 from ..interfaces.auth import Auth
 from ..interfaces.users import Users
 from ..objects.user import User
-
-
-class InvalidCredentials(Exception):
-    """Raised when the username is unknown or the password is wrong."""
+from .errors import InvalidCredentials
 
 
 class LoggedInUser:

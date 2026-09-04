@@ -7,10 +7,7 @@ ranges. Dependencies (Users, Ranges, TrainingSessions ports) are injected.
 from ..interfaces.ranges import Ranges
 from ..interfaces.training_sessions import TrainingSessions
 from ..interfaces.users import Users
-
-
-class UserNotFound(Exception):
-    """Raised when the user does not exist."""
+from .errors import UserNotFound
 
 
 class UserStats:
@@ -24,7 +21,7 @@ class UserStats:
     def compute(self, user_id: int) -> dict:
         user = self._users.user_by_id(user_id)
         if not user:
-            raise UserNotFound(f"User {user_id} not found")
+            raise UserNotFound(user_id)
 
         sessions = self._sessions.sessions_by_user(user_id)
         ranges = self._ranges.ranges_by_user(user_id)

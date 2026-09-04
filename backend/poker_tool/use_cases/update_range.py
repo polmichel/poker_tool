@@ -7,10 +7,7 @@ injected.
 """
 from ..interfaces.ranges import Ranges
 from ..objects.range import Range
-
-
-class RangeNotFound(Exception):
-    """Raised when the range to update does not exist."""
+from .errors import RangeNotFound
 
 
 class UpdateRange:
@@ -22,6 +19,6 @@ class UpdateRange:
     def update(self, range_id: int, data: dict) -> Range:
         existing = self._ranges.range_by_id(range_id)
         if not existing:
-            raise RangeNotFound(f"Range {range_id} not found")
+            raise RangeNotFound(range_id)
         updated = Range.from_dict({**existing.to_dict(), **data})
         return self._ranges.add(updated)
