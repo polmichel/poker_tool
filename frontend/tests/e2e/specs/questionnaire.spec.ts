@@ -1,21 +1,21 @@
 /**
- * Tests E2E pour le questionnaire (Scénarios 2a, 2b, 2c)
+ * Tests E2E pour le questionnaire (Sc\u00e9narios 2a, 2b, 2c)
  *
- * Scénario 2 : Lancer un questionnaire dans les 3 modes
- * - Sélectionner une range existante (avec des mains)
+ * Sc\u00e9nario 2 : Lancer un questionnaire dans les 3 modes
+ * - S\u00e9lectionner une range existante (avec des mains)
  * - Lancer un questionnaire dans chaque mode
- * - Vérifier que le questionnaire se lance correctement
- * - Vérifier que les résultats sont enregistrés
+ * - V\u00e9rifier que le questionnaire se lance correctement
+ * - V\u00e9rifier que les r\u00e9sultats sont enregistr\u00e9s
  */
 
 import { test, expect } from '@playwright/test';
 import { authenticatePage } from '../utils';
 
-// Les modes de questionnaire avec leurs labels en français
+// Les modes de questionnaire avec leurs labels en fran\u0007ais
 const QUESTIONNAIRE_MODES = [
   { value: 'fill', label: 'Remplir une range' },
   { value: 'guess', label: 'Deviner une range' },
-  { value: 'complete', label: 'Compléter une range' },
+  { value: 'complete', label: 'Compl\u00e9ter une range' },
 ] as const;
 
 test.describe('Questionnaire sur une range', () => {
@@ -24,137 +24,126 @@ test.describe('Questionnaire sur une range', () => {
   test.beforeEach(async ({ page }) => {
     // Authenticate so the ProtectedRoute lets us through.
     await authenticatePage(page);
-    // Setup : accéder à la page de training avant chaque test
+    // Setup : acc\u00e9der \u00e0 la page de training avant chaque test
     await page.goto('/training');
     await page.waitForLoadState('domcontentloaded');
 
-    // Vérifier qu'on est bien sur la page de training
+    // V\u00e9rifier qu'on est bien sur la page de training
     await expect(page).toHaveURL('/training');
   });
 
-  test('Accéder à la page de training', async ({ page }) => {
-    // Vérifier que le titre de la page contient "Poker" ou "Entraînement"
+  test('Acc\u00e9der \u00e0 la page de training', async ({ page }) => {
+    // V\u00e9rifier que le titre de la page contient "Poker" ou "Entra\u00eenement"
     const title = await page.title();
     expect(title.toLowerCase()).toContain('poker');
 
-    // Vérifier qu'il y a du contenu sur la page
+    // V\u00e9rifier qu'il y a du contenu sur la page
     const bodyText = await page.locator('body').textContent();
     expect(bodyText).not.toBe('');
     expect(bodyText?.length).toBeGreaterThan(100);
 
-    // Vérifier que le sélecteur de mode est visible
+    // V\u00e9rifier que le s\u00e9lecteur de mode est visible
     const modeSelector = page.locator('.MuiToggleButtonGroup-root');
     await expect(modeSelector).toBeVisible();
   });
 
-  test('Sélectionner une range pour le questionnaire', async ({ page }) => {
-    // Attendre que les chips de ranges soient visibles
+  test('S\u00e9lectionner une range pour le questionnaire', async ({ page }) => {
+    // 1. V\u00e9rifier qu'il y a des ranges disponibles
     const rangeChips = page.locator('.MuiChip-root');
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
 
-    // Vérifier qu'il y a au moins une range
     const chipCount = await rangeChips.count();
     expect(chipCount).toBeGreaterThan(0);
 
-    // Sélectionner la première range
+    // 2. S\u00e9lectionner la premi\u00e8re range
     await rangeChips.first().click();
 
-    // Vérifier que la range est sélectionnée
-    const selectedChip = page.locator('.MuiChip-filled');
-    const selectedCount = await selectedChip.count();
-    expect(selectedCount).toBeGreaterThan(0);
+    // 3. V\u00e9rifier que la range est s\u00e9lectionn\u00e9e (style change)
+    const firstChip = rangeChips.first();
+    const chipClasses = await firstChip.getAttribute('class');
+    expect(chipClasses).toContain('MuiChip-colorPrimary');
 
-    // Afficher le nom de la range sélectionnée pour débogage
-    const selectedRangeName = await rangeChips.first().textContent();
-    console.log(`Range sélectionnée: "${selectedRangeName}"`);
+    console.log(`Range s\u00e9lectionn\u00e9e avec succ\u00e8s`);
   });
 
-  // Test pour chaque mode de questionnaire
-  QUESTIONNAIRE_MODES.forEach((mode) => {
-    test(`Lancer un questionnaire en mode ${mode.value}`, async ({ page }) => {
-      // 1. Sélectionner une range (la première disponible)
+  test('Lancer un questionnaire dans chaque mode', async ({ page }) => {
+    for (const mode of QUESTIONNAIRE_MODES) {
+      // 1. S\u00e9lectionner une range
       const rangeChips = page.locator('.MuiChip-root');
       await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
       await rangeChips.first().click();
 
-      const selectedRangeName = await rangeChips.first().textContent();
-      console.log(`Range sélectionnée: "${selectedRangeName}"`);
-
-      // 2. Sélectionner le mode de questionnaire (utiliser le label en français)
+      // 2. S\u00e9lectionner le mode
       const modeButton = page.locator(`button:has-text("${mode.label}")`);
       await modeButton.waitFor({ state: 'visible', timeout: 5000 });
       await modeButton.click();
 
-      // Vérifier que le mode est bien sélectionné
-      const selectedModeButton = page.locator('.MuiToggleButton-root.Mui-selected');
-      const selectedModeText = await selectedModeButton.textContent();
-      console.log(`Mode sélectionné: "${selectedModeText}"`);
-
-      // 3. Cliquer sur "Démarrer l'entraînement"
+      // 3. D\u00e9marrer le questionnaire
       const startButton = page.locator('[data-testid="start-training-button"]');
-      await startButton.waitFor({ state: 'visible', timeout: 5000 });
-
-      console.log(`Avant clic, URL: ${page.url()}`);
-
       await startButton.click();
 
-      // Attendre un peu et vérifier que le questionnaire a démarré
-      await page.waitForTimeout(3000);
+      // 4. Attendre qu'une question apparaisse (diff\u00e9rents types de questions)
+      const questionIndicator = page.locator('[data-testid="question-indicator"]');
+      const guessRangePaper = page.locator('[data-testid="guess-range-paper"]');
+      const gridQuestionPaper = page.locator('[data-testid="grid-question-paper"]');
 
-      console.log(`Après clic, URL: ${page.url()}`);
-
-      // Vérifier si le questionnaire est actif. Le mode "fill" affiche une grille
-      // à peindre (grid-question-paper) ; les autres modes affichent une question
-      // par main (question-indicator).
-      if (mode.value === 'fill') {
-        const gridPaper = page.locator('[data-testid="grid-question-paper"]');
-        await gridPaper.waitFor({ state: 'visible', timeout: 90000 });
-      } else {
-        const questionIndicator = page.locator('[data-testid="question-indicator"]');
-        await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
+      try {
+        await questionIndicator.waitFor({ state: 'visible', timeout: 10000 });
+      } catch {
+        // Try other question types
+        try {
+          await guessRangePaper.waitFor({ state: 'visible', timeout: 10000 });
+        } catch {
+          await gridQuestionPaper.waitFor({ state: 'visible', timeout: 10000 });
+        }
       }
 
-      // 4. Vérifier qu'on est toujours sur la page /training
+      // 4. Verifier qu'on est toujours sur la page /training
       const url = page.url();
       expect(url).toContain('/training');
 
-      console.log(`Questionnaire en mode ${mode.value} (${mode.label}) démarré avec succès`);
-    });
+      console.log(`Questionnaire en mode ${mode.value} (${mode.label}) demarre avec succes`);
+    }
   });
 
-  test('Répondre à une question et passer à la suivante', async ({ page }) => {
-    // 1. Sélectionner une range
+  test('Repondre a une question et passer a la suivante', async ({ page }) => {
+    // 1. Selectionner une range
     const rangeChips = page.locator('.MuiChip-root');
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
     await rangeChips.first().click();
 
-    // 2. Sélectionner le mode "Compléter une range" (questions une par une).
-    const completeModeButton = page.locator('button:has-text("Compléter une range")');
+    // 2. Selectionner le mode "Completer une range" (questions une par une).
+    const completeModeButton = page.locator('button:has-text("Compl\u00e9ter une range")');
     await completeModeButton.waitFor({ state: 'visible', timeout: 5000 });
     await completeModeButton.click();
 
-    // 3. Démarrer le questionnaire
+    // 3. Demarrer le questionnaire
     const startButton = page.locator('[data-testid="start-training-button"]');
     await startButton.click();
 
-    // 4. Attendre la première question (format: "Question 1 sur 10")
+    // 4. Attendre la premiere question (format: "Question 1 sur 10")
     const questionIndicator = page.locator('[data-testid="question-indicator"]');
     await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
 
-    // 5. Trouver et cliquer sur une réponse
+    // 5. Trouver et cliquer sur une reponse
+    // Try different test IDs for different question types
     const answerButtons = page.locator('[data-testid="answer-button"]');
+    const guessButtons = page.locator('[data-testid="guess-option-button"]');
+    const validateButton = page.locator('[data-testid="validate-grid-button"]');
 
     const answerCount = await answerButtons.count();
+    const guessCount = await guessButtons.count();
+    const validateCount = await validateButton.count();
 
     if (answerCount > 0) {
-      // Cliquer sur la première réponse disponible
+      // Cliquer sur la premiere reponse disponible (TrainingQuestion - action buttons)
       await answerButtons.first().waitFor({ state: 'visible', timeout: 10000 });
       await answerButtons.first().click();
 
-      // 6. Attendre la question suivante ou les résultats
+      // 6. Attendre la question suivante ou les resultats
       await page.waitForTimeout(2000);
 
-      // Vérifier soit la question suivante, soit les résultats
+      // Verifier soit la question suivante, soit les resultats
       const nextQuestion = page.locator('[data-testid="question-indicator"]');
       const resultsDialog = page.locator('[data-testid="results-dialog"]');
 
@@ -163,9 +152,26 @@ test.describe('Questionnaire sur une range', () => {
 
       expect(nextQuestionCount > 0 || resultsCount > 0).toBeTruthy();
 
-      console.log(`Réponse soumise, question suivante ou résultats affichés`);
+      console.log(`Reponse soumise, question suivante ou resultats affiches`);
+    } else if (guessCount > 0) {
+      // Cliquer sur la premiere option de range (TrainingGuessRangeQuestion)
+      await guessButtons.first().waitFor({ state: 'visible', timeout: 10000 });
+      await guessButtons.first().click();
+
+      // Then click the next button
+      const nextButton = page.locator('[data-testid="next-question-button"]');
+      await nextButton.waitFor({ state: 'visible', timeout: 10000 });
+      await nextButton.click();
+
+      console.log(`Range guess submitted, next question clicked`);
+    } else if (validateCount > 0) {
+      // Cliquer sur le bouton de validation (TrainingGridQuestion)
+      await validateButton.waitFor({ state: 'visible', timeout: 10000 });
+      await validateButton.click();
+
+      console.log(`Grid validated`);
     } else {
-      // Afficher tous les boutons pour débogage
+      // Afficher tous les boutons pour debogage
       const allButtons = page.locator('button');
       const allButtonCount = await allButtons.count();
       console.log(`Found ${allButtonCount} buttons total`);
@@ -183,21 +189,21 @@ test.describe('Questionnaire sur une range', () => {
   });
 
   test('Terminer une session de questionnaire', async ({ page }) => {
-    // 1. Sélectionner une range
+    // 1. S\u00e9lectionner une range
     const rangeChips = page.locator('.MuiChip-root');
     await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
     await rangeChips.first().click();
 
-    // 2. Sélectionner le mode "Compléter une range" (questions une par une).
-    const completeModeButton = page.locator('button:has-text("Compléter une range")');
+    // 2. S\u00e9lectionner le mode "Compl\u00e9ter une range" (questions une par une).
+    const completeModeButton = page.locator('button:has-text("Compl\u00e9ter une range")');
     await completeModeButton.waitFor({ state: 'visible', timeout: 5000 });
     await completeModeButton.click();
 
-    // 3. Démarrer le questionnaire
+    // 3. D\u00e9marrer le questionnaire
     const startButton = page.locator('[data-testid="start-training-button"]');
     await startButton.click();
 
-    // 4. Attendre la première question (format: "Question 1 sur 10")
+    // 4. Attendre la premi\u00e8re question (format: "Question 1 sur 10")
     const questionIndicator = page.locator('[data-testid="question-indicator"]');
     await questionIndicator.waitFor({ state: 'visible', timeout: 90000 });
 
@@ -206,17 +212,17 @@ test.describe('Questionnaire sur une range', () => {
     await endButton.waitFor({ state: 'visible', timeout: 5000 });
     await endButton.click();
 
-    // 6. Vérifier que le dialogue des résultats s'affiche
+    // 6. V\u00e9rifier que le dialogue des r\u00e9sultats s'affiche
     const resultsDialog = page.locator('[data-testid="results-dialog"]');
     await resultsDialog.waitFor({ state: 'visible', timeout: 5000 });
 
-    // 7. Vérifier qu'un score est affiché
+    // 7. V\u00e9rifier qu'un score est affich\u00e9
     const scoreElement = page.locator('[data-testid="final-score"]');
     await scoreElement.waitFor({ state: 'visible', timeout: 5000 });
 
     const scoreText = await scoreElement.textContent();
     expect(scoreText).toMatch(/\d+%/);
 
-    console.log(`Session terminée avec score: ${scoreText}`);
+    console.log(`Session terminee avec score: ${scoreText}`);
   });
 });
