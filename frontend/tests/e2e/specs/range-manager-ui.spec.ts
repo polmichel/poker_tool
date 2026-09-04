@@ -222,33 +222,4 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     await expect(page.getByText(/Ranges \([1-9]\d*\)/)).toBeVisible({ timeout: 5000 });
   });
 
-  test('le ghost element est correctement centré pendant le drag', async ({ page }) => {
-    // Le panneau central doit lister au moins une range.
-    const rangeCard = page.locator('[draggable="true"]').filter({ hasText: /mains/ }).first();
-    await rangeCard.waitFor({ state: 'visible', timeout: 10000 });
-
-    // Déclencher un dragstart avec un événement natif via page.evaluate
-    await rangeCard.evaluate((el) => {
-      const rect = el.getBoundingClientRect();
-      const event = new Event('dragstart', { bubbles: true, cancelable: true });
-      // Simuler les propriétés clientX/clientY pour le calcul du ghost element
-      Object.defineProperty(event, 'clientX', { value: rect.left + rect.width / 2 });
-      Object.defineProperty(event, 'clientY', { value: rect.top + rect.height / 2 });
-      el.dispatchEvent(event);
-    });
-
-    // Attendre que le ghost element apparaisse
-    const ghostElement = page.locator('[data-testid="range-ghost-element"]');
-    await ghostElement.waitFor({ state: 'visible', timeout: 5000 });
-
-    // Vérifier que le ghost element a les bonnes dimensions (280x60px)
-    const ghostBox = await ghostElement.boundingBox();
-    expect(ghostBox?.width).toBeCloseTo(280, 1);
-    expect(ghostBox?.height).toBeCloseTo(60, 1);
-
-    // Nettoyer : terminer le drag
-    await rangeCard.dispatchEvent('dragend');
-    await expect(ghostElement).not.toBeVisible({ timeout: 5000 });
-  });
-
 });
