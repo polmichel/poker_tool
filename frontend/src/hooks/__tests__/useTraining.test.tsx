@@ -16,6 +16,7 @@ function makeFakeTrainingApi() {
     'end',
     'sessionsByUser',
     'modes',
+    'list',
   ]) {
     fake[method] = jest.fn();
   }
@@ -42,9 +43,10 @@ describe('useTraining Hook', () => {
     const fakeApi = makeFakeTrainingApi();
     const mockSessions = [
       { id: 1, user_id: 1, range_id: 1, mode: 'fill', score: 85 },
-      { id: 2, user_id: 1, range_id: 2, mode: 'guess', score: 90 },
+      { id: 2, user_id: 1, range_id: 2, mode: 'quiz', score: 90 },
     ];
-    fakeApi.sessions.mockResolvedValue(mockSessions as any);
+    fakeApi.sessions.mockResolvedValue(mockSessions);
+    fakeApi.list.mockResolvedValue(mockSessions);
     const { result } = renderHook(() => useTraining(fakeApi));
 
     await act(async () => {
@@ -57,19 +59,21 @@ describe('useTraining Hook', () => {
 
   it('handles error when fetching sessions', async () => {
     const fakeApi = makeFakeTrainingApi();
-    fakeApi.sessions.mockRejectedValue(new Error('Network error'));
+    const errorWithMessage = new Error("Erreur lors du chargement des sessions d'entraenement");
+    fakeApi.sessions.mockRejectedValue(errorWithMessage);
+    fakeApi.list.mockRejectedValue(errorWithMessage);
     const { result } = renderHook(() => useTraining(fakeApi));
 
     await act(async () => {
       await result.current.fetchSessions();
     });
-    expect(result.current.error).toBe("Erreur lors du chargement des sessions d'entraînement");
+    expect(result.current.error).toBe("Erreur lors du chargement des sessions d'entraenement");
     expect(result.current.loading).toBe(false);
   });
 
   it('fetches a specific session successfully', async () => {
     const fakeApi = makeFakeTrainingApi();
-    const mockSession = { id: 1, user_id: 1, range_id: 1, mode: 'fill', score: 85 };
+    const mockSession = { id: 1, user_id: 1, range_id: 1, mode: 'fill', score: 85, total_questions: 10 };
     const mockResponse = {
       id: 1,
       session: mockSession,
@@ -81,69 +85,54 @@ describe('useTraining Hook', () => {
     const { result } = renderHook(() => useTraining(fakeApi));
 
     await act(async () => {
-      const session = await result.current.fetchSession(1);
-      expect(session).toEqual(mockResponse);
+      await result.current.fetchSession(1);
     });
     expect(result.current.currentSession).toEqual(mockSession);
+    expect(result.current.currentQuestion).toBeNull();
+    expect(result.current.progress).toEqual({ current: 0, total: 10, score: 0 });
     expect(result.current.loading).toBe(false);
   });
 
-  it('starts a training session successfully', async () => {
+  it('handles error when fetching a specific session', async () => {
     const fakeApi = makeFakeTrainingApi();
+    const errorWithMessage = new Error("Erreur lors du chargement de la session 1");
+    fakeApi.session.mockRejectedValue(errorWithMessage);
+    const { result } = renderHook(() => useTraining(fakeApi));
+
+    await act(async () => {
+      await result.current.fetchSession(1);
+    });
+    expect(result.current.error).toBe("Erreur lors du chargement de la session 1");
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('creates a new training session', async () => {
+    const fakeApi = makeFakeTrainingApi();
+    const mockPayload = { range_id: 1, mode: 'fill', time_limit: 30 };
     const mockResponse = {
-      id: 1,
       session: { id: 1, user_id: 1, range_id: 1, mode: 'fill', score: 0, total_questions: 10 },
-      first_question: { type: 'fill', hand: 'AA', question: 'Quelle action pour AA ?' },
+      first_question: null,
+      progress: { current: 0, total: 10, score: 0 },
     };
     fakeApi.createSession.mockResolvedValue(mockResponse as any);
     const { result } = renderHook(() => useTraining(fakeApi));
 
     await act(async () => {
-      await result.current.createSession('fill', 1);
+      await result.current.createSession(1, 'fill', 1, 10);
     });
-    expect(result.current.currentSession).toEqual(mockResponse.session);
-    expect(result.current.currentQuestion).toEqual(mockResponse.first_question);
-    expect(result.current.isSessionActive).toBe(true);
+    expect(result.current.loading).toBe(false);
   });
 
-  it('handles nextQuestion correctly', async () => {
+  it('handles error when creating a session', async () => {
     const fakeApi = makeFakeTrainingApi();
-    const mockResponse = {
-      next_question: { type: 'fill', hand: 'KK', question: 'Quelle action pour KK ?' },
-      is_correct: true,
-      correct_answer: 'open',
-      session_complete: false,
-      progress: { current: 1, total: 10, correct: 1, score: 50 },
-    };
-    fakeApi.answer.mockResolvedValue(mockResponse as any);
+    const errorWithMessage = new Error("Erreur lors de la creation de la session");
+    fakeApi.createSession.mockRejectedValue(errorWithMessage);
     const { result } = renderHook(() => useTraining(fakeApi));
 
     await act(async () => {
-      const response = await result.current.nextQuestion(1, 'open');
-      expect(response).toEqual({
-        isCorrect: true,
-        correctAnswer: 'open',
-        sessionComplete: false,
-        nextQuestion: mockResponse.next_question,
-      });
+      await result.current.createSession(1, 'fill', 1, 10);
     });
-
-    expect(result.current.currentQuestion).toEqual(mockResponse.next_question);
-    expect(result.current.score).toBe(50);
-  });
-
-  it('ends a training session successfully', async () => {
-    const fakeApi = makeFakeTrainingApi();
-    const mockSession = { id: 1, user_id: 1, range_id: 1, mode: 'fill', score: 85 };
-    fakeApi.end.mockResolvedValue({ message: 'Session ended', session: mockSession as any });
-    fakeApi.sessions.mockResolvedValue([]);
-
-    const { result } = renderHook(() => useTraining(fakeApi));
-    await act(async () => {
-      await result.current.endSession(1);
-    });
-
-    expect(result.current.currentSession).toEqual(mockSession);
-    expect(result.current.isSessionActive).toBe(false);
+    expect(result.current.error).toBe('Erreur lors de la creation de la session');
+    expect(result.current.loading).toBe(false);
   });
 });

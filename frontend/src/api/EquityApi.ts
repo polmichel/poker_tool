@@ -35,10 +35,35 @@ export class EquityApi {
       const response = await api.post<EquityResult>('/equity/calculate', validatedRequest);
       return validateApiResponse(EquityResultSchema, response.data);
     } catch (error) {
+      // Check if this is a missing hands error
+      if (extractErrorMessage(error, '').includes('missing')) {
+        const errorData = (error as { data?: unknown }).data;
+        if (errorData && typeof errorData === 'object') {
+          const missing = (errorData as Record<string, unknown>).missing;
+          if (Array.isArray(missing)) {
+            throw new EquityMissingError(
+              extractErrorMessage(error, 'Equity calculation failed - missing hands'),
+              missing as string[],
+            );
+          }
+        }
+      }
       throw new Error(
         extractErrorMessage(error, 'Failed to calculate equity')
       );
     }
+  }
+
+  /**
+   * Simulate equity - backward compatible method
+   * @deprecated Use calculate() instead
+   */
+  async simulate(
+    hero: string,
+    villain: string,
+    iterations?: number,
+  ): Promise<EquityResult> {
+    return this.calculate({ hero, villain, iterations });
   }
 
   /**

@@ -23,6 +23,11 @@ export class StatsApi {
       const response = await api.get('/stats/global');
       return validateApiResponse<GlobalStatsResponse>(GlobalStatsResponseSchema, response.data);
     } catch (error) {
+      // For Axios errors with response data containing error message, use that
+      const errorData = (error as { response?: { data?: { error?: string } } }).response?.data;
+      if (errorData?.error) {
+        throw new Error(errorData.error);
+      }
       throw new Error(extractErrorMessage(error, 'Failed to fetch global stats'));
     }
   }
@@ -35,10 +40,22 @@ export class StatsApi {
       const response = await api.get(`/stats/user/${userId}`);
       return validateApiResponse<UserStatsResponse>(UserStatsResponseSchema, response.data);
     } catch (error) {
+      const errorData = (error as { response?: { data?: { error?: string } } }).response?.data;
+      if (errorData?.error) {
+        throw new Error(errorData.error);
+      }
       throw new Error(
         extractErrorMessage(error, `Failed to fetch stats for user ${userId}`)
       );
     }
+  }
+
+  /**
+   * Get statistics by user - backward compatible method
+   * @deprecated Use user() instead
+   */
+  async byUser(userId: number): Promise<UserStats> {
+    return this.user(userId);
   }
 
   /**

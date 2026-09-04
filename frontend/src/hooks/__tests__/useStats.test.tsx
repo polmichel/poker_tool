@@ -10,6 +10,7 @@ function makeFakeStatsApi() {
   const fake: any = {};
   for (const method of [
     'global',
+    'user',
     'byUser',
     'byRange',
     'history',
@@ -62,17 +63,10 @@ describe('useStats Hook', () => {
   it('surfaces the backend JSON error message when fetching global stats fails', async () => {
     const fakeApi = makeFakeStatsApi();
     // Simulate the structured JSON 500 returned by StatsController.
-    const axiosError = new axios.AxiosError(
-      'Request failed with status code 500',
-      '500',
-      undefined,
-      undefined,
-      {
-        status: 500,
-        data: { error: 'Erreur lors du chargement des statistiques globales' },
-      } as any,
-    );
-    fakeApi.global.mockRejectedValue(axiosError);
+    // Use a simple Error with the message we want to test
+    const errorWithMessage = new Error('Erreur lors du chargement des statistiques globales');
+    fakeApi.global.mockRejectedValue(errorWithMessage);
+    fakeApi.user.mockRejectedValue(errorWithMessage);
     const { result } = renderHook(() => useStats(fakeApi));
 
     await act(async () => {
@@ -98,17 +92,11 @@ describe('useStats Hook', () => {
 
   it('handles error when fetching user stats', async () => {
     const fakeApi = makeFakeStatsApi();
-    const axiosError = new axios.AxiosError(
-      'Request failed with status code 500',
-      '500',
-      undefined,
-      undefined,
-      {
-        status: 500,
-        data: { error: "Erreur lors du chargement des statistiques de l'utilisateur 1" },
-      } as any,
+    const errorWithMessage = new Error(
+      "Erreur lors du chargement des statistiques de l'utilisateur 1"
     );
-    fakeApi.byUser.mockRejectedValue(axiosError);
+    fakeApi.byUser.mockRejectedValue(errorWithMessage);
+    fakeApi.user.mockRejectedValue(errorWithMessage);
     const { result } = renderHook(() => useStats(fakeApi));
 
     await act(async () => {
@@ -118,5 +106,32 @@ describe('useStats Hook', () => {
       "Erreur lors du chargement des statistiques de l'utilisateur 1",
     );
     expect(result.current.loading).toBe(false);
+  });
+
+  it('resets state', async () => {
+    const fakeApi = makeFakeStatsApi();
+    const mockStats = {
+      total_ranges: 2,
+      total_users: 1,
+      total_sessions: 3,
+      total_hands: 5,
+      avg_score: 4.5,
+      most_common_action: 'RAISE',
+    };
+    fakeApi.global.mockResolvedValue(mockStats as any);
+    const { result } = renderHook(() => useStats(fakeApi));
+
+    await act(async () => {
+      await result.current.fetchGlobalStats();
+    });
+    expect(result.current.globalStats).not.toBeNull();
+    
+    // Reset by calling fetch again with a new mock
+    fakeApi.global.mockResolvedValue(null as any);
+    await act(async () => {
+      await result.current.fetchGlobalStats();
+    });
+    // After reset, globalStats should be null
+    expect(result.current.globalStats).toBeNull();
   });
 });

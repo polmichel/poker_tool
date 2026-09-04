@@ -60,6 +60,14 @@ export class TrainingApi {
   }
 
   /**
+   * List training sessions - backward compatible method
+   * @deprecated Use sessions() instead
+   */
+  async list(): Promise<TrainingSession[]> {
+    return this.sessions();
+  }
+
+  /**
    * Create a new training session
    */
   async createSession(

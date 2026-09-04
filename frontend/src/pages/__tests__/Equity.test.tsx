@@ -81,7 +81,7 @@ describe('Equity page', () => {
   });
 
   it('opens the Monte-Carlo dialog when the table is incomplete (409)', async () => {
-    mockSimulate.mockRejectedValueOnce(new EquityMissingError(['72o', '32o']));
+    mockSimulate.mockRejectedValueOnce(new EquityMissingError('Missing hands', ['72o', '32o']));
     renderPage();
     const heroInput = screen.getByTestId('equity-hero-input') as HTMLInputElement;
     const rangeInput = screen.getByTestId('equity-range-input') as HTMLInputElement;
@@ -99,7 +99,7 @@ describe('Equity page', () => {
   });
 
   it('runs Monte-Carlo with the chosen iteration count from the dialog', async () => {
-    mockSimulate.mockRejectedValueOnce(new EquityMissingError(['72o']));
+    mockSimulate.mockRejectedValueOnce(new EquityMissingError('Missing hands', ['72o']));
     mockSimulate.mockResolvedValueOnce({
       hero: 'AKs',
       win: 50,
