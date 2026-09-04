@@ -60,23 +60,21 @@ const Training: React.FC = () => {
   const [openResultsDialog, setOpenResultsDialog] = useState<boolean>(false);
   const [totalQuestions, setTotalQuestions] = useState<number>(10);
 
-  // Charger les données au montage.
-  // fetchRanges() is already called by useRanges on mount; only fetch modes here.
+  // Load training modes on mount
   useEffect(() => {
     fetchTrainingModes();
   }, [fetchTrainingModes]);
 
-  // Démarrer une nouvelle session
+  // Start a new training session
   const handleStartTraining = useCallback(async () => {
     if (!selectedRange) {
-      alert('Veuillez sélectionner une range');
+      alert('Veuillez selectionner une range');
       return;
     }
 
-    // Vérifier que la range a au moins une main
     if (!selectedRange.hands || Object.keys(selectedRange.hands).length === 0) {
       alert(
-        "La range sélectionnée ne contient aucune main. Veuillez ajouter des mains à votre range avant de démarrer l'entraînement.",
+        "La range selectionnee ne contient aucune main. Veuillez ajouter des mains a votre range avant de demarrer l'entrainement.",
       );
       return;
     }
@@ -87,14 +85,13 @@ const Training: React.FC = () => {
     }
   }, [selectedMode, selectedRange, createSession, setIsSessionActive, totalQuestions]);
 
-  // Démarrer rapidement avec des paramètres par défaut
+  // Quick start with default parameters
   const handleQuickStart = useCallback(async () => {
     if (ranges.length === 0) {
-      alert("Aucune range disponible. Veuillez en créer une d'abord.");
+      alert("Aucune range disponible. Veuillez en creer une d'abord.");
       return;
     }
 
-    // Utiliser la première range disponible
     const result = await quickStart(selectedMode, ranges[0].id!, undefined);
     if (result) {
       setSelectedRange(ranges[0]);
@@ -102,7 +99,7 @@ const Training: React.FC = () => {
     }
   }, [selectedMode, ranges, quickStart, setIsSessionActive]);
 
-  // Soumettre une réponse — store feedback for the feedback screen
+  // Submit an answer
   const [feedback, setFeedback] = useState<{
     isCorrect: boolean;
     correctAnswer: string | null;
@@ -135,7 +132,7 @@ const Training: React.FC = () => {
     setFeedback(null);
   }, [feedback, setIsSessionActive]);
 
-  // Terminer la session
+  // End the session
   const handleEndSession = useCallback(async () => {
     if (!currentSession || !currentSession.id) return;
 
@@ -144,46 +141,46 @@ const Training: React.FC = () => {
     setOpenResultsDialog(true);
   }, [currentSession, endSession, setIsSessionActive]);
 
-  // Réinitialiser la session
+  // Reset the session
   const handleResetSession = useCallback(() => {
     resetTrainingState();
   }, [resetTrainingState]);
 
-  // Ouvrir les paramètres
+  // Open settings
   const handleOpenSettings = useCallback(() => {
     setOpenSettingsDialog(true);
   }, []);
 
-  // Fermer les paramètres
+  // Close settings
   const handleCloseSettings = useCallback(() => {
     setOpenSettingsDialog(false);
   }, []);
 
-  // Fermer les résultats
+  // Close results
   const handleCloseResults = useCallback(() => {
     setOpenResultsDialog(false);
     resetTrainingState();
   }, [resetTrainingState]);
 
-  // Changer le mode d'entraînement
+  // Change training mode
   const handleModeChange = useCallback((mode: TrainingMode) => {
     setSelectedMode(mode);
   }, []);
 
-  // Sélectionner une range
+  // Select a range
   const handleRangeSelect = useCallback((range: Range) => {
     setSelectedRange(range);
   }, []);
 
-  // Calculer le numéro de la question actuelle
+  // Calculate current question number
   const questionNumber = progress?.current ? progress.current + 1 : 1;
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* En-tête */}
+      {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
-          Entraînement
+          Entrainement
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -192,18 +189,18 @@ const Training: React.FC = () => {
               <FullscreenIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Paramètres">
+          <Tooltip title="Parametres">
             <Button
               variant="outlined"
               startIcon={<SettingsIcon />}
               onClick={handleOpenSettings}
               color="inherit"
             >
-              Paramètres
+              Parametres
             </Button>
           </Tooltip>
 
-          <Tooltip title="Démarrer rapidement">
+          <Tooltip title="Demarrer rapidement">
             <Button
               variant="contained"
               startIcon={<PlayArrowIcon />}
@@ -212,31 +209,31 @@ const Training: React.FC = () => {
               disabled={ranges.length === 0}
               data-testid="quick-start-button"
             >
-              Démarrer
+              Demarrer
             </Button>
           </Tooltip>
         </Box>
       </Box>
 
-      {/* Affichage des erreurs */}
+      {/* Error display */}
       {error && (
         <Paper sx={{ p: 2, mb: 2, backgroundColor: 'error.main', color: 'error.contrastText' }}>
           <Typography variant="body1">{error}</Typography>
         </Paper>
       )}
 
-      {/* Sélection du mode */}
+      {/* Mode selection */}
       <TrainingModeSelector
         selectedMode={selectedMode}
         onModeChange={handleModeChange}
         disabled={isSessionActive}
       />
 
-      {/* Sélection de la range */}
+      {/* Range selection */}
       {!isSessionActive && (
         <Paper sx={{ p: 2, mb: 3 }}>
           <Typography variant="subtitle1" gutterBottom>
-            Sélectionner une Range
+            Selectionner une Range
           </Typography>
 
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -256,14 +253,14 @@ const Training: React.FC = () => {
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               Aucune range disponible.{' '}
               <Button onClick={() => navigate('/ranges/new')} color="primary">
-                Créer une range
+                Creer une range
               </Button>
             </Typography>
           )}
         </Paper>
       )}
 
-      {/* Zone de la question */}
+      {/* Question area */}
       {isSessionActive && currentQuestion && (
         <Box sx={{ mb: 3 }}>
           <Paper sx={{ p: 2, mb: 2 }}>
@@ -328,14 +325,14 @@ const Training: React.FC = () => {
         </Box>
       )}
 
-      {/* Message d'erreur si la session est active mais qu'il n'y a pas de question */}
+      {/* Error message if session is active but no question */}
       {isSessionActive && !currentQuestion && (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <Typography variant="h6" color="error" gutterBottom>
             Aucune question disponible
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            La range sélectionnée ne contient pas assez de mains pour générer des questions.
+            La range selectionnee ne contient pas assez de mains pour generer des questions.
           </Typography>
           <Button variant="contained" onClick={handleResetSession} color="inherit">
             Retour
@@ -343,14 +340,14 @@ const Training: React.FC = () => {
         </Paper>
       )}
 
-      {/* Zone de démarrage */}
+      {/* Start zone */}
       {!isSessionActive && !currentQuestion && (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <Typography variant="h6" gutterBottom>
-            Prêt à vous entraîner ?
+            Pret a vous entrainer ?
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Sélectionnez un mode et une range, puis cliquez sur "Démarrer"
+            Selectionnez un mode et une range, puis cliquez sur "Demarrer"
           </Typography>
 
           <Button
@@ -361,14 +358,14 @@ const Training: React.FC = () => {
             size="large"
             data-testid="start-training-button"
           >
-            Démarrer l'entraînement
+            Demarrer l'entrainement
           </Button>
         </Paper>
       )}
 
-      {/* Dialogue des paramètres */}
+      {/* Settings dialog */}
       <Dialog open={openSettingsDialog} onClose={handleCloseSettings} maxWidth="sm" fullWidth>
-        <DialogTitle>Paramètres d'entraînement</DialogTitle>
+        <DialogTitle>Parametres d'entrainement</DialogTitle>
         <DialogContent>
           <Box sx={{ p: 2 }}>
             <Typography variant="subtitle1" gutterBottom>
@@ -394,7 +391,7 @@ const Training: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Dialogue des résultats */}
+      {/* Results dialog */}
       <Dialog
         open={openResultsDialog}
         onClose={handleCloseResults}
@@ -402,7 +399,7 @@ const Training: React.FC = () => {
         fullWidth
         data-testid="results-dialog"
       >
-        <DialogTitle>Résultats de la Session</DialogTitle>
+        <DialogTitle>Resultats de la Session</DialogTitle>
         <DialogContent>
           <Box sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="h4" color="primary" gutterBottom data-testid="final-score">
@@ -417,7 +414,7 @@ const Training: React.FC = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-around', mb: 2 }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">
-                  Bonnes réponses
+                  Bonnes reponses
                 </Typography>
                 <Typography variant="h6">{progress?.correct || 0}</Typography>
               </Box>

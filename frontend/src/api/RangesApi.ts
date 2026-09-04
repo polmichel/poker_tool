@@ -1,60 +1,122 @@
 /**
  * API layer for ranges.
- *
- * Encapsulates every HTTP call to /api/ranges. Hooks depend on this instead
- * of touching axios directly, so the network contract lives in one place
- * and is easy to test/mock.
+ * Uses Zod validation for all responses.
  */
-import { api } from './client';
-import { Range } from '../types';
+import { api, extractErrorMessage } from './client';
+import { validate, validateApiResponse } from '../utils/validation';
+import type { Range } from '../types/domain/poker';
+import type {
+  CreateRangeRequest,
+  UpdateRangeRequest,
+  RangeListResponse,
+  RangeResponse,
+} from '../types/api';
+import { RangeListResponseSchema, RangeResponseSchema } from '../types/api/responses';
+import { CreateRangeRequestSchema, UpdateRangeRequestSchema } from '../types/api/requests';
 
+/**
+ * Ranges API client with Zod validation
+ */
 export class RangesApi {
-  async all(): Promise<Range[]> {
-    const response = await api.get<Range[]>('/ranges/');
-    return response.data;
+  /**
+   * Get all ranges
+   */
+  async ranges(): Promise<Range[]> {
+    try {
+      const response = await api.get('/ranges');
+      const data = validateApiResponse<RangeListResponse>(RangeListResponseSchema, response.data);
+      return data.ranges;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, 'Failed to fetch ranges'));
+    }
   }
 
-  async byId(id: number): Promise<Range> {
-    const response = await api.get<Range>(`/ranges/${id}`);
-    return response.data;
+  /**
+   * Get a specific range by ID
+   */
+  async range(rangeId: number): Promise<Range> {
+    try {
+      const response = await api.get(`/ranges/${rangeId}`);
+      const data = validateApiResponse<RangeResponse>(RangeResponseSchema, response.data);
+      return data.range;
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to fetch range ${rangeId}`)
+      );
+    }
   }
 
-  async create(rangeData: Omit<Range, 'id' | 'created_at' | 'updated_at'>): Promise<Range> {
-    const response = await api.post<Range>('/ranges/', rangeData);
-    return response.data;
+  /**
+   * Create a new range
+   */
+  async create(rangeData: CreateRangeRequest): Promise<Range> {
+    try {
+      const validatedData = validate(CreateRangeRequestSchema, rangeData);
+      const response = await api.post<RangeResponse>('/ranges', validatedData);
+      const data = validateApiResponse<RangeResponse>(RangeResponseSchema, response.data);
+      return data.range;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, 'Failed to create range'));
+    }
   }
 
-  async update(id: number, rangeData: Partial<Range>): Promise<Range> {
-    const response = await api.put<Range>(`/ranges/${id}`, rangeData);
-    return response.data;
+  /**
+   * Update an existing range
+   */
+  async update(rangeId: number, rangeData: UpdateRangeRequest): Promise<Range> {
+    try {
+      const validatedData = validate(UpdateRangeRequestSchema, rangeData);
+      const response = await api.put<RangeResponse>(`/ranges/${rangeId}`, validatedData);
+      const data = validateApiResponse<RangeResponse>(RangeResponseSchema, response.data);
+      return data.range;
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to update range ${rangeId}`)
+      );
+    }
   }
 
-  async remove(id: number): Promise<void> {
-    await api.delete(`/ranges/${id}`);
+  /**
+   * Delete a range
+   */
+  async delete(rangeId: number): Promise<{ message: string }> {
+    try {
+      const response = await api.delete<{ message: string }>(`/ranges/${rangeId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to delete range ${rangeId}`)
+      );
+    }
   }
 
-  async byUser(userId: number): Promise<Range[]> {
-    const response = await api.get<Range[]>(`/ranges/user/${userId}`);
-    return response.data;
+  /**
+   * Get ranges for a specific user
+   */
+  async rangesByUser(userId: number): Promise<Range[]> {
+    try {
+      const response = await api.get(`/ranges/user/${userId}`);
+      const data = validateApiResponse<RangeListResponse>(RangeListResponseSchema, response.data);
+      return data.ranges;
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to fetch ranges for user ${userId}`)
+      );
+    }
   }
 
-  async grid(id: number): Promise<Record<string, unknown>> {
-    const response = await api.get(`/ranges/${id}/grid`);
-    return response.data;
-  }
-
-  async stats(id: number): Promise<Record<string, unknown>> {
-    const response = await api.get(`/ranges/${id}/stats`);
-    return response.data;
-  }
-
-  async exportRange(rangeId: number, format: 'json' | 'text' | 'csv' = 'json'): Promise<unknown> {
-    const response = await api.get(`/ranges/export/${rangeId}?format=${format}`);
-    return response.data;
-  }
-
-  async importRange(content: string, format: 'json' | 'text' | 'csv' = 'json'): Promise<Range> {
-    const response = await api.post<Range>('/ranges/import', { content, format });
-    return response.data;
+  /**
+   * Search ranges by name or description
+   */
+  async search(query: string): Promise<Range[]> {
+    try {
+      const response = await api.get(`/ranges/search?q=${encodeURIComponent(query)}`);
+      const data = validateApiResponse<RangeListResponse>(RangeListResponseSchema, response.data);
+      return data.ranges;
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to search ranges for query: ${query}`)
+      );
+    }
   }
 }

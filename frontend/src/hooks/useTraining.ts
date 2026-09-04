@@ -1,11 +1,28 @@
+/**
+ * useTraining - Composed hook for training functionality
+ *
+ * This hook combines all training-related hooks into a single, backward-compatible interface.
+ * It manages:
+ * - Training session state and lifecycle
+ * - Training question flow and feedback
+ * - Training modes
+ *
+ * For new code, consider using the individual hooks directly:
+ * - useTrainingSession for session management
+ * - useTrainingQuestions for question flow
+ * - useTrainingModes for mode management
+ *
+ * @hook
+ * @deprecated Prefer using useTrainingSession, useTrainingQuestions, and useTrainingModes directly
+ */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { TrainingApi } from '../api';
 import { TrainingSession, TrainingMode, TrainingQuestion } from '../types';
 import { useAsyncState } from './useAsyncState';
 import { extractErrorMessage } from '../utils/errors';
 
-// Hook personnalisé pour gérer l'entraînement.
-// Dépend de TrainingApi (injectable) plutôt que d'appeler axios directement.
+// Hook personnalis pour grer l'entranement.
+// Dpend de TrainingApi (injectable) plutt que d'appeler axios directement.
 export function useTraining(trainingApi?: TrainingApi) {
   const trainingApiRef = useRef<TrainingApi>(trainingApi ?? new TrainingApi());
   const api = trainingApiRef.current;
@@ -22,18 +39,18 @@ export function useTraining(trainingApi?: TrainingApi) {
     correct: number;
   }>({ current: 0, total: 0, correct: 0 });
 
-  // Charger toutes les sessions d'entraînement
+  // Charger toutes les sessions d'entranement
   const fetchSessions = useCallback(async () => {
     try {
       const data = await run(() => api.sessions());
       setSessions(data);
     } catch (err) {
-      setError(extractErrorMessage(err, "Erreur lors du chargement des sessions d'entraînement"));
+      setError(extractErrorMessage(err, "Erreur lors du chargement des sessions d'entranement"));
       console.error('Error fetching training sessions:', err);
     }
   }, [api, run, setError]);
 
-  // Charger une session spécifique
+  // Charger une session spcifique
   const fetchSession = useCallback(
     async (id: number) => {
       try {
@@ -54,7 +71,7 @@ export function useTraining(trainingApi?: TrainingApi) {
     [api, run, setError],
   );
 
-  // Créer une nouvelle session d'entraînement
+  // Creer une nouvelle session d'entranement
   const createSession = useCallback(
     async (mode: TrainingMode, rangeId: number, userId?: number, totalQuestions: number = 10) => {
       try {
@@ -85,7 +102,7 @@ export function useTraining(trainingApi?: TrainingApi) {
         return sessionData;
       } catch (err) {
         setError(
-          extractErrorMessage(err, "Erreur lors de la création de la session d'entraînement"),
+          extractErrorMessage(err, "Erreur lors de la cration de la session d'entranement"),
         );
         console.error('Error creating training session:', err);
         return null;
@@ -94,7 +111,7 @@ export function useTraining(trainingApi?: TrainingApi) {
     [api, run, setError],
   );
 
-  // Passer à la question suivante
+  // Passer  la question suivante
   const nextQuestion = useCallback(
     async (sessionId: number, answer: string) => {
       try {
@@ -103,7 +120,7 @@ export function useTraining(trainingApi?: TrainingApi) {
         // Update state based on response
         // NOTE: when the session is complete we deliberately keep the current
         // question and the session active so the feedback panel stays mounted
-        // in the page until the user clicks "Voir les résultats". Closing the
+        // in the page until the user clicks "Voir les rsultats". Closing the
         // session (setIsSessionActive(false) + setCurrentQuestion(null)) is
         // driven by the page's handleNextQuestion, which also opens the results
         // dialog. Doing it here would unmount the question component (and its
@@ -144,7 +161,7 @@ export function useTraining(trainingApi?: TrainingApi) {
           };
         }
       } catch (err) {
-        setError(extractErrorMessage(err, 'Erreur lors de la soumission de la réponse'));
+        setError(extractErrorMessage(err, 'Erreur lors de la soumission de la rponse'));
         console.error('Error submitting answer:', err);
         return null;
       }
@@ -152,7 +169,7 @@ export function useTraining(trainingApi?: TrainingApi) {
     [progress, score, api, run, setError],
   );
 
-  // Terminer une session d'entraînement
+  // Terminer une session d'entranement
   const endSession = useCallback(
     async (sessionId: number) => {
       try {
@@ -171,7 +188,7 @@ export function useTraining(trainingApi?: TrainingApi) {
     [fetchSessions, api, run, setError],
   );
 
-  // Démarrer rapidement une session (avec paramètres par défaut)
+  // Dmarrer rapidement une session (avec paramtres par dfaut)
   const quickStart = useCallback(
     async (mode: TrainingMode, rangeId: number, userId?: number) => {
       try {
@@ -201,7 +218,7 @@ export function useTraining(trainingApi?: TrainingApi) {
 
         return sessionData;
       } catch (err) {
-        setError(extractErrorMessage(err, 'Erreur lors du démarrage rapide'));
+        setError(extractErrorMessage(err, 'Erreur lors du dmarrage rapide'));
         console.error('Error quick starting:', err);
         return null;
       }
@@ -209,18 +226,18 @@ export function useTraining(trainingApi?: TrainingApi) {
     [api, run, setError],
   );
 
-  // Obtenir les modes d'entraînement disponibles
+  // Obtenir les modes d'entranement disponibles
   const fetchTrainingModes = useCallback(async () => {
     try {
       return await run(() => api.modes());
     } catch (err) {
-      setError(extractErrorMessage(err, "Erreur lors du chargement des modes d'entraînement"));
+      setError(extractErrorMessage(err, "Erreur lors du chargement des modes d'entranement"));
       console.error('Error fetching training modes:', err);
       return null;
     }
   }, [api, run, setError]);
 
-  // Réinitialiser l'état
+  // Rinitialiser l'tat
   const resetTrainingState = useCallback(() => {
     setCurrentSession(null);
     setCurrentQuestion(null);
