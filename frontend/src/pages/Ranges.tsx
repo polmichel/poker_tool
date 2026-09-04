@@ -138,22 +138,24 @@ const Ranges: React.FC = () => {
   }, [selectedFolderId, folders, createFolder]);
 
   // --- Drag & drop : ranges -> dossiers (HTML5 natif, sans dépendance) ---
+  // Ghost element dimensions (used for consistent offset calculation)
+  const GHOST_WIDTH = 280;
+  const GHOST_HEIGHT = 60;
+
   const handleRangeDragStart = useCallback((rangeId: number, e: React.DragEvent) => {
     setDraggingRangeId(rangeId);
     setIsDragging(true);
     // Required for HTML5 DnD to work in most browsers
     e.dataTransfer.setData('text/plain', rangeId.toString());
-    // Create ghost element for visual feedback
-    const rangeElement = e.currentTarget as HTMLElement;
-    const rect = rangeElement.getBoundingClientRect();
-    setGhostRange({ id: rangeId, x: e.clientX - rect.width / 2, y: e.clientY - rect.height / 2 });
+    // Create ghost element for visual feedback - use ghost dimensions for consistent offset
+    setGhostRange({ id: rangeId, x: e.clientX - GHOST_WIDTH / 2, y: e.clientY - GHOST_HEIGHT / 2 });
   }, []);
 
   const handleRangeDrag = useCallback(
     (e: React.DragEvent) => {
       if (ghostRange && isDragging) {
-        // Ghost element is 280x60px, so offset by half width (140) and half height (30)
-        setGhostRange({ ...ghostRange, x: e.clientX - 140, y: e.clientY - 30 });
+        // Use same ghost dimensions offset as in dragStart for consistency
+        setGhostRange({ ...ghostRange, x: e.clientX - GHOST_WIDTH / 2, y: e.clientY - GHOST_HEIGHT / 2 });
       }
     },
     [ghostRange, isDragging],
