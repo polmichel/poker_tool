@@ -1,79 +1,185 @@
 /**
  * API layer for training sessions.
+ * Uses Zod validation for all responses.
  */
-import { api } from './client';
-import { TrainingMode, TrainingSession, TrainingQuestion as TrainingQuestionType } from '../types';
+import { api, extractErrorMessage } from './client';
+import { validate, validateApiResponse } from '../utils/validation';
+import {
+  CreateSessionPayload,
+  CreateSessionResponse,
+  NextQuestionResponse,
+  SessionDetail,
+} from './TrainingApi.types';
+import { TrainingModeResponseSchema, TrainingSessionsResponseSchema, CreateSessionResponseSchema, SessionDetailResponseSchema, NextQuestionResponseSchema } from '../types/api/responses';
+import { CreateSessionRequestSchema, AnswerRequestSchema } from '../types/api/requests';
+import type { TrainingMode, TrainingSession, TrainingQuestion } from '../types/domain/training';
+import type { CreateSessionRequest } from '../types/api/requests';
+import type { TrainingModeResponse, TrainingSessionsResponse, SessionDetailResponse } from '../types/api/responses';
 
-export interface NextQuestionResponse {
-  is_correct: boolean;
-  correct_answer: string | null;
-  session_complete: boolean;
-  progress: { current: number; total: number; correct: number; score: number };
-  next_question?: TrainingQuestionType;
-}
+// Re-export types for backward compatibility
+export type {
+  CreateSessionPayload,
+  CreateSessionResponse,
+  NextQuestionResponse,
+  SessionDetail,
+  TrainingMode,
+  TrainingSession,
+  TrainingQuestion,
+};
 
-export interface CreateSessionPayload {
-  mode: TrainingMode;
-  range_id: number;
-  total_questions?: number;
-  user_id?: number;
-}
-
-export interface CreateSessionResponse {
-  id: number;
-  session: TrainingSession;
-  first_question: TrainingQuestionType | null;
-}
-
-export interface SessionDetail {
-  id: number;
-  session: TrainingSession;
-  current_question: TrainingQuestionType | null;
-  progress: { current: number; total: number; correct: number; score: number };
-}
-
+/**
+ * Training API client with Zod validation
+ */
 export class TrainingApi {
-  async modes(): Promise<{ value: string; label: string }[]> {
-    const response = await api.get('/training/modes');
-    return response.data;
+  /**
+   * Get available training modes
+   */
+  async modes(): Promise<TrainingModeResponse> {
+    try {
+      const response = await api.get('/training/modes');
+      return validateApiResponse<TrainingModeResponse>(TrainingModeResponseSchema, response.data);
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, 'Failed to fetch training modes')
+      );
+    }
   }
 
+  /**
+   * Get all training sessions
+   */
   async sessions(): Promise<TrainingSession[]> {
-    const response = await api.get('/training/sessions');
-    return response.data;
+    try {
+      const response = await api.get('/training/sessions');
+      return validateApiResponse<TrainingSessionsResponse>(TrainingSessionsResponseSchema, response.data);
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, 'Failed to fetch training sessions')
+      );
+    }
   }
 
-  async createSession(payload: CreateSessionPayload): Promise<CreateSessionResponse> {
-    const response = await api.post<CreateSessionResponse>('/training/sessions', payload);
-    return response.data;
+  /**
+   * List training sessions - backward compatible method
+   * @deprecated Use sessions() instead
+   */
+  async list(): Promise<TrainingSession[]> {
+    return this.sessions();
   }
 
+  /**
+   * Create a new training session
+   */
+  async createSession(
+    payload: CreateSessionRequest
+  ): Promise<CreateSessionResponse> {
+    try {
+      // Validate the payload before sending
+      const validatedPayload = validate(CreateSessionRequestSchema, payload);
+      
+      const response = await api.post<CreateSessionResponse>(
+        '/training/sessions',
+        validatedPayload
+      );
+      return validateApiResponse<CreateSessionResponse>(CreateSessionResponseSchema, response.data);
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, 'Failed to create training session')
+      );
+    }
+  }
+
+  /**
+   * Get a specific training session with its current question
+   */
   async session(sessionId: number): Promise<SessionDetail> {
-    const response = await api.get(`/training/sessions/${sessionId}`);
-    return response.data;
+    try {
+      const response = await api.get(`/training/sessions/${sessionId}`);
+      return validateApiResponse<SessionDetailResponse>(SessionDetailResponseSchema, response.data);
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to fetch session ${sessionId}`)
+      );
+    }
   }
 
+  /**
+   * Start a training session
+   * Note: This may not be needed as createSession already returns the first question
+   */
   async start(
-    sessionId: number,
-  ): Promise<{ session: TrainingSession; first_question: TrainingQuestionType | null }> {
-    const response = await api.post(`/training/sessions/${sessionId}/start`);
-    return response.data;
+    sessionId: number
+  ): Promise<{ session: TrainingSession; first_question: TrainingQuestion | null }> {
+    try {
+      const response = await api.post<{
+        session: TrainingSession;
+        first_question: TrainingQuestion | null;
+      }>(`/training/sessions/${sessionId}/start`);
+      
+      return {
+        session: response.data.session,
+        first_question: response.data.first_question,
+      };
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to start session ${sessionId}`)
+      );
+    }
   }
 
+  /**
+   * Submit an answer and get the next question
+   */
   async answer(sessionId: number, answer: string): Promise<NextQuestionResponse> {
-    const response = await api.post<NextQuestionResponse>(`/training/sessions/${sessionId}/next`, {
-      answer,
-    });
-    return response.data;
+    try {
+      const validatedAnswer = validate(AnswerRequestSchema, { answer });
+      
+      const response = await api.post<NextQuestionResponse>(
+        `/training/sessions/${sessionId}/next`,
+        validatedAnswer
+      );
+      return validateApiResponse<NextQuestionResponse>(NextQuestionResponseSchema, response.data);
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to submit answer for session ${sessionId}`)
+      );
+    }
   }
 
-  async end(sessionId: number): Promise<{ message: string; session: TrainingSession }> {
-    const response = await api.post(`/training/sessions/${sessionId}/end`);
-    return response.data;
+  /**
+   * End a training session
+   */
+  async end(
+    sessionId: number
+  ): Promise<{ message: string; session: TrainingSession }> {
+    try {
+      const response = await api.post<{
+        message: string;
+        session: TrainingSession;
+      }>(`/training/sessions/${sessionId}/end`);
+      
+      return {
+        message: response.data.message,
+        session: response.data.session,
+      };
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to end session ${sessionId}`)
+      );
+    }
   }
 
+  /**
+   * Get training sessions for a specific user
+   */
   async sessionsByUser(userId: number): Promise<TrainingSession[]> {
-    const response = await api.get(`/training/sessions/user/${userId}`);
-    return response.data;
+    try {
+      const response = await api.get(`/training/sessions/user/${userId}`);
+      return validateApiResponse<TrainingSessionsResponse>(TrainingSessionsResponseSchema, response.data);
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to fetch sessions for user ${userId}`)
+      );
+    }
   }
 }
