@@ -1,49 +1,108 @@
 /**
  * API layer for statistics.
+ * Uses Zod validation for all responses.
  */
-import { api } from './client';
+import { api, extractErrorMessage } from './client';
+import { validateApiResponse } from '../utils/validation';
+import type { GlobalStats, UserStats } from '../types/domain/stats';
+import { GlobalStatsResponseSchema, UserStatsResponseSchema } from '../types/api/responses';
+import type { GlobalStatsResponse, UserStatsResponse } from '../types/api/responses';
 
-export interface GlobalStats {
-  total_ranges: number;
-  total_users: number;
-  total_sessions: number;
-  total_hands: number;
-  avg_score: number;
-  most_common_action: string;
-}
+// Re-export types for backward compatibility
+export type { GlobalStats, UserStats };
 
-export interface UserStats {
-  user_id: number;
-  total_sessions: number;
-  avg_score: number;
-  total_time_spent: number;
-  best_score: number;
-  most_played_range: string;
-}
-
+/**
+ * Statistics API client with Zod validation
+ */
 export class StatsApi {
+  /**
+   * Get global statistics
+   */
   async global(): Promise<GlobalStats> {
-    const response = await api.get<GlobalStats>('/stats/global');
-    return response.data;
+    try {
+      const response = await api.get('/stats/global');
+      return validateApiResponse<GlobalStatsResponse>(GlobalStatsResponseSchema, response.data);
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, 'Failed to fetch global stats'));
+    }
   }
 
-  async byUser(userId: number): Promise<UserStats> {
-    const response = await api.get<UserStats>(`/stats/user/${userId}`);
-    return response.data;
+  /**
+   * Get statistics for a specific user
+   */
+  async user(userId: number): Promise<UserStats> {
+    try {
+      const response = await api.get(`/stats/user/${userId}`);
+      return validateApiResponse<UserStatsResponse>(UserStatsResponseSchema, response.data);
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to fetch stats for user ${userId}`)
+      );
+    }
   }
 
-  async history(): Promise<unknown> {
-    const response = await api.get('/stats/history');
-    return response.data;
+  /**
+   * Get training statistics for a specific user
+   */
+  async training(userId: number): Promise<{
+    total_sessions: number;
+    avg_score: number;
+    total_time_spent: number;
+    best_score: number;
+    worst_score: number;
+  }> {
+    try {
+      const response = await api.get(`/stats/training/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to fetch training stats for user ${userId}`)
+      );
+    }
   }
 
-  async leaderboard(): Promise<unknown> {
-    const response = await api.get('/stats/leaderboard');
-    return response.data;
+  /**
+   * Get range statistics for a specific user
+   */
+  async ranges(userId: number): Promise<{
+    total_ranges: number;
+    by_type: Record<string, number>;
+    by_position: Record<string, number>;
+  }> {
+    try {
+      const response = await api.get(`/stats/ranges/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to fetch range stats for user ${userId}`)
+      );
+    }
   }
 
-  async export(format: 'json' | 'csv' = 'json'): Promise<unknown> {
-    const response = await api.get(`/stats/export?format=${format}`);
-    return response.data;
+  /**
+   * Get recent activity for a user
+   */
+  async recentActivity(userId: number, limit?: number): Promise<{
+    sessions: Array<{
+      id: number;
+      type: string;
+      score: number;
+      date: string;
+    }>;
+    ranges: Array<{
+      id: number;
+      name: string;
+      date: string;
+    }>;
+  }> {
+    try {
+      const url = limit ? `/stats/activity/${userId}?limit=${limit}` : `/stats/activity/${userId}`;
+      const response = await api.get(url);
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, `Failed to fetch recent activity for user ${userId}`)
+      );
+    }
   }
 }
