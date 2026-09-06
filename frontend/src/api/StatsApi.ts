@@ -44,9 +44,7 @@ export class StatsApi {
       if (errorData?.error) {
         throw new Error(errorData.error);
       }
-      throw new Error(
-        extractErrorMessage(error, `Failed to fetch stats for user ${userId}`)
-      );
+      throw new Error(extractErrorMessage(error, `Failed to fetch stats for user ${userId}`));
     }
   }
 

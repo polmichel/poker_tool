@@ -73,7 +73,14 @@ describe('useTraining Hook', () => {
 
   it('fetches a specific session successfully', async () => {
     const fakeApi = makeFakeTrainingApi();
-    const mockSession = { id: 1, user_id: 1, range_id: 1, mode: 'fill', score: 85, total_questions: 10 };
+    const mockSession = {
+      id: 1,
+      user_id: 1,
+      range_id: 1,
+      mode: 'fill',
+      score: 85,
+      total_questions: 10,
+    };
     const mockResponse = {
       id: 1,
       session: mockSession,
@@ -95,14 +102,14 @@ describe('useTraining Hook', () => {
 
   it('handles error when fetching a specific session', async () => {
     const fakeApi = makeFakeTrainingApi();
-    const errorWithMessage = new Error("Erreur lors du chargement de la session 1");
+    const errorWithMessage = new Error('Erreur lors du chargement de la session 1');
     fakeApi.session.mockRejectedValue(errorWithMessage);
     const { result } = renderHook(() => useTraining(fakeApi));
 
     await act(async () => {
       await result.current.fetchSession(1);
     });
-    expect(result.current.error).toBe("Erreur lors du chargement de la session 1");
+    expect(result.current.error).toBe('Erreur lors du chargement de la session 1');
     expect(result.current.loading).toBe(false);
   });
 
@@ -125,7 +132,7 @@ describe('useTraining Hook', () => {
 
   it('handles error when creating a session', async () => {
     const fakeApi = makeFakeTrainingApi();
-    const errorWithMessage = new Error("Erreur lors de la creation de la session");
+    const errorWithMessage = new Error('Erreur lors de la creation de la session');
     fakeApi.createSession.mockRejectedValue(errorWithMessage);
     const { result } = renderHook(() => useTraining(fakeApi));
 

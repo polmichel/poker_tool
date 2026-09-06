@@ -36,15 +36,15 @@ export function extractErrorMessage(
   if (axios.isAxiosError(err)) {
     const axiosErr = err as AxiosError;
     const body = axiosErr.response?.data as { error?: string; message?: string } | undefined;
-    
+
     // Try to get error message from response data
     if (body?.error) return body.error;
     if (body?.message) return body.message;
-    
+
     // Fall back to status text or axios message
     if (axiosErr.response?.statusText) return axiosErr.response.statusText;
     if (axiosErr.message) return axiosErr.message;
-    
+
     return defaultMessage;
   }
 
@@ -52,7 +52,11 @@ export function extractErrorMessage(
   if (useMessage && err instanceof Error && err.message) return err.message;
 
   // For any other type (strings, objects, etc.)
-  const errorObj = err as { message?: string; error?: string; response?: { data?: { error?: string } } };
+  const errorObj = err as {
+    message?: string;
+    error?: string;
+    response?: { data?: { error?: string } };
+  };
   if (errorObj.error) return errorObj.error;
   if (errorObj.message) return errorObj.message;
   if (errorObj.response?.data?.error) return errorObj.response.data.error;
@@ -60,4 +64,3 @@ export function extractErrorMessage(
   // Return default message
   return defaultMessage;
 }
-

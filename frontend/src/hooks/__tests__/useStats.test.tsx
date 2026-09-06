@@ -93,7 +93,7 @@ describe('useStats Hook', () => {
   it('handles error when fetching user stats', async () => {
     const fakeApi = makeFakeStatsApi();
     const errorWithMessage = new Error(
-      "Erreur lors du chargement des statistiques de l'utilisateur 1"
+      "Erreur lors du chargement des statistiques de l'utilisateur 1",
     );
     fakeApi.byUser.mockRejectedValue(errorWithMessage);
     fakeApi.user.mockRejectedValue(errorWithMessage);
@@ -125,7 +125,7 @@ describe('useStats Hook', () => {
       await result.current.fetchGlobalStats();
     });
     expect(result.current.globalStats).not.toBeNull();
-    
+
     // Reset by calling fetch again with a new mock
     fakeApi.global.mockResolvedValue(null as any);
     await act(async () => {

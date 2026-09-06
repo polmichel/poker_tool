@@ -48,9 +48,7 @@ export class EquityApi {
           }
         }
       }
-      throw new Error(
-        extractErrorMessage(error, 'Failed to calculate equity')
-      );
+      throw new Error(extractErrorMessage(error, 'Failed to calculate equity'));
     }
   }
 
@@ -58,11 +56,7 @@ export class EquityApi {
    * Simulate equity - backward compatible method
    * @deprecated Use calculate() instead
    */
-  async simulate(
-    hero: string,
-    villain: string,
-    iterations?: number,
-  ): Promise<EquityResult> {
+  async simulate(hero: string, villain: string, iterations?: number): Promise<EquityResult> {
     return this.calculate({ hero, villain, iterations });
   }
 
