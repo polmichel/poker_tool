@@ -38,8 +38,10 @@ jest.mock('../../api', () => {
     sessionsByUser = jest.fn();
   }
   class FakeRangesApi {
-    all = jest.fn().mockResolvedValue([{ id: 1, name: 'Test Range E2E', hands: { AA: 'raise' } }]);
-    byId = jest.fn();
+    ranges = jest
+      .fn()
+      .mockResolvedValue([{ id: 1, name: 'Test Range E2E', hands: { AA: 'raise' } }]);
+    range = jest.fn();
     create = jest.fn();
     update = jest.fn();
     remove = jest.fn();

@@ -1,5 +1,4 @@
 import { renderHook, act } from '@testing-library/react';
-import axios from 'axios';
 import { useStats } from '../useStats';
 import { StatsApi } from '../../api';
 

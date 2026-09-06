@@ -115,7 +115,6 @@ describe('useTraining Hook', () => {
 
   it('creates a new training session', async () => {
     const fakeApi = makeFakeTrainingApi();
-    const mockPayload = { range_id: 1, mode: 'fill', time_limit: 30 };
     const mockResponse = {
       session: { id: 1, user_id: 1, range_id: 1, mode: 'fill', score: 0, total_questions: 10 },
       first_question: null,
