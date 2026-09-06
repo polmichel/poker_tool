@@ -10,7 +10,7 @@ import { z } from 'zod';
 
 export const GlobalStatsSchema = z.object({
   total_ranges: z.number(),
-  total_training_sessions: z.number(),
+  total_sessions: z.number(),
   avg_score: z.number(),
   total_time_spent: z.number(),
   total_users: z.number().optional(),
@@ -38,7 +38,7 @@ export type UserStats = z.infer<typeof UserStatsSchema>;
 
 export const StatsSchema = z.object({
   total_ranges: z.number(),
-  total_training_sessions: z.number(),
+  total_sessions: z.number(),
   avg_score: z.number(),
   total_time_spent: z.number(),
 });

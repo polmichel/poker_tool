@@ -48,3 +48,4 @@ const ICONS: Record<string, IconComponent> = {
 export function getIcon(name: string): IconComponent {
   return ICONS[name] ?? Home;
 }
+export { ICONS };

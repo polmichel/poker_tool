@@ -45,9 +45,9 @@ export function useAuth(authApi?: AuthApi) {
   const register = useCallback(
     async (username: string, email: string, password: string) => {
       try {
-        await run(() => api.register(username, email, password));
+        await run(() => api.register({ username, email, password }));
         // Connecter automatiquement après l'inscription
-        const { access_token, user: userData } = await api.login(username, password);
+        const { access_token, user: userData } = await api.login({ username, password });
         localStorage.setItem('poker_tool_token', access_token);
         setToken(access_token);
         setUser(userData);
@@ -66,7 +66,7 @@ export function useAuth(authApi?: AuthApi) {
   const login = useCallback(
     async (username: string, password: string) => {
       try {
-        const { access_token, user: userData } = await run(() => api.login(username, password));
+        const { access_token, user: userData } = await run(() => api.login({ username, password }));
         localStorage.setItem('poker_tool_token', access_token);
         setToken(access_token);
         setUser(userData);
