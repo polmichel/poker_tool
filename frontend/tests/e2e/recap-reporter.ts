@@ -6,6 +6,7 @@
  * results table. Retries are de-duplicated: each test is counted once, using
  * its final outcome.
  */
+import path from 'path';
 import type { Reporter, TestCase, TestResult, FullResult } from '@playwright/test/reporter';
 
 interface FailureEntry {
@@ -21,7 +22,7 @@ class RecapReporter implements Reporter {
   private seen = new Set<string>();
 
   onTestEnd(test: TestCase, result: TestResult): void {
-    const spec = test.titlePath()[0] ?? 'unknown';
+    const spec = path.basename(test.location.file) || 'unknown';
     const key = `${spec}::${test.title}`;
 
     // Count each test exactly once using its final attempt.
