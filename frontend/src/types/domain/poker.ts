@@ -49,18 +49,12 @@ export type ActionType = z.infer<typeof ActionTypeSchema>;
 // Position Types
 // ============================================================================
 
-export const PositionSchema = z.enum([
-  'UTG',
-  'UTG+1',
-  'LJ',
-  'HJ',
-  'CO',
-  'BTN',
-  'SB',
-  'BB',
-  'undefined',
-]);
-export type Position = z.infer<typeof PositionSchema>;
+export const PositionSchema = z
+  .enum(['UTG', 'UTG_PLUS_1', 'LJ', 'HJ', 'CO', 'BTN', 'SB', 'BB', 'UNDEFINED'])
+  .transform((value): Position =>
+    value === 'UTG_PLUS_1' ? 'UTG+1' : value === 'UNDEFINED' ? 'undefined' : value,
+  );
+export type Position = 'UTG' | 'UTG+1' | 'LJ' | 'HJ' | 'CO' | 'BTN' | 'SB' | 'BB' | 'undefined';
 
 // ============================================================================
 // Range Types
