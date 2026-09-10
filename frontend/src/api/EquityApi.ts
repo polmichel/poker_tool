@@ -32,12 +32,22 @@ export class EquityApi {
   async calculate(request: EquityRequest): Promise<EquityResult> {
     try {
       const validatedRequest = validate(EquityRequestSchema, request);
-      const response = await api.post<EquityResult>('/equity/calculate', validatedRequest);
+      // The backend exposes /equity/simulate and reads the opposing range
+      // under the `range` field (not `villain`).
+      const payload = {
+        hero: validatedRequest.hero,
+        range: validatedRequest.villain,
+        board: validatedRequest.board,
+        iterations: validatedRequest.iterations,
+      };
+      const response = await api.post<EquityResult>('/equity/simulate', payload);
       return validateApiResponse(EquityResultSchema, response.data);
     } catch (error) {
-      // Check if this is a missing hands error
-      if (extractErrorMessage(error, '').includes('missing')) {
-        const errorData = (error as { data?: unknown }).data;
+      // The backend returns 409 with a `missing` list when the exact equity
+      // table cannot answer every hand in the range.
+      const apiError = error as { status?: number; data?: unknown };
+      if (apiError.status === 409) {
+        const errorData = apiError.data;
         if (errorData && typeof errorData === 'object') {
           const missing = (errorData as Record<string, unknown>).missing;
           if (Array.isArray(missing)) {
@@ -70,18 +80,19 @@ export class EquityApi {
     iterations?: number,
   ): Promise<EquityResult> {
     try {
-      const response = await api.post<EquityResult>('/equity/calculate', {
+      const response = await api.post<EquityResult>('/equity/simulate', {
         hero,
-        villain,
+        range: villain,
         board,
         iterations,
       });
       return validateApiResponse(EquityResultSchema, response.data);
     } catch (error) {
-      // Check if this is a missing hands error
-      if (extractErrorMessage(error, '').includes('missing')) {
-        // Try to extract missing hands from error
-        const errorData = (error as { data?: unknown }).data;
+      // The backend returns 409 with a `missing` list when the exact equity
+      // table cannot answer every hand in the range.
+      const apiError = error as { status?: number; data?: unknown };
+      if (apiError.status === 409) {
+        const errorData = apiError.data;
         if (errorData && typeof errorData === 'object') {
           const missing = (errorData as Record<string, unknown>).missing;
           if (Array.isArray(missing)) {
