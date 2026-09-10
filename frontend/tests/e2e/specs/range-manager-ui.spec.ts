@@ -222,4 +222,52 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     await expect(page.getByText(/Ranges \([1-9]\d*\)/)).toBeVisible({ timeout: 5000 });
   });
 
+  test('drag-and-drop visual feedback works correctly', async ({ page }) => {
+    // Créer un dossier cible pour le dépôt.
+    const folderName = 'Dossier DnD Visual ' + Date.now();
+    await page.evaluate((name) => {
+      window.prompt = () => name;
+    }, folderName);
+    const newFolderButton = page.getByRole('button', { name: 'Nouveau Dossier' });
+    await newFolderButton.waitFor({ state: 'visible', timeout: 5000 });
+    await newFolderButton.click();
+    await expect(page.getByText(folderName, { exact: true })).toBeVisible({ timeout: 5000 });
+
+    // Le panneau central doit lister au moins une range.
+    const rangeCard = page.locator('[draggable="true"]').filter({ hasText: /mains/ }).first();
+    await rangeCard.waitFor({ state: 'visible', timeout: 10000 });
+
+    const folderTarget = page.getByText(folderName, { exact: true }).first();
+    await folderTarget.waitFor({ state: 'visible', timeout: 5000 });
+
+    // Dispatch dragstart on range
+    await rangeCard.dispatchEvent('dragstart');
+
+    // Verify ghost element appears (custom visual feedback)
+    const ghostElement = page.locator('[data-testid="range-ghost-element"]');
+    await expect(ghostElement).toBeVisible({ timeout: 2000 });
+
+    // Dispatch dragover on folder
+    await folderTarget.dispatchEvent('dragover');
+
+    // Verify folder highlight appears (drop target feedback)
+    const highlightedFolder = page.locator('div').filter({
+      hasText: folderName,
+    }).filter({
+      hasCSS: /border.*dashed/,
+    });
+    await expect(highlightedFolder).toBeVisible({ timeout: 1000 });
+
+    // Verify dragenter also works (smoother transitions between folders)
+    await folderTarget.dispatchEvent('dragenter');
+    await expect(highlightedFolder).toBeVisible({ timeout: 1000 });
+
+    // Complete the drop
+    await folderTarget.dispatchEvent('drop');
+    await rangeCard.dispatchEvent('dragend');
+
+    // Verify ghost element disappears after dragend
+    await expect(ghostElement).not.toBeVisible({ timeout: 2000 });
+  });
+
 });
