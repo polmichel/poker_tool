@@ -20,9 +20,7 @@ export interface FocusModeIndicatorProps {
  *
  * Only visible when in focus mode, provides a way to exit
  */
-export const FocusModeIndicator: React.FC<FocusModeIndicatorProps> = ({
-  onExitFocusMode,
-}) => {
+export const FocusModeIndicator: React.FC<FocusModeIndicatorProps> = ({ onExitFocusMode }) => {
   return (
     <Box
       sx={{

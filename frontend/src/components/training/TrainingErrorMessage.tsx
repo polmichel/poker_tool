@@ -7,7 +7,7 @@
  * @component
  */
 import React from 'react';
-import { Box, Button, Paper, Typography } from '@mui/material';
+import { Button, Paper, Typography } from '@mui/material';
 
 export interface TrainingErrorMessageProps {
   error?: string | null;

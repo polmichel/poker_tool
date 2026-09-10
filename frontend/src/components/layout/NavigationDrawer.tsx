@@ -21,13 +21,10 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import {
-  Settings as SettingsIcon,
-  GridView as GridViewIcon,
-} from '@mui/icons-material';
+import { Settings as SettingsIcon, GridView as GridViewIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { THEME_COLORS } from '../../utils/constants';
-import { APP_ENTRIES, MODULE_ROUTES, moduleRoute, resolveModule } from '../../app/theme';
+import { APP_ENTRIES, moduleRoute } from '../../app/theme';
 import { getIcon } from '../../app/icons';
 
 export interface NavigationDrawerProps {
@@ -129,7 +126,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   /**
    * Navigation item for a module
    */
-  const ModuleNavItem: React.FC<{ entry: typeof APP_ENTRIES[number] }> = ({ entry }) => {
+  const ModuleNavItem: React.FC<{ entry: (typeof APP_ENTRIES)[number] }> = ({ entry }) => {
     const Icon = getIcon(entry.icon);
     const isActive = activeModule === entry.slug;
     const route = moduleRoute(entry.slug);
@@ -198,9 +195,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
     <ListItem disablePadding>
       <Tooltip title={collapsed ? 'Paramètres' : ''} placement="right" arrow>
         <ListItemButton onClick={() => navigate('/settings')}>
-          <ListItemIcon
-            sx={{ minWidth: collapsed ? 'auto' : 38, justifyContent: 'center' }}
-          >
+          <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 38, justifyContent: 'center' }}>
             <SettingsIcon />
           </ListItemIcon>
           {!collapsed && <ListItemText primary="Paramètres" />}
@@ -279,4 +274,4 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
       </Drawer>
     </Box>
   );
-}
+};

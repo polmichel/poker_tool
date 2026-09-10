@@ -85,7 +85,7 @@ export function useTrainingQuestions(trainingApi?: TrainingApi): UseTrainingQues
               total: result.progress?.total,
             },
           };
-          
+
           setFeedback(feedbackData);
           return feedbackData;
         } else {
@@ -96,7 +96,7 @@ export function useTrainingQuestions(trainingApi?: TrainingApi): UseTrainingQues
             sessionComplete: false,
             nextQuestion: result.next_question,
           };
-          
+
           setFeedback(feedbackData);
           return feedbackData;
         }

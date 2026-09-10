@@ -7,7 +7,7 @@
  * @component
  */
 import React from 'react';
-import { Box, Button, Paper, Typography } from '@mui/material';
+import { Button, Paper, Typography } from '@mui/material';
 import { PlayArrow as PlayArrowIcon } from '@mui/icons-material';
 
 export interface TrainingStartPromptProps {
@@ -18,10 +18,7 @@ export interface TrainingStartPromptProps {
 /**
  * Training start prompt component
  */
-export const TrainingStartPrompt: React.FC<TrainingStartPromptProps> = ({
-  onStart,
-  disabled,
-}) => {
+export const TrainingStartPrompt: React.FC<TrainingStartPromptProps> = ({ onStart, disabled }) => {
   return (
     <Paper sx={{ p: 4, textAlign: 'center' }}>
       <Typography variant="h6" gutterBottom>

@@ -48,13 +48,7 @@ export const TrainingResultsDialog: React.FC<TrainingResultsDialogProps> = ({
   timeSpent,
 }) => {
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      data-testid="results-dialog"
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="results-dialog">
       <DialogTitle>Resultats de la Session</DialogTitle>
       <DialogContent>
         <Box sx={{ p: 2, textAlign: 'center' }}>
@@ -101,11 +95,7 @@ export const TrainingResultsDialog: React.FC<TrainingResultsDialogProps> = ({
         <Button onClick={onClose} color="inherit">
           Fermer
         </Button>
-        <Button
-          onClick={onRestart}
-          color="primary"
-          startIcon={<ReplayIcon />}
-        >
+        <Button onClick={onRestart} color="primary" startIcon={<ReplayIcon />}>
           Recommencer
         </Button>
       </DialogActions>

@@ -29,9 +29,7 @@ export const TrainingSessionInfo: React.FC<TrainingSessionInfoProps> = ({
 }) => {
   return (
     <Paper sx={{ p: 2, mb: 2 }}>
-      <Box
-        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}
-      >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="h6">Session en cours</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Chip label={`Score: ${Math.round(score)}%`} color="primary" />
@@ -50,11 +48,7 @@ export const TrainingSessionInfo: React.FC<TrainingSessionInfoProps> = ({
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Tooltip title="Terminer la session">
-          <IconButton
-            onClick={onEndSession}
-            color="error"
-            data-testid="end-session-button"
-          >
+          <IconButton onClick={onEndSession} color="error" data-testid="end-session-button">
             <StopIcon />
           </IconButton>
         </Tooltip>

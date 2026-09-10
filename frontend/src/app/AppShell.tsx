@@ -13,23 +13,19 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Box, CssBaseline, Fade } from '@mui/material';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuthContext } from '../auth/AuthContext';
+import { useLocation } from 'react-router-dom';
+
 import { useFocusMode } from '../contexts/FocusModeContext';
 import { NavigationDrawer } from '../components/layout/NavigationDrawer';
 import { TopAppBar } from '../components/layout/TopAppBar';
 import { FocusModeIndicator } from '../components/layout/FocusModeIndicator';
-import { THEME_COLORS } from '../utils/constants';
-import { APP_ENTRIES, MODULE_ROUTES, moduleRoute, resolveModule } from './theme';
+import { MODULE_ROUTES, resolveModule } from './theme';
 
 const DRAWER_WIDTH = 256;
-const DRAWER_COLLAPSED_WIDTH = 48;
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, isAuthenticated } = useAuthContext();
   const { focusMode, drawerCollapsed, setFocusMode, setDrawerCollapsed } = useFocusMode();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
@@ -92,9 +88,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       </Box>
 
       {/* Focus mode indicator (only visible when in focus mode) */}
-      {focusMode && (
-        <FocusModeIndicator onExitFocusMode={handleToggleFocusMode} />
-      )}
+      {focusMode && <FocusModeIndicator onExitFocusMode={handleToggleFocusMode} />}
     </Box>
   );
 };

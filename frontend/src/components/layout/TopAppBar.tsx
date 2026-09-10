@@ -37,7 +37,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../auth/AuthContext';
-import { useFocusMode } from '../../contexts/FocusModeContext';
 import { THEME_COLORS } from '../../utils/constants';
 
 export interface TopAppBarProps {
