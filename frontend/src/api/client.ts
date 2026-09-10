@@ -45,8 +45,9 @@ api.interceptors.response.use(
   },
   (error: AxiosError) => {
     // Create a standardized error object
+    const responseData = error.response?.data as { message?: string } | undefined;
     const errorMessage =
-      error.response?.data?.message ||
+      responseData?.message ||
       error.response?.statusText ||
       error.message ||
       'An unknown error occurred';
@@ -127,21 +128,21 @@ export function isTimeoutError(error: unknown): boolean {
  * Helper to check if an error is a 404 Not Found
  */
 export function isNotFoundError(error: unknown): boolean {
-  return isApiError(error) && error.status === 404;
+  return isApiError(error) && (error as ApiErrorExtended).status === 404;
 }
 
 /**
  * Helper to check if an error is a 401 Unauthorized
  */
 export function isUnauthorizedError(error: unknown): boolean {
-  return isApiError(error) && error.status === 401;
+  return isApiError(error) && (error as ApiErrorExtended).status === 401;
 }
 
 /**
  * Helper to check if an error is a 400 Bad Request (validation error)
  */
 export function isValidationError(error: unknown): boolean {
-  return isApiError(error) && error.status === 400;
+  return isApiError(error) && (error as ApiErrorExtended).status === 400;
 }
 
 export { API_BASE_URL };

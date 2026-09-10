@@ -91,6 +91,39 @@ export class StatsApi {
       throw new Error(extractErrorMessage(error, `Failed to fetch range stats for user ${userId}`));
     }
   }
+  /**
+   * Get training history (recent sessions) for the authenticated user
+   */
+  async history(): Promise<unknown> {
+    try {
+      const response = await api.get('/stats/history');
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, 'Failed to fetch training history'));
+    }
+  }
+  /**
+   * Get the leaderboard of users by score
+   */
+  async leaderboard(): Promise<unknown> {
+    try {
+      const response = await api.get('/stats/leaderboard');
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, 'Failed to fetch leaderboard'));
+    }
+  }
+  /**
+   * Export statistics in the given format (json, csv)
+   */
+  async export(format: 'json' | 'csv' = 'json'): Promise<unknown> {
+    try {
+      const response = await api.get(`/stats/export?format=${format}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, 'Failed to export stats'));
+    }
+  }
 
   /**
    * Get recent activity for a user

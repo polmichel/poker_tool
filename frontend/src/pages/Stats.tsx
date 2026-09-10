@@ -253,7 +253,7 @@ const Stats: React.FC = () => {
                   <Grid item xs={12} sm={6} md={3}>
                     <StatsCard
                       title="Temps Total"
-                      stats={{ total_time_spent: globalStats.total_hands }}
+                      stats={{ total_time_spent: globalStats.total_time_spent }}
                       icon={<TimelineIcon color="success" />}
                       color="#8BC34A"
                     />

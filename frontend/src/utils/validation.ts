@@ -2,7 +2,7 @@
  * Validation Utilities
  * Runtime validation utilities using Zod schemas
  */
-import { z, ZodSchema, ZodError } from 'zod';
+import { z, ZodSchema, ZodError, ZodType } from 'zod';
 
 // ============================================================================
 // Core Validation Functions
@@ -49,11 +49,8 @@ export function safeValidate<T>(
  * @param data - The data to validate and transform
  * @returns The validated, parsed, and transformed data
  */
-export function validateAndTransform<T, U>(
-  schema: ZodSchema<T, z.ZodTypeDef, U>,
-  data: unknown,
-): U {
-  return schema.parse(data);
+export function validateAndTransform<T, U>(schema: ZodType<T, U>, data: unknown): U {
+  return schema.parse(data) as unknown as U;
 }
 
 // ============================================================================
@@ -116,7 +113,7 @@ export function validatePaginatedResponse<T>(
  * @returns A formatted error message string
  */
 export function formatZodError(error: ZodError): string {
-  const errors = error.errors.map((err) => {
+  const errors = error.issues.map((err) => {
     const path = err.path.join('.');
     return `${path}: ${err.message}`;
   });
@@ -132,7 +129,7 @@ export function formatZodError(error: ZodError): string {
 export function formatZodErrorByField(error: ZodError): Record<string, string> {
   const fieldErrors: Record<string, string> = {};
 
-  for (const err of error.errors) {
+  for (const err of error.issues) {
     const path = err.path.join('.');
     fieldErrors[path] = err.message;
   }
@@ -243,7 +240,7 @@ export function nullishSchema<T>(schema: ZodSchema<T>): ZodSchema<T | null | und
  * @returns A schema with the default value
  */
 export function withDefault<T>(schema: ZodSchema<T>, defaultValue: T | (() => T)): ZodSchema<T> {
-  return schema.default(defaultValue);
+  return schema.default(defaultValue as never) as ZodSchema<T>;
 }
 
 // ============================================================================

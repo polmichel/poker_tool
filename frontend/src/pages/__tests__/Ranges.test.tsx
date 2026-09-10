@@ -7,6 +7,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import Ranges from '../Ranges';
+import type { Range } from '../../types';
 
 // Mock useRanges hook
 const mockFetchRanges = jest.fn();
@@ -16,21 +17,21 @@ const mockDeleteRange = jest.fn();
 const mockImportRange = jest.fn();
 const mockExportRange = jest.fn();
 
-const mockRanges = [
+const mockRanges: Range[] = [
   {
     id: 1,
     name: 'UTG Range',
     description: 'Opening range from UTG',
-    range_type: 'preflop' as const,
-    position: 'UTG' as const,
+    range_type: 'preflop',
+    position: 'UTG',
     hands: { AA: 'open', KK: 'open', AKs: 'open' },
   },
   {
     id: 2,
     name: 'BTN Range',
     description: 'Opening range from BTN',
-    range_type: 'preflop' as const,
-    position: 'BTN' as const,
+    range_type: 'preflop',
+    position: 'BTN',
     hands: { AA: 'open', KK: 'open', QQ: 'open', AKs: 'open', AQs: 'open' },
   },
 ];
@@ -40,7 +41,7 @@ const mockSetSelectedRange = jest.fn();
 const mockUseRanges = jest.fn(() => ({
   ranges: mockRanges,
   loading: false,
-  error: null,
+  error: null as string | null,
   selectedRange: null,
   setSelectedRange: mockSetSelectedRange,
   fetchRanges: mockFetchRanges,

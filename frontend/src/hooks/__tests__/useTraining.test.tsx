@@ -42,8 +42,26 @@ describe('useTraining Hook', () => {
   it('fetches training sessions successfully', async () => {
     const fakeApi = makeFakeTrainingApi();
     const mockSessions = [
-      { id: 1, user_id: 1, range_id: 1, mode: 'fill', score: 85 },
-      { id: 2, user_id: 1, range_id: 2, mode: 'quiz', score: 90 },
+      {
+        id: 1,
+        user_id: 1,
+        range_id: 1,
+        mode: 'fill' as const,
+        score: 85,
+        total_questions: 10,
+        correct_answers: 8,
+        time_spent: 120,
+      },
+      {
+        id: 2,
+        user_id: 1,
+        range_id: 2,
+        mode: 'guess' as const,
+        score: 90,
+        total_questions: 10,
+        correct_answers: 9,
+        time_spent: 100,
+      },
     ];
     fakeApi.sessions.mockResolvedValue(mockSessions);
     fakeApi.list.mockResolvedValue(mockSessions);
@@ -124,7 +142,7 @@ describe('useTraining Hook', () => {
     const { result } = renderHook(() => useTraining(fakeApi));
 
     await act(async () => {
-      await result.current.createSession(1, 'fill', 1, 10);
+      await result.current.createSession('fill', 1, 1, 10);
     });
     expect(result.current.loading).toBe(false);
   });
@@ -136,7 +154,7 @@ describe('useTraining Hook', () => {
     const { result } = renderHook(() => useTraining(fakeApi));
 
     await act(async () => {
-      await result.current.createSession(1, 'fill', 1, 10);
+      await result.current.createSession('fill', 1, 1, 10);
     });
     expect(result.current.error).toBe('Erreur lors de la creation de la session');
     expect(result.current.loading).toBe(false);

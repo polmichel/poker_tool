@@ -109,4 +109,48 @@ export class RangesApi {
       throw new Error(extractErrorMessage(error, `Failed to search ranges for query: ${query}`));
     }
   }
+  /**
+   * Get the 13x13 grid representation of a range
+   */
+  async grid(rangeId: number): Promise<Record<string, unknown>> {
+    try {
+      const response = await api.get(`/ranges/${rangeId}/grid`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, `Failed to fetch grid for range ${rangeId}`));
+    }
+  }
+  /**
+   * Get statistics for a range
+   */
+  async stats(rangeId: number): Promise<Record<string, unknown>> {
+    try {
+      const response = await api.get(`/ranges/${rangeId}/stats`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, `Failed to fetch stats for range ${rangeId}`));
+    }
+  }
+  /**
+   * Export a range in the given format (json, text, csv)
+   */
+  async exportRange(rangeId: number, format: 'json' | 'text' | 'csv' = 'json'): Promise<unknown> {
+    try {
+      const response = await api.get(`/ranges/export/${rangeId}?format=${format}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, `Failed to export range ${rangeId}`));
+    }
+  }
+  /**
+   * Import a range from content in the given format (json, text, csv)
+   */
+  async importRange(content: string, format: 'json' | 'text' | 'csv' = 'json'): Promise<Range> {
+    try {
+      const response = await api.post<Range>('/ranges/import', { content, format });
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, 'Failed to import range'));
+    }
+  }
 }

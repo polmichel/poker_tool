@@ -15,6 +15,7 @@ import type {
   RangeGrid,
   RangeGridCell,
 } from '../types/domain/training';
+import type { CreateSessionResponse, NextQuestionResponse } from '../types/api/responses';
 
 // Backward compatible types
 export type { TrainingMode };
@@ -40,3 +41,5 @@ export interface SessionDetail {
   current_question: TrainingQuestion | null;
   progress: Progress;
 }
+
+export type { CreateSessionResponse, NextQuestionResponse };
