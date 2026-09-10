@@ -66,8 +66,11 @@ test.describe('Questionnaire sur une range', () => {
     console.log(`Range s\u00e9lectionn\u00e9e avec succ\u00e8s`);
   });
 
-  test('Lancer un questionnaire dans chaque mode', async ({ page }) => {
-    for (const mode of QUESTIONNAIRE_MODES) {
+  // Un test s\u00e9par\u00e9 par mode : beforeEach recharge /training \u00e0 chaque fois,
+  // sinon la session reste active d'un mode sur l'autre et les boutons de mode
+  // sont d\u00e9sactiv\u00e9s.
+  QUESTIONNAIRE_MODES.forEach((mode) => {
+    test(`Lancer un questionnaire en mode ${mode.value}`, async ({ page }) => {
       // 1. S\u00e9lectionner une range
       const rangeChips = page.locator('.MuiChip-root');
       await rangeChips.first().waitFor({ state: 'visible', timeout: 5000 });
@@ -98,12 +101,12 @@ test.describe('Questionnaire sur une range', () => {
         }
       }
 
-      // 4. Verifier qu'on est toujours sur la page /training
+      // 5. Verifier qu'on est toujours sur la page /training
       const url = page.url();
       expect(url).toContain('/training');
 
       console.log(`Questionnaire en mode ${mode.value} (${mode.label}) demarre avec succes`);
-    }
+    });
   });
 
   test('Repondre a une question et passer a la suivante', async ({ page }) => {

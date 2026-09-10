@@ -2,17 +2,17 @@
  * API layer for ranges.
  * Uses Zod validation for all responses.
  */
+import { z } from 'zod';
 import { api, extractErrorMessage } from './client';
 import { validate, validateApiResponse } from '../utils/validation';
+import { RangeSchema } from '../types/domain/poker';
 import type { Range } from '../types/domain/poker';
-import type {
-  CreateRangeRequest,
-  UpdateRangeRequest,
-  RangeListResponse,
-  RangeResponse,
-} from '../types/api';
-import { RangeListResponseSchema, RangeResponseSchema } from '../types/api/responses';
+import type { CreateRangeRequest, UpdateRangeRequest } from '../types/api';
 import { CreateRangeRequestSchema, UpdateRangeRequestSchema } from '../types/api/requests';
+
+// The backend returns plain arrays/objects (not wrapped in {ranges}/{range}),
+// so validate against the raw shapes.
+const RangeListSchema = z.array(RangeSchema);
 
 /**
  * Ranges API client with Zod validation
@@ -24,8 +24,7 @@ export class RangesApi {
   async ranges(): Promise<Range[]> {
     try {
       const response = await api.get('/ranges');
-      const data = validateApiResponse<RangeListResponse>(RangeListResponseSchema, response.data);
-      return data.ranges;
+      return validateApiResponse<Range[]>(RangeListSchema, response.data);
     } catch (error) {
       throw new Error(extractErrorMessage(error, 'Failed to fetch ranges'));
     }
@@ -37,8 +36,7 @@ export class RangesApi {
   async range(rangeId: number): Promise<Range> {
     try {
       const response = await api.get(`/ranges/${rangeId}`);
-      const data = validateApiResponse<RangeResponse>(RangeResponseSchema, response.data);
-      return data.range;
+      return validateApiResponse<Range>(RangeSchema, response.data);
     } catch (error) {
       throw new Error(extractErrorMessage(error, `Failed to fetch range ${rangeId}`));
     }
@@ -50,9 +48,8 @@ export class RangesApi {
   async create(rangeData: CreateRangeRequest): Promise<Range> {
     try {
       const validatedData = validate(CreateRangeRequestSchema, rangeData);
-      const response = await api.post<RangeResponse>('/ranges', validatedData);
-      const data = validateApiResponse<RangeResponse>(RangeResponseSchema, response.data);
-      return data.range;
+      const response = await api.post('/ranges', validatedData);
+      return validateApiResponse<Range>(RangeSchema, response.data);
     } catch (error) {
       throw new Error(extractErrorMessage(error, 'Failed to create range'));
     }
@@ -64,9 +61,8 @@ export class RangesApi {
   async update(rangeId: number, rangeData: UpdateRangeRequest): Promise<Range> {
     try {
       const validatedData = validate(UpdateRangeRequestSchema, rangeData);
-      const response = await api.put<RangeResponse>(`/ranges/${rangeId}`, validatedData);
-      const data = validateApiResponse<RangeResponse>(RangeResponseSchema, response.data);
-      return data.range;
+      const response = await api.put(`/ranges/${rangeId}`, validatedData);
+      return validateApiResponse<Range>(RangeSchema, response.data);
     } catch (error) {
       throw new Error(extractErrorMessage(error, `Failed to update range ${rangeId}`));
     }
@@ -90,8 +86,7 @@ export class RangesApi {
   async rangesByUser(userId: number): Promise<Range[]> {
     try {
       const response = await api.get(`/ranges/user/${userId}`);
-      const data = validateApiResponse<RangeListResponse>(RangeListResponseSchema, response.data);
-      return data.ranges;
+      return validateApiResponse<Range[]>(RangeListSchema, response.data);
     } catch (error) {
       throw new Error(extractErrorMessage(error, `Failed to fetch ranges for user ${userId}`));
     }
@@ -103,8 +98,7 @@ export class RangesApi {
   async search(query: string): Promise<Range[]> {
     try {
       const response = await api.get(`/ranges/search?q=${encodeURIComponent(query)}`);
-      const data = validateApiResponse<RangeListResponse>(RangeListResponseSchema, response.data);
-      return data.ranges;
+      return validateApiResponse<Range[]>(RangeListSchema, response.data);
     } catch (error) {
       throw new Error(extractErrorMessage(error, `Failed to search ranges for query: ${query}`));
     }
