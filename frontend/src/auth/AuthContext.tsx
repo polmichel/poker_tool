@@ -10,13 +10,17 @@
  */
 import React, { createContext, useContext } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { AuthApi } from '../api/AuthApi';
 
-type AuthContextValue = ReturnType<typeof useAuth>;
+export type AuthContextValue = ReturnType<typeof useAuth>;
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const auth = useAuth();
+export const AuthProvider: React.FC<{ children: React.ReactNode; authApi?: AuthApi }> = ({
+  children,
+  authApi,
+}) => {
+  const auth = useAuth(authApi);
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };
 

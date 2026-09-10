@@ -61,7 +61,7 @@ export function useTrainingQuestions(trainingApi?: TrainingApi): UseTrainingQues
     async (
       sessionId: number,
       answer: string,
-      currentProgress: { current: number; total: number; correct: number; score: number },
+      _currentProgress: { current: number; total: number; correct: number; score: number },
     ): Promise<Feedback | null> => {
       try {
         const result = await run(() => api.answer(sessionId, answer));
