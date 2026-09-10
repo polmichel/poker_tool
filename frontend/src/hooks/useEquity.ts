@@ -4,13 +4,13 @@ import { extractErrorMessage } from '../utils/errors';
 import { EquityApi, EquityMissingError } from '../api';
 import { EquityResult } from '../types';
 
-// Hook personnalisé pour gérer la simulation d'équité.
-// Dépend de EquityApi (injectable) plutôt que d'appeler axios directement.
+// Hook personnalise pour gerer la simulation d'equite.
+// Depend de EquityApi (injectable) plutôt que d'appeler axios directement.
 //
-// Par défaut, simulate() appelle le chemin exact (sans itérations). Si la
-// table exacte est incomplète, l'API lève EquityMissingError (409) portant la
+// Par defaut, simulate() appelle le chemin exact (sans iterations). Si la
+// table exacte est incomplete, l'API leve EquityMissingError (409) portant la
 // liste des mains manquantes : le hook la propage afin que la page puisse
-// ouvrir la pop-up proposant de lancer un Monte-Carlo (avec itérations).
+// ouvrir la pop-up proposant de lancer un Monte-Carlo (avec iterations).
 export function useEquity(equityApi?: EquityApi) {
   const equityApiRef = useRef<EquityApi>(equityApi ?? new EquityApi());
   const api = equityApiRef.current;
@@ -25,14 +25,14 @@ export function useEquity(equityApi?: EquityApi) {
         setResult(data);
         return data;
       } catch (err) {
-        // EquityMissingError est propagée telle quelle pour que la page
+        // EquityMissingError est propagee telle quelle pour que la page
         // puisse ouvrir la pop-up de Monte-Carlo ; les autres erreurs
         // deviennent un message utilisateur classique.
         if (err instanceof EquityMissingError) {
           setError(null);
           throw err;
         }
-        setError(extractErrorMessage(err, "Erreur lors du calcul de l'équité", true));
+        setError(extractErrorMessage(err, "Erreur lors du calcul de l'equite", true));
         return null;
       }
     },

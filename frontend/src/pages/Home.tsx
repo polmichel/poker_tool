@@ -98,7 +98,7 @@ const Home: React.FC = () => {
           />
           <StatPill
             label="Utilisateurs"
-            value={loading || !globalStats ? null : globalStats.total_users}
+            value={loading || !globalStats ? null : (globalStats.total_users ?? null)}
           />
         </Stack>
       </Box>

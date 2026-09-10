@@ -27,9 +27,10 @@ async function globalSetup(config: FullConfig) {
           console.log('Backend is ready!');
           break;
         }
-      } catch (err) {
+      } catch (err: any) {
         if (i === maxRetries - 1) {
           console.error('Backend did not start in time');
+          console.error('Last error:', err.message);
           throw err;
         }
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -53,7 +54,7 @@ async function globalSetup(config: FullConfig) {
     // Create test range with hands
     console.log('Creating test range...');
     try {
-      const rangeResponse = await axios.post(`${API_BASE_URL}/ranges/`, {
+      const rangeResponse = await axios.post(`${API_BASE_URL}/ranges`, {
         name: 'Test Range E2E',
         description: 'Range de test pour E2E',
         range_type: 'preflop',
@@ -78,7 +79,7 @@ async function globalSetup(config: FullConfig) {
 
     // List ranges to verify
     try {
-      const rangesResponse = await axios.get(`${API_BASE_URL}/ranges/`);
+      const rangesResponse = await axios.get(`${API_BASE_URL}/ranges`);
       console.log(`Found ${rangesResponse.data.length} ranges in database`);
       rangesResponse.data.forEach((r: any) => {
         console.log(`  - ${r.name} (ID=${r.id}, hands=${Object.keys(r.hands || {}).length})`);

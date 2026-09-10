@@ -59,7 +59,7 @@ const Equity: React.FC = () => {
         await simulate(hero.trim(), rangeText.trim(), iterations);
       } catch (err) {
         if (err instanceof EquityMissingError) {
-          setMcMissing(err.missing);
+          setMcMissing(err.missing || []);
           setMcIterations(DEFAULT_MONTE_CARLO_ITERATIONS);
           setMcDialogOpen(true);
         }
@@ -190,7 +190,7 @@ const Equity: React.FC = () => {
             Certaines mains adverses ne sont pas dans la table d'équité exacte. Vous pouvez lancer
             une simulation Monte-Carlo à la place.
           </Typography>
-          {mcMissing.length > 0 && (
+          {mcMissing && mcMissing.length > 0 && (
             <Typography
               variant="body2"
               color="text.secondary"

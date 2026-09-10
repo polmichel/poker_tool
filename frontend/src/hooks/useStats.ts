@@ -3,9 +3,9 @@ import { StatsApi, GlobalStats, UserStats } from '../api';
 import { useAsyncState } from './useAsyncState';
 import { extractErrorMessage } from '../utils/errors';
 
-// Hook personnalisé pour gérer les statistiques.
-// Dépend de StatsApi (injectable). L'état interne reste privé : l'UI n'a accès
-// qu'aux intentions (fetchGlobalStats, fetchUserStats, ...) — pas aux setters.
+// Hook personnalise pour gerer les statistiques.
+// Depend de StatsApi (injectable). L'etat interne reste prive : l'UI n'a acces
+// qu'aux intentions (fetchGlobalStats, fetchUserStats, ...) pas aux setters.
 export function useStats(statsApi?: StatsApi) {
   const statsApiRef = useRef<StatsApi>(statsApi ?? new StatsApi());
   const api = statsApiRef.current;

@@ -22,7 +22,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
   // Charger toutes les ranges
   const fetchRanges = useCallback(async () => {
     try {
-      const data = await run(() => api.all());
+      const data = await run(() => api.ranges());
       setRanges(data);
     } catch (err) {
       setError(extractErrorMessage(err, 'Erreur lors du chargement des ranges'));
@@ -34,7 +34,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
   const fetchRange = useCallback(
     async (id: number) => {
       try {
-        const data = await run(() => api.byId(id));
+        const data = await run(() => api.range(id));
         setSelectedRange(data);
         return data;
       } catch (err) {
@@ -89,7 +89,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
   const deleteRange = useCallback(
     async (id: number) => {
       try {
-        await run(() => api.remove(id));
+        await run(() => api.delete(id));
         setRanges((prev) => prev.filter((r) => r.id !== id));
         if (selectedRange?.id === id) {
           setSelectedRange(null);

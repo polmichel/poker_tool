@@ -66,7 +66,7 @@ describe('useEquity Hook', () => {
 
   it('propagates EquityMissingError (409) so the page can open the pop-up', async () => {
     const fakeApi = makeFakeEquityApi();
-    const missingErr = new EquityMissingError(['72o', '32o']);
+    const missingErr = new EquityMissingError('Missing hands', ['72o', '32o']);
     fakeApi.simulate.mockRejectedValue(missingErr);
     const { result } = renderHook(() => useEquity(fakeApi));
     let thrown: unknown = null;

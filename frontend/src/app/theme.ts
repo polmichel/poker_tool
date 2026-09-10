@@ -322,3 +322,4 @@ const themeOptions: ThemeOptions = {
 };
 
 export const darkTheme = createTheme(themeOptions);
+export default darkTheme;
