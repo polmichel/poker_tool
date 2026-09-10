@@ -72,7 +72,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
           mobileOpen={mobileOpen}
           onMobileClose={handleDrawerToggle}
           collapsed={drawerCollapsed}
-          activeModule={activeModule}
+          activeModule={activeModule ?? undefined}
           onHub={onHub}
         />
       </Fade>

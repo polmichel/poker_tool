@@ -37,7 +37,7 @@ export interface TrainingSessionActions {
   fetchSession: (id: number) => Promise<{
     session: TrainingSession;
     current_question: TrainingQuestion | null;
-    progress: { current: number; total: number; correct: number; score: number };
+    progress: { current: number; total: number; correct: number; score?: number };
   } | null>;
   createSession: (
     mode: TrainingMode,

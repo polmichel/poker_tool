@@ -56,8 +56,8 @@ export const TrainingQuestionArea: React.FC<TrainingQuestionAreaProps> = ({
           onAnswer={onAnswer}
           onNext={onNext}
           feedback={feedback}
-          questionNumber={questionNumber}
-          totalQuestions={totalQuestions}
+          questionNumber={questionNumber ?? 0}
+          totalQuestions={totalQuestions ?? 0}
         />
       ) : (
         <TrainingQuestion
@@ -65,8 +65,8 @@ export const TrainingQuestionArea: React.FC<TrainingQuestionAreaProps> = ({
           onAnswer={onAnswer}
           onNext={onNext}
           feedback={feedback}
-          questionNumber={questionNumber}
-          totalQuestions={totalQuestions}
+          questionNumber={questionNumber ?? 0}
+          totalQuestions={totalQuestions ?? 0}
         />
       )}
     </Box>
