@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { fileURLToPath } from 'url';
 
 /**
  * Read environment variables from file.
@@ -6,6 +7,9 @@ import { defineConfig, devices } from '@playwright/test';
  */
 import path from 'path';
 import dotenv from 'dotenv';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load environment variables from .env file
 const envPath = path.resolve(__dirname, '../../.env.test');
@@ -86,17 +90,26 @@ export default defineConfig({
    */
   webServer: isCI
     ? undefined
-    : {
-        // Start backend first (Flask server)
-        command: 'cd ../../backend && python3 main.py',
-        url: 'http://localhost:5000/api/health',
-        reuseExistingServer: true,
-        timeout: 60000, // 60 seconds for backend to start
-        env: {
-          FLASK_ENV: 'development',
-          DATABASE_URL: 'sqlite:///../../backend/instance/poker_tool.db',
+    : [
+        {
+          // Start backend (Flask server)
+          command: 'cd ../../backend && python3 main.py',
+          url: 'http://localhost:5000/api/health',
+          reuseExistingServer: true,
+          timeout: 60000,
+          env: {
+            FLASK_ENV: 'development',
+            DATABASE_URL: 'sqlite:///../../backend/instance/poker_tool.db',
+          },
         },
-      },
+        {
+          // Start frontend (Vite dev server)
+          command: 'npm run start',
+          url: 'http://localhost:3000',
+          reuseExistingServer: true,
+          timeout: 60000,
+        },
+      ],
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   outputDir: '../../test-results/',
