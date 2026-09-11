@@ -24,10 +24,10 @@ class TestCurrentUser(unittest.TestCase):
         result = self.use_case.user()
         self.assertEqual(result.username, "alice")
 
-    def test_falls_back_to_first_user_when_anonymous(self):
+    def test_returns_none_when_anonymous(self):
         self.auth.set_current_user(None)
         result = self.use_case.user()
-        self.assertEqual(result.username, "alice")
+        self.assertIsNone(result)
 
     def test_returns_none_when_no_users(self):
         empty_users = FakeUsers()

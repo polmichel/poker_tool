@@ -41,14 +41,14 @@ class TestCreateRange(unittest.TestCase):
 
     def test_create_without_user_stores_none(self):
         # When no user is authenticated and no explicit user_id is provided,
-        # ResolveUser falls back to the first existing user (alice with id=1)
+        # ResolveUser returns None (no fallback to first user)
         self.auth.set_current_user(None)
         result = self.use_case.create({
             "name": "R3", "range_type": "preflop", "position": "BTN",
             "hands": {"QQ": "call"},
         })
-        # Falls back to first user (alice)
-        self.assertEqual(result.user_id, 1)
+        # No user resolved, so user_id is None
+        self.assertIsNone(result.user_id)
 
 
 class TestUpdateRange(unittest.TestCase):

@@ -10,6 +10,7 @@ from unittest.mock import patch
 from poker_tool.use_cases.answer_question import AnswerQuestion, SessionNotFound
 from poker_tool.use_cases.create_range import CreateRange
 from poker_tool.use_cases.end_training_session import EndTrainingSession
+from poker_tool.use_cases.errors import UserRequired
 from poker_tool.use_cases.register_user import RegisterUser
 from poker_tool.use_cases.resolve_user import ResolveUser
 from poker_tool.use_cases.start_training_session import (
@@ -55,10 +56,10 @@ class TestStartTrainingSession(unittest.TestCase):
         with self.assertRaises(RangeHasNoHands):
             self.use_case.start("fill", range_id=2, user_id=1)
 
-    def test_start_falls_back_to_first_user(self):
+    def test_start_requires_user_when_anonymous(self):
         self.auth.set_current_user(None)
-        result = self.use_case.start("fill", range_id=1)
-        self.assertEqual(result.session.user.username, "alice")
+        with self.assertRaises(UserRequired):
+            self.use_case.start("fill", range_id=1)
 
     def test_start_uses_authenticated_user(self):
         alice = self.users.user_by_username("alice")
