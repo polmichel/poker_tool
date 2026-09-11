@@ -63,6 +63,7 @@ jest.mock('../../utils/helpers', () => ({
 // Mock RangeStats : il utilise recharts/ResponsiveContainer qui a besoin de
 // ResizeObserver (absent de jsdom). On l'évite pour ces tests d'intégration.
 jest.mock('../../components/RangeStats', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const React = require('react');
   return {
     __esModule: true,

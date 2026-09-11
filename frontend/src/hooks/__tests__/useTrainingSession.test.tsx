@@ -27,9 +27,7 @@ const sampleSession = (): ReturnType<typeof makeTrainingSession> =>
   makeTrainingSession({ id: 1, total_questions: 10 });
 
 describe('useTrainingSession Hook', () => {
-  beforeEach(() => {
-    process.env.REACT_APP_API_URL = 'http://localhost:5000/api';
-  });
+  beforeEach(() => {});
 
   it('auto-fetches sessions on mount', async () => {
     const fakeApi = makeFakeTrainingApi();

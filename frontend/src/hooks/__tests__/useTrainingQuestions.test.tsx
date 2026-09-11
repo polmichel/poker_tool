@@ -23,9 +23,7 @@ function makeFakeTrainingApi() {
 }
 
 describe('useTrainingQuestions Hook', () => {
-  beforeEach(() => {
-    process.env.REACT_APP_API_URL = 'http://localhost:5000/api';
-  });
+  beforeEach(() => {});
 
   it('initializes with no feedback', () => {
     const fakeApi = makeFakeTrainingApi();

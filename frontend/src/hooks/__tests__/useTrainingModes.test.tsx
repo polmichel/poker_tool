@@ -21,9 +21,7 @@ function makeFakeTrainingApi() {
 }
 
 describe('useTrainingModes Hook', () => {
-  beforeEach(() => {
-    process.env.REACT_APP_API_URL = 'http://localhost:5000/api';
-  });
+  beforeEach(() => {});
 
   it('initializes with empty modes and loading=true', () => {
     const fakeApi = makeFakeTrainingApi();
