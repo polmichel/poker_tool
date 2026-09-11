@@ -127,15 +127,16 @@ export default defineConfig({
           },
         },
         {
-          // Start frontend (Vite dev server) with the API proxied to the
-          // e2e backend on port 5001.
+          // Start frontend (Vite dev server). VITE_API_URL makes the
+          // frontend hit the e2e backend on port 5001 directly, so the
+          // Vite proxy (hardcoded to port 5000 for dev) is bypassed.
           command: 'npm run start',
           cwd: path.resolve(__dirname, '../..'),
           url: 'http://localhost:3000',
           reuseExistingServer: false,
           timeout: 60000,
           env: {
-            VITE_API_PROXY_TARGET: 'http://localhost:5001',
+            VITE_API_URL: 'http://localhost:5001/api',
           },
         },
       ],
