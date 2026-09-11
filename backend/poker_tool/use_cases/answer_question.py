@@ -33,7 +33,7 @@ class AnswerQuestion:
         new_session = session.answer(answer)
         saved_session = self._sessions.add(new_session)
 
-        response: dict[str, float | bool | str | None | dict] = {
+        response: dict[str, float | bool | str | dict | None] = {
             "is_correct": new_session.current_index > session.current_index
             and new_session.correct_answers > session.correct_answers,
             "correct_answer": session.current_question.correct_answer if session.current_question else None,
