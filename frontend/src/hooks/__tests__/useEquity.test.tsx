@@ -71,7 +71,7 @@ describe('useEquity Hook', () => {
     await act(async () => {
       try {
         await result.current.simulate('AKs', '72o, 32o');
-      } catch (_err) {
+      } catch (err) {
         thrown = err;
       }
     });

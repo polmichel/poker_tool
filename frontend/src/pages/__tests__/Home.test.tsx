@@ -15,8 +15,8 @@ const mockNavigate = jest.fn();
 // Mock window.open for donation dialog
 const mockWindowOpen = jest.fn();
 
-jest.mock('react-router-dom', () => {
-  const actual = jest.requireActual('react-router-dom');
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -36,7 +36,7 @@ beforeEach(() => {
   mockWindowOpen.mockClear();
 });
 
-jest.mock('../../hooks', () => ({
+vi.mock('../../hooks', () => ({
   useStats: () => ({
     globalStats: {
       total_ranges: 12,
@@ -52,7 +52,7 @@ jest.mock('../../hooks', () => ({
   }),
 }));
 
-jest.mock('../../auth/AuthContext', () => ({
+vi.mock('../../auth/AuthContext', () => ({
   useAuthContext: () => ({
     user: { id: 1, username: 'tester' },
     isAuthenticated: true,
@@ -61,13 +61,13 @@ jest.mock('../../auth/AuthContext', () => ({
 }));
 
 // Mock MUI icons to avoid module not found errors
-jest.mock('@mui/icons-material/ArrowForward', () => () => <span>ArrowForward</span>);
-jest.mock('@mui/icons-material/AutoAwesome', () => () => <span>AutoAwesome</span>);
-jest.mock('@mui/icons-material/Favorite', () => () => <span>Favorite</span>);
+vi.mock('@mui/icons-material/ArrowForward', () => ({ default: () => <span>ArrowForward</span> }));
+vi.mock('@mui/icons-material/AutoAwesome', () => ({ default: () => <span>AutoAwesome</span> }));
+vi.mock('@mui/icons-material/Favorite', () => ({ default: () => <span>Favorite</span> }));
 
 // Mock DonationDialog to avoid rendering issues
 // Mock AppCard to render the "Bientot" chip for soon modules
-jest.mock('../../components', () => ({
+vi.mock('../../components', () => ({
   AppCard: ({ entry, onSelect }: { entry: any; onSelect: (entry: any) => void }) => (
     <button onClick={() => !entry.soon && onSelect(entry)} data-testid={`app-card-${entry.slug}`}>
       {entry.title}

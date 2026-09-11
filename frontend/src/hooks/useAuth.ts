@@ -53,7 +53,7 @@ export function useAuth(authApi?: AuthApi) {
         setUser(userData);
         setIsAuthenticated(true);
         return userData;
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, "Erreur lors de l'inscription"));
         console.error('Error registering:', err);
         return null;
@@ -72,7 +72,7 @@ export function useAuth(authApi?: AuthApi) {
         setUser(userData);
         setIsAuthenticated(true);
         return userData;
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, 'Identifiants invalides'));
         console.error('Error logging in:', err);
         return null;
@@ -102,7 +102,7 @@ export function useAuth(authApi?: AuthApi) {
           setUser(response);
           return response;
         });
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, 'Erreur lors de la mise à jour du profil'));
         console.error('Error updating user:', err);
         return null;

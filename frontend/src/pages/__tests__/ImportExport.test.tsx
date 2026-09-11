@@ -31,15 +31,15 @@ const mockUseRanges = jest.fn(() => ({
   exportRange: mockExportRange,
 }));
 
-jest.mock('../../hooks/useRanges', () => ({
+vi.mock('../../hooks/useRanges', () => ({
   useRanges: () => mockUseRanges(),
 }));
 
-jest.mock('../../contexts/FocusModeContext', () => ({
+vi.mock('../../contexts/FocusModeContext', () => ({
   useFocusMode: () => ({ setFocusMode: jest.fn(), focusMode: false }),
 }));
 
-jest.mock('../../components', () => ({
+vi.mock('../../components', () => ({
   RangeList: ({ ranges, onSelectRange, selectedRangeId }: any) => (
     <div data-testid="range-list">
       {ranges.map((r: Range) => (

@@ -18,15 +18,15 @@ const mockExportStats = jest.fn();
 
 const mockUseStats = jest.fn();
 
-jest.mock('../../hooks/useStats', () => ({
+vi.mock('../../hooks/useStats', () => ({
   useStats: () => mockUseStats(),
 }));
 
-jest.mock('../../contexts/FocusModeContext', () => ({
+vi.mock('../../contexts/FocusModeContext', () => ({
   useFocusMode: () => ({ setFocusMode: jest.fn(), focusMode: false }),
 }));
 
-jest.mock('../../components', () => ({
+vi.mock('../../components', () => ({
   StatsCard: ({ title, stats }: any) => (
     <div data-testid="stats-card">
       <span data-testid="stats-card-title">{title}</span>

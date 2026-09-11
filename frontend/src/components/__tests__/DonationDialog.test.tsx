@@ -23,8 +23,8 @@ beforeEach(() => {
 });
 
 // Mock MUI icons
-jest.mock('@mui/icons-material/Close', () => () => <span>Close</span>);
-jest.mock('@mui/icons-material/Euro', () => () => <span>Euro</span>);
+vi.mock('@mui/icons-material/Close', () => ({ default: () => <span>Close</span> }));
+vi.mock('@mui/icons-material/Euro', () => ({ default: () => <span>Euro</span> }));
 
 describe('DonationDialog', () => {
   const mockOnClose = jest.fn();

@@ -14,15 +14,15 @@ const mockNavigate = jest.fn();
 const mockLogin = jest.fn();
 const mockUseAuth = jest.fn();
 
-jest.mock('react-router-dom', () => {
-  const actual = jest.requireActual('react-router-dom');
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
     useNavigate: () => mockNavigate,
   };
 });
 
-jest.mock('../../auth/AuthContext', () => ({
+vi.mock('../../auth/AuthContext', () => ({
   useAuthContext: () => mockUseAuth(),
 }));
 

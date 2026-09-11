@@ -18,13 +18,13 @@ import { MemoryRouter } from 'react-router-dom';
 import Training from '../Training';
 
 // --- Mock API fakes (real hook runs against these) ----------------------------
-// Variables are prefixed with "mock" so jest.mock() factories may reference them.
+// Variables are prefixed with "mock" so vi.mock() factories may reference them.
 const mockAnswer = jest.fn();
 const mockCreateSession = jest.fn();
 const mockSessions = jest.fn();
 const mockModes = jest.fn();
 
-jest.mock('../../api', () => {
+vi.mock('../../api', () => {
   // TrainingApi is instantiated via `new TrainingApi()` inside useTraining; the
   // mock constructor returns an object exposing the methods used by the hook.
   class FakeTrainingApi {
@@ -58,8 +58,8 @@ jest.mock('../../api', () => {
   };
 });
 
-jest.mock('react-router-dom', () => {
-  const actual = jest.requireActual('react-router-dom');
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
     useNavigate: () => jest.fn(),

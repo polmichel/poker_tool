@@ -6,7 +6,7 @@ import { useRangeFolders } from '../useRangeFolders';
 // Mock AuthContext so useRangeFolders gets a stable user id for the
 // localStorage key without needing the full AuthProvider.
 let mockUserId: number | undefined = 1;
-jest.mock('../../auth/AuthContext', () => ({
+vi.mock('../../auth/AuthContext', () => ({
   useAuthContext: () => ({ user: mockUserId ? { id: mockUserId } : null }),
 }));
 

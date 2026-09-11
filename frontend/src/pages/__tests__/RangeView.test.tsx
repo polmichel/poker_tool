@@ -18,19 +18,19 @@ const mockDeleteRange = jest.fn();
 
 const mockUseRanges = jest.fn();
 
-jest.mock('react-router-dom', () => {
-  const actual = jest.requireActual('react-router-dom');
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
     useNavigate: () => mockNavigate,
   };
 });
 
-jest.mock('../../hooks/useRanges', () => ({
+vi.mock('../../hooks/useRanges', () => ({
   useRanges: () => mockUseRanges(),
 }));
 
-jest.mock('../../components', () => ({
+vi.mock('../../components', () => ({
   RangeGrid: ({ grid }: any) => (
     <div data-testid="range-grid">
       {grid.length}x{grid[0]?.length ?? 0}

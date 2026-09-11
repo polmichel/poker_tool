@@ -100,7 +100,7 @@ export function useTrainingQuestions(trainingApi?: TrainingApi): UseTrainingQues
           setFeedback(feedbackData);
           return feedbackData;
         }
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, 'Erreur lors de la soumission de la réponse'));
         console.error('Error submitting answer:', err);
         return null;

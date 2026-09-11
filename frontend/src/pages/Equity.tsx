@@ -57,7 +57,7 @@ const Equity: React.FC = () => {
       setValidationError(null);
       try {
         await simulate(hero.trim(), rangeText.trim(), iterations);
-      } catch (_err) {
+      } catch (err) {
         if (err instanceof EquityMissingError) {
           setMcMissing(err.missing || []);
           setMcIterations(DEFAULT_MONTE_CARLO_ITERATIONS);

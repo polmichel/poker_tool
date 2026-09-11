@@ -52,7 +52,7 @@ const mockUseRanges = jest.fn(() => ({
   exportRange: mockExportRange,
 }));
 
-jest.mock('../../hooks/useRanges', () => ({
+vi.mock('../../hooks/useRanges', () => ({
   useRanges: () => mockUseRanges(),
 }));
 
@@ -72,7 +72,7 @@ let mockFoldersState: any[] = [
     children: [],
   },
 ];
-jest.mock('../../hooks/useRangeFolders', () => ({
+vi.mock('../../hooks/useRangeFolders', () => ({
   useRangeFolders: () => ({
     folders: mockFoldersState,
     createFolder: mockCreateFolder,
@@ -83,12 +83,12 @@ jest.mock('../../hooks/useRangeFolders', () => ({
 }));
 
 // Mock generateRangeGrid
-jest.mock('../../utils/helpers', () => ({
+vi.mock('../../utils/helpers', () => ({
   generateRangeGrid: jest.fn(() => []),
 }));
 
 // Mock THEME_COLORS
-jest.mock('../../utils/constants', () => ({
+vi.mock('../../utils/constants', () => ({
   THEME_COLORS: {
     paperElevated: '#1a1a1a',
     paper: '#121212',

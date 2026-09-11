@@ -6,7 +6,7 @@ import { Range, RangeType, Position } from '../../types';
 // Mock des constantes. The real constants module exports RANGE_TYPES and
 // POSITIONS as arrays (the component calls .find on them), so the mock must
 // match that shape.
-jest.mock('../../utils/constants', () => ({
+vi.mock('../../utils/constants', () => ({
   RANGE_TYPES: [
     { value: 'preflop', label: 'Préflop' },
     { value: 'postflop', label: 'Postflop' },

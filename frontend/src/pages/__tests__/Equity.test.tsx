@@ -11,7 +11,7 @@ import { EquityResult } from '../../types';
 const mockSimulate = jest.fn();
 const mockReset = jest.fn();
 
-jest.mock('../../hooks', () => ({
+vi.mock('../../hooks', () => ({
   useEquity: () => ({
     result: null as EquityResult | null,
     loading: false,
@@ -21,7 +21,7 @@ jest.mock('../../hooks', () => ({
   }),
 }));
 
-jest.mock('../../auth/AuthContext', () => ({
+vi.mock('../../auth/AuthContext', () => ({
   useAuthContext: () => ({
     user: { id: 1, username: 'tester' },
     isAuthenticated: true,

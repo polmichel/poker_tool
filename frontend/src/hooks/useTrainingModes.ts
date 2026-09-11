@@ -35,7 +35,7 @@ export function useTrainingModes(trainingApi?: TrainingApi): UseTrainingModesRet
       const data = await run(() => api.modes());
       setModes(data);
       return data;
-    } catch (_err) {
+    } catch (err) {
       setError(extractErrorMessage(err, "Erreur lors du chargement des modes d'entraînement"));
       console.error('Error fetching training modes:', err);
       return null;

@@ -4,7 +4,7 @@ import RangeGrid from '../RangeGrid';
 import { RangeGridCell } from '../../types';
 
 // Mock des constantes
-jest.mock('../../utils/constants', () => ({
+vi.mock('../../utils/constants', () => ({
   RANKS: ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'],
   ACTION_COLORS: {
     open: '#4CAF50',

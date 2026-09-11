@@ -21,8 +21,8 @@ const mockRange: Range = {
 
 const mockUpdateRange = jest.fn();
 
-jest.mock('../../hooks', () => ({
-  ...jest.requireActual('../../hooks'),
+vi.mock('../../hooks', async () => ({
+  ...(await vi.importActual<typeof import('../../hooks')>('../../hooks')),
   useRanges: () => ({
     loading: false,
     error: null,
@@ -34,8 +34,8 @@ jest.mock('../../hooks', () => ({
   }),
 }));
 
-jest.mock('../../utils/helpers', () => ({
-  ...jest.requireActual('../../utils/helpers'),
+vi.mock('../../utils/helpers', async () => ({
+  ...(await vi.importActual<typeof import('../../utils/helpers')>('../../utils/helpers')),
   generateRangeGrid: (hands: Record<string, any>) => {
     // Petite grille 2x2 pour les tests
     return [
@@ -62,7 +62,7 @@ jest.mock('../../utils/helpers', () => ({
 
 // Mock RangeStats : il utilise recharts/ResponsiveContainer qui a besoin de
 // ResizeObserver (absent de jsdom). On l'évite pour ces tests d'intégration.
-jest.mock('../../components/RangeStats', () => {
+vi.mock('../../components/RangeStats', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const React = require('react');
   return {

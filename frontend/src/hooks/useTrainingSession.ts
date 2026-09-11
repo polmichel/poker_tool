@@ -88,7 +88,7 @@ export function useTrainingSession(trainingApi?: TrainingApi): UseTrainingSessio
     try {
       const data = await run(() => api.sessions());
       setSessions(data);
-    } catch (_err) {
+    } catch (err) {
       setError(extractErrorMessage(err, "Erreur lors du chargement des sessions d'entraînement"));
       console.error('Error fetching training sessions:', err);
     }
@@ -106,7 +106,7 @@ export function useTrainingSession(trainingApi?: TrainingApi): UseTrainingSessio
         setTimeSpent(sessionData.session?.time_spent || 0);
         setIsSessionActive(sessionData.progress?.current < sessionData.progress?.total);
         return sessionData;
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, `Erreur lors du chargement de la session ${id}`));
         console.error(`Error fetching session ${id}:`, err);
         return null;
@@ -140,7 +140,7 @@ export function useTrainingSession(trainingApi?: TrainingApi): UseTrainingSessio
         setIsSessionActive(true);
 
         return sessionData;
-      } catch (_err) {
+      } catch (err) {
         setError(
           extractErrorMessage(err, "Erreur lors de la création de la session d'entraînement"),
         );
@@ -176,7 +176,7 @@ export function useTrainingSession(trainingApi?: TrainingApi): UseTrainingSessio
         setIsSessionActive(true);
 
         return sessionData;
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, 'Erreur lors du démarrage rapide'));
         console.error('Error quick starting:', err);
         return null;
@@ -195,7 +195,7 @@ export function useTrainingSession(trainingApi?: TrainingApi): UseTrainingSessio
         setCurrentQuestion(null);
         fetchSessions();
         return data;
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, `Erreur lors de la fin de la session ${sessionId}`));
         console.error(`Error ending session ${sessionId}:`, err);
         return null;

@@ -18,7 +18,7 @@ const mockUseAuth = jest.fn(() => ({
   error: null,
 }));
 
-jest.mock('../../auth/AuthContext', () => ({
+vi.mock('../../auth/AuthContext', () => ({
   useAuthContext: () => mockUseAuth(),
 }));
 

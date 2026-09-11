@@ -44,7 +44,7 @@ export function useTraining(trainingApi?: TrainingApi) {
     try {
       const data = await run(() => api.sessions());
       setSessions(data);
-    } catch (_err) {
+    } catch (err) {
       setError(extractErrorMessage(err, "Erreur lors du chargement des sessions d'entranement"));
       console.error('Error fetching training sessions:', err);
     }
@@ -62,7 +62,7 @@ export function useTraining(trainingApi?: TrainingApi) {
         setTimeSpent(sessionData.session?.time_spent || 0);
         setIsSessionActive(sessionData.progress?.current < sessionData.progress?.total);
         return sessionData;
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, `Erreur lors du chargement de la session ${id}`));
         console.error(`Error fetching session ${id}:`, err);
         return null;
@@ -100,7 +100,7 @@ export function useTraining(trainingApi?: TrainingApi) {
         setIsSessionActive(true);
 
         return sessionData;
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, "Erreur lors de la cration de la session d'entranement"));
         console.error('Error creating training session:', err);
         return null;
@@ -158,7 +158,7 @@ export function useTraining(trainingApi?: TrainingApi) {
             nextQuestion: result.next_question,
           };
         }
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, 'Erreur lors de la soumission de la rponse'));
         console.error('Error submitting answer:', err);
         return null;
@@ -177,7 +177,7 @@ export function useTraining(trainingApi?: TrainingApi) {
         setCurrentQuestion(null);
         fetchSessions();
         return data;
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, `Erreur lors de la fin de la session ${sessionId}`));
         console.error(`Error ending session ${sessionId}:`, err);
         return null;
@@ -215,7 +215,7 @@ export function useTraining(trainingApi?: TrainingApi) {
         setIsSessionActive(true);
 
         return sessionData;
-      } catch (_err) {
+      } catch (err) {
         setError(extractErrorMessage(err, 'Erreur lors du dmarrage rapide'));
         console.error('Error quick starting:', err);
         return null;
@@ -228,7 +228,7 @@ export function useTraining(trainingApi?: TrainingApi) {
   const fetchTrainingModes = useCallback(async () => {
     try {
       return await run(() => api.modes());
-    } catch (_err) {
+    } catch (err) {
       setError(extractErrorMessage(err, "Erreur lors du chargement des modes d'entranement"));
       console.error('Error fetching training modes:', err);
       return null;
