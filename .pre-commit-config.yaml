@@ -1,0 +1,51 @@
+# .pre-commit-config.yaml
+# Install:  pip install pre-commit  &&  pre-commit install
+# Update:   pre-commit autoupdate
+# Run all:  pre-commit run --all-files
+
+repos:
+  # ---- Python: lint + format ----
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.6
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # ---- Python: type checks ----
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        args: [--ignore-missing-imports]
+
+  # ---- Frontend: lint (uses project dependencies via npm) ----
+  - repo: local
+    hooks:
+      - id: lint-frontend
+        name: lint-frontend
+        entry: bash -c 'cd frontend && npm run lint -- --check'
+        language: system
+        pass_filenames: false
+
+  # ---- Frontend: format (uses project dependencies via npm) ----
+  - repo: local
+    hooks:
+      - id: format-frontend
+        name: format-frontend
+        entry: bash -c 'cd frontend && npm run format'
+        language: system
+        pass_filenames: false
+
+  # ---- Shared: catch common mistakes ----
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: mixed-line-ending
+        args: [--fix=lf]
