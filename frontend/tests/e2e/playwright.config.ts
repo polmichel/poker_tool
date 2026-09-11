@@ -135,7 +135,7 @@ export default defineConfig({
           // can manage the process cleanly. reuseExistingServer: false
           // ensures the backend always starts fresh. Stale processes on
           // port 5001 are killed above before the run starts.
-          command: './venv/bin/python3 main.py',
+          command: './.venv/bin/python main.py',
           cwd: path.resolve(__dirname, '../../../backend'),
           url: 'http://localhost:5001/api/health',
           reuseExistingServer: false,
