@@ -135,16 +135,17 @@ export default defineConfig({
           // can manage the process cleanly. reuseExistingServer: false
           // ensures the backend always starts fresh. Stale processes on
           // port 5001 are killed above before the run starts.
-          command: './.venv/bin/python main.py',
-          cwd: path.resolve(__dirname, '../../../backend'),
+          command: 'python backend/main.py',
+          cwd: path.resolve(__dirname, '../../..'),
           url: 'http://localhost:5001/api/health',
           reuseExistingServer: false,
           timeout: 60000,
           env: {
             FLASK_ENV: 'development',
             FLASK_DEBUG: '0',
-            DATABASE_URL: 'sqlite:///poker_tool_e2e.db',
+            DATABASE_URL: 'sqlite:///backend/instance/poker_tool_e2e.db',
             PORT: '5001',
+            PYTHONPATH: 'backend',
           },
         },
         {
