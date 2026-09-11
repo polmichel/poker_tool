@@ -1,8 +1,32 @@
-// jest-dom adds custom jest matchers for asserting on DOM nodes.
-// allows you to do things like:
-// expect(element).toBeInTheDocument();
-// learn more: https://github.com/testing-library/jest-dom
+// Vitest setup file
+// Import extend expect with jest-dom matchers
 import '@testing-library/jest-dom';
+// Create a jest shim for backward compatibility with Vitest
+import { vi } from 'vitest';
+
+// Make jest available globally as an alias for vi
+(window as any).jest = vi;
+
+// Mock localStorage for tests
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+});
 
 // jsdom does not implement ResizeObserver, which recharts' ResponsiveContainer
 // (used by the Stats page) relies on. Provide a no-op stub so chart components
@@ -23,11 +47,11 @@ if (!window.matchMedia) {
       matches: false,
       media: query,
       onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => {},
     }),
   });
 }

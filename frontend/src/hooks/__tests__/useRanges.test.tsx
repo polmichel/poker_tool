@@ -25,7 +25,6 @@ function makeFakeRangesApi() {
 
 describe('useRanges Hook', () => {
   beforeEach(() => {
-    process.env.REACT_APP_API_URL = 'http://localhost:5000/api';
   });
 
   it('initializes with empty ranges and no selected range', () => {

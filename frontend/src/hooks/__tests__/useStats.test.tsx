@@ -25,7 +25,6 @@ function makeFakeStatsApi() {
 
 describe('useStats Hook', () => {
   beforeEach(() => {
-    process.env.REACT_APP_API_URL = 'http://localhost:5000/api';
   });
 
   it('initializes with correct default values', () => {
