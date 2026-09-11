@@ -60,8 +60,8 @@ if (!isCI && process.env.TEST_WORKER_INDEX === undefined) {
  */
 export default defineConfig({
   testDir: './specs',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
+  /* Run tests in files in parallel - disabled to avoid backend issues */
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: isCI,
   /* Retry on CI only */
