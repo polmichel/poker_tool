@@ -75,9 +75,9 @@ test.describe('Registration flow', () => {
     expect(page.url()).toContain('/register');
     const alert = page.locator('[role="alert"]');
     await expect(alert).toBeVisible();
-    const alertText = await alert.textContent();
+    const alertText = (await alert.textContent()) || '';
     // The error should mention "already exists" (from the backend), not the
     // generic "Erreur lors de l'inscription"
-    expect(alertText).toContain('exist');
+    expect(alertText.toLowerCase()).toContain('exist');
   });
 });

@@ -70,10 +70,10 @@ test.describe('Login flow', () => {
     await page.waitForURL('http://localhost:3000/', { timeout: 10000 });
 
     // Verify username is visible
-    await expect(page.locator(`text=${username}`)).toBeVisible();
+    await expect(page.locator(`text=${username}`).first()).toBeVisible();
 
     // Click the user menu button to open it
-    await page.locator(`text=${username}`).click();
+    await page.locator(`text=${username}`).first().click();
     await page.waitForTimeout(500);
 
     // Click "Déconnexion"
