@@ -162,6 +162,8 @@ describe('ImportExport page', () => {
       configurable: true,
       value: { ...window.URL, createObjectURL, revokeObjectURL },
     });
+    // jsdom doesn't implement anchor.click() navigation; stub it as a no-op.
+    const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
     renderImportExport();
     fireEvent.click(screen.getByRole('tab', { name: /Exporter/ }));
@@ -174,5 +176,6 @@ describe('ImportExport page', () => {
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(/succès/i);
     });
+    clickSpy.mockRestore();
   });
 });

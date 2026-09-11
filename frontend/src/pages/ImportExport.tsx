@@ -399,14 +399,16 @@ JJ,raise`;
                 {/* Boutons d'export */}
                 <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
                   <Tooltip title="Copier dans le presse-papiers">
-                    <Button
-                      variant="outlined"
-                      startIcon={<ContentCopyIcon />}
-                      onClick={handleCopyToClipboard}
-                      disabled={!selectedRange}
-                    >
-                      Copier
-                    </Button>
+                    <span>
+                      <Button
+                        variant="outlined"
+                        startIcon={<ContentCopyIcon />}
+                        onClick={handleCopyToClipboard}
+                        disabled={!selectedRange}
+                      >
+                        Copier
+                      </Button>
+                    </span>
                   </Tooltip>
 
                   <Button

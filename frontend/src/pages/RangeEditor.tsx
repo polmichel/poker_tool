@@ -188,27 +188,31 @@ const RangeEditor: React.FC = () => {
 
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Annuler">
-            <Button
-              variant="outlined"
-              startIcon={<UndoIcon />}
-              onClick={undo}
-              disabled={!canUndo}
-              size="small"
-            >
-              Annuler
-            </Button>
+            <span>
+              <Button
+                variant="outlined"
+                startIcon={<UndoIcon />}
+                onClick={undo}
+                disabled={!canUndo}
+                size="small"
+              >
+                Annuler
+              </Button>
+            </span>
           </Tooltip>
 
           <Tooltip title="Rétablir">
-            <Button
-              variant="outlined"
-              startIcon={<RedoIcon />}
-              onClick={redo}
-              disabled={!canRedo}
-              size="small"
-            >
-              Rétablir
-            </Button>
+            <span>
+              <Button
+                variant="outlined"
+                startIcon={<RedoIcon />}
+                onClick={redo}
+                disabled={!canRedo}
+                size="small"
+              >
+                Rétablir
+              </Button>
+            </span>
           </Tooltip>
 
           <Tooltip title="Sauvegarder">

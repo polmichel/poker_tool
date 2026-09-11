@@ -201,16 +201,18 @@ const Training: React.FC = () => {
           </Tooltip>
 
           <Tooltip title="Demarrer rapidement">
-            <Button
-              variant="contained"
-              startIcon={<PlayArrowIcon />}
-              onClick={handleQuickStart}
-              color="success"
-              disabled={ranges.length === 0}
-              data-testid="quick-start-button"
-            >
-              Demarrer
-            </Button>
+            <span>
+              <Button
+                variant="contained"
+                startIcon={<PlayArrowIcon />}
+                onClick={handleQuickStart}
+                color="success"
+                disabled={ranges.length === 0}
+                data-testid="quick-start-button"
+              >
+                Demarrer
+              </Button>
+            </span>
           </Tooltip>
         </Box>
       </Box>
