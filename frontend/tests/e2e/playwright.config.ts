@@ -119,15 +119,17 @@ export default defineConfig({
         {
           // Start backend (Flask server) with the e2e test database.
           // Uses port 5001 to avoid conflicting with a dev backend on
-          // port 5000. reuseExistingServer: false ensures the backend
-          // always restarts fresh with the clean e2e database.
+          // port 5000. FLASK_DEBUG=0 disables the reloader so Playwright
+          // can manage the process cleanly. reuseExistingServer: true
+          // avoids port conflicts if a previous run left the server up.
           command: './venv/bin/python3 main.py',
           cwd: path.resolve(__dirname, '../../../backend'),
           url: 'http://localhost:5001/api/health',
-          reuseExistingServer: false,
+          reuseExistingServer: true,
           timeout: 60000,
           env: {
             FLASK_ENV: 'development',
+            FLASK_DEBUG: '0',
             DATABASE_URL: 'sqlite:///poker_tool_e2e.db',
             PORT: '5001',
           },
@@ -139,7 +141,7 @@ export default defineConfig({
           command: 'npm run start',
           cwd: path.resolve(__dirname, '../..'),
           url: 'http://localhost:3000',
-          reuseExistingServer: false,
+          reuseExistingServer: true,
           timeout: 60000,
           env: {
             VITE_API_URL: 'http://localhost:5001/api',
