@@ -34,7 +34,7 @@ class EffectiveStack(Enum):
     @property
     def value(self) -> int:
         """Numeric value in BB."""
-        return self._value_  # type: ignore
+        return super().value
 
     @property
     def label(self) -> str:

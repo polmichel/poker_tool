@@ -4,11 +4,16 @@ These models are internal implementation details of the SQLAlchemy adapter.
 """
 
 from datetime import UTC, datetime
+from typing import Any
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 
 # Create SQLAlchemy instance (will be initialized by the adapter)
-db = SQLAlchemy()  # type: ignore[assignment]
+db: SQLAlchemy = SQLAlchemy()
+
+# Type alias to satisfy mypy - db.Model is created at runtime
+Model: Any = db.Model
 
 
 def _utcnow_naive():
@@ -16,21 +21,21 @@ def _utcnow_naive():
     return datetime.now(UTC).replace(tzinfo=None)
 
 
-class RangeModel(db.Model):  # type: ignore[name-defined]
+class RangeModel(Model):
     """SQLAlchemy model for Range."""
 
     __tablename__ = "poker_range"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, default="")
-    range_type = db.Column(db.String(20), default="preflop")
-    position = db.Column(db.String(20), default="undefined")
-    effective_stack_bb = db.Column(db.Integer, nullable=True)
-    hands = db.Column(db.JSON, default={})  # Dict[str, str] (hand_str -> action_str)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
-    created_at = db.Column(db.DateTime, default=_utcnow_naive)
-    updated_at = db.Column(db.DateTime, default=_utcnow_naive, onupdate=_utcnow_naive)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, default="")
+    range_type = Column(String(20), default="preflop")
+    position = Column(String(20), default="undefined")
+    effective_stack_bb = Column(Integer, nullable=True)
+    hands = Column(JSON, default={})  # Dict[str, str] (hand_str -> action_str)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=True)
+    created_at = Column(DateTime, default=_utcnow_naive)
+    updated_at = Column(DateTime, default=_utcnow_naive, onupdate=_utcnow_naive)
 
     def to_domain(self):
         """Convert to domain Range object."""
@@ -52,17 +57,17 @@ class RangeModel(db.Model):  # type: ignore[name-defined]
         )
 
 
-class UserModel(db.Model):  # type: ignore[name-defined]
+class UserModel(Model):
     """SQLAlchemy model for User."""
 
     __tablename__ = "user"
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    password_hash = db.Column(db.String(200), nullable=True)
-    created_at = db.Column(db.DateTime, default=_utcnow_naive)
-    updated_at = db.Column(db.DateTime, default=_utcnow_naive, onupdate=_utcnow_naive)
+    id = Column(Integer, primary_key=True)
+    username = Column(String(50), unique=True, nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
+    password_hash = Column(String(200), nullable=True)
+    created_at = Column(DateTime, default=_utcnow_naive)
+    updated_at = Column(DateTime, default=_utcnow_naive, onupdate=_utcnow_naive)
 
     def to_domain(self):
         """Convert to domain User object."""
@@ -76,23 +81,23 @@ class UserModel(db.Model):  # type: ignore[name-defined]
         )
 
 
-class TrainingSessionModel(db.Model):  # type: ignore[name-defined]
+class TrainingSessionModel(Model):
     """SQLAlchemy model for TrainingSession."""
 
     __tablename__ = "training_session"
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    range_id = db.Column(db.Integer, db.ForeignKey("poker_range.id"), nullable=False)
-    mode = db.Column(db.String(20), default="fill")
-    total_questions = db.Column(db.Integer, default=10)
-    current_question_index = db.Column(db.Integer, default=0)
-    correct_answers = db.Column(db.Integer, default=0)
-    score = db.Column(db.Float, default=0.0)
-    time_spent = db.Column(db.Integer, default=0)
-    is_complete = db.Column(db.Boolean, default=False)
-    details = db.Column(db.JSON, default={})  # Contains questions, start_time, etc.
-    created_at = db.Column(db.DateTime, default=_utcnow_naive)
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    range_id = Column(Integer, ForeignKey("poker_range.id"), nullable=False)
+    mode = Column(String(20), default="fill")
+    total_questions = Column(Integer, default=10)
+    current_question_index = Column(Integer, default=0)
+    correct_answers = Column(Integer, default=0)
+    score = Column(Float, default=0.0)
+    time_spent = Column(Integer, default=0)
+    is_complete = Column(Boolean, default=False)
+    details = Column(JSON, default={})  # Contains questions, start_time, etc.
+    created_at = Column(DateTime, default=_utcnow_naive)
 
     def to_domain(self):
         """Convert to domain TrainingSession object."""

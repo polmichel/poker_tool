@@ -6,6 +6,8 @@ and delegates every business operation to the injected use cases. No
 business logic lives here.
 """
 
+from typing import Protocol
+
 from flask import Blueprint, Flask, jsonify
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import BadRequest, NotFound
@@ -30,6 +32,14 @@ from .controllers.equity import EquityController
 from .controllers.ranges import RangeController
 from .controllers.stats import StatsController
 from .controllers.training import TrainingController
+
+
+class Controller(Protocol):
+    """Protocol for HTTP controllers that can register routes."""
+
+    def register(self, api: Blueprint) -> None:
+        """Register routes with the Flask Blueprint."""
+        ...
 
 
 class FlaskApp:
@@ -63,7 +73,7 @@ class FlaskApp:
         self.app = flask_app
 
         # Build the controllers (each owns a resource's routes).
-        self._controllers = [
+        self._controllers: list[Controller] = [
             RangeController(
                 ranges,
                 auth,
@@ -90,7 +100,7 @@ class FlaskApp:
             return jsonify({"status": "healthy", "version": "1.0.0"})
 
         for controller in self._controllers:
-            controller.register(api)  # type: ignore[attr-defined]
+            controller.register(api)
 
         self.app.register_blueprint(api)
 
