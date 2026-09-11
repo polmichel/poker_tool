@@ -24,8 +24,7 @@ function makeFakeStatsApi() {
 }
 
 describe('useStats Hook', () => {
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   it('initializes with correct default values', () => {
     const fakeApi = makeFakeStatsApi();

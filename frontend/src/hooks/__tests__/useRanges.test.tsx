@@ -24,8 +24,7 @@ function makeFakeRangesApi() {
 }
 
 describe('useRanges Hook', () => {
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   it('initializes with empty ranges and no selected range', () => {
     const fakeApi = makeFakeRangesApi();

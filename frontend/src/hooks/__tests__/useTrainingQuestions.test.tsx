@@ -23,8 +23,7 @@ function makeFakeTrainingApi() {
 }
 
 describe('useTrainingQuestions Hook', () => {
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   it('initializes with no feedback', () => {
     const fakeApi = makeFakeTrainingApi();

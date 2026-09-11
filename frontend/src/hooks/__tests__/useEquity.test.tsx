@@ -12,8 +12,7 @@ function makeFakeEquityApi() {
 }
 
 describe('useEquity Hook', () => {
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   it('initializes with correct default values', () => {
     const fakeApi = makeFakeEquityApi();

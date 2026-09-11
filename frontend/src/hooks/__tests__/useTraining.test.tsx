@@ -24,8 +24,7 @@ function makeFakeTrainingApi() {
 }
 
 describe('useTraining Hook', () => {
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   it('initializes with correct default values', () => {
     const fakeApi = makeFakeTrainingApi();

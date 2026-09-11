@@ -21,8 +21,7 @@ function makeFakeTrainingApi() {
 }
 
 describe('useTrainingModes Hook', () => {
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   it('initializes with empty modes and loading=true', () => {
     const fakeApi = makeFakeTrainingApi();
