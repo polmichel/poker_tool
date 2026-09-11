@@ -75,7 +75,7 @@ export const RangeSchema = z.object({
   position: PositionSchema,
   effective_stack_bb: z.number().nullable().optional(),
   hands: HandsRecordSchema,
-  user_id: z.number().optional(),
+  user_id: z.number().nullish(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });
@@ -97,7 +97,7 @@ export const ScenarioSchema = z.object({
   position: PositionSchema,
   action: z.string(),
   range_id: z.number().optional(),
-  user_id: z.number().optional(),
+  user_id: z.number().nullish(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });

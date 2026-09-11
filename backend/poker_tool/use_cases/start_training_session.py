@@ -2,7 +2,7 @@
 Start a training session (use case).
 
 Encapsulates: fetching the range, validating it has hands, resolving the
-user (explicit, auth, or fallback) and creating + persisting the session.
+user (explicit or auth) and creating + persisting the session.
 Dependencies (Ranges port, TrainingSessions port, ResolveUser use case) are
 injected.
 """

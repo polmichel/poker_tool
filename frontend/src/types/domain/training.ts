@@ -38,7 +38,7 @@ export type TrainingQuestion = z.infer<typeof TrainingQuestionSchema>;
 
 export const TrainingSessionSchema = z.object({
   id: z.number().optional(),
-  user_id: z.number().optional(),
+  user_id: z.number().nullish(),
   range_id: z.number(),
   mode: TrainingModeSchema,
   score: z.number(),

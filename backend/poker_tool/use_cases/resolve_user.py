@@ -1,10 +1,9 @@
 """
 Resolve a user (use case).
 
-Encapsulates: resolving a user from an explicit ID, the current authenticated
-user, or falling back to the first existing user for anonymous / E2E sessions.
-This centralizes the user resolution logic that was previously duplicated in
-multiple use cases (CurrentUser, CreateRange, StartTrainingSession).
+Encapsulates: resolving a user from an explicit ID or the current authenticated
+user. This centralizes the user resolution logic that was previously duplicated
+in multiple use cases (CurrentUser, CreateRange, StartTrainingSession).
 
 Dependencies (Users port, Auth port) are injected, making this unit-testable
 with fakes.
@@ -16,7 +15,7 @@ from .errors import UserRequired
 
 
 class ResolveUser:
-    """Resolve a user from various sources with fallback."""
+    """Resolve a user from various sources."""
 
     def __init__(self, users: Users, auth: Auth) -> None:
         """Initialize with Users and Auth ports."""
@@ -24,22 +23,18 @@ class ResolveUser:
         self._auth = auth
 
     def resolve(self, user_id: int | None = None) -> User | None:
-        """Resolve a user from the given ID, auth context, or fallback.
+        """Resolve a user from the given ID or auth context.
 
         Priority order:
         1. Explicit user_id (if provided)
         2. Current authenticated user (from JWT)
-        3. First existing user (for anonymous / E2E sessions)
-        4. None (if no user exists)
+        3. None (if no user is authenticated and no user_id provided)
 
         Args:
             user_id: Optional explicit user ID to resolve.
 
         Returns:
             The resolved User, or None if no user can be found.
-
-        Raises:
-            UserRequired: If user_id is explicitly None and no user exists.
         """
         if user_id is not None:
             return self._users.user_by_id(user_id)
@@ -48,8 +43,7 @@ class ResolveUser:
         if current and current.id:
             return self._users.user_by_id(current.id)
 
-        users = self._users.all()
-        return users[0] if users else None
+        return None
 
     def resolve_or_raise(self, user_id: int | None = None) -> User:
         """Resolve a user, raising UserRequired if none can be found.

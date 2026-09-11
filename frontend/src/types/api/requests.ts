@@ -37,7 +37,7 @@ export type UpdateRangeRequest = z.infer<typeof UpdateRangeRequestSchema>;
 export const CreateSessionRequestSchema = z.object({
   mode: TrainingModeSchema,
   range_id: z.number(),
-  user_id: z.number().optional(),
+  user_id: z.number().nullish(),
   total_questions: z.number().optional(),
 });
 export type CreateSessionRequest = z.infer<typeof CreateSessionRequestSchema>;
