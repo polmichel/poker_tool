@@ -3,4 +3,4 @@
 // `expect` stay typed through @types/jest; this declares only `vi` (used for
 // hoisted `vi.mock` and `vi.importActual`) without pulling in vitest/globals,
 // which would duplicate those jest-provided ambient declarations.
-declare const vi: typeof import('vitest')['vi'];
+declare const vi: (typeof import('vitest'))['vi'];
