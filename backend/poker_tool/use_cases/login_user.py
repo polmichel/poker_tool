@@ -4,6 +4,7 @@ Login a user (use case).
 Encapsulates: user lookup by username, password verification and token
 generation. Dependencies (Users port, Auth port) are injected.
 """
+
 from ..interfaces.auth import Auth
 from ..interfaces.users import Users
 from ..objects.user import User
@@ -29,6 +30,8 @@ class LoginUser:
         user = self._users.user_by_username(username)
         if not user:
             raise InvalidCredentials("User not found")
+        if user.password_hash is None:
+            raise InvalidCredentials("Invalid password")
         if not self._auth.check_password(password, user.password_hash):
             raise InvalidCredentials("Invalid password")
         token = self._auth.generate_token(user)

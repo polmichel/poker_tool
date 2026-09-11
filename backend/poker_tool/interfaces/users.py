@@ -5,6 +5,7 @@ A single-responsibility port for reading and writing :class:`User` objects.
 Every method speaks only about users — no generic ``save(obj)``,
 no ``isinstance`` dispatch.
 """
+
 from abc import ABC, abstractmethod
 
 from ..objects.user import User

@@ -71,7 +71,7 @@ class Range:
         """Effective stack in BB."""
         return self._effective_stack_bb
 
-    def with_hand(self, hand_str: str, action: Action) -> 'Range':
+    def with_hand(self, hand_str: str, action: Action) -> "Range":
         """Return new Range with added/updated hand (immutable)."""
         new_hands = dict(self._hands)
         new_hands[hand_str] = action
@@ -86,7 +86,7 @@ class Range:
             effective_stack_bb=self._effective_stack_bb,
         )
 
-    def without_hand(self, hand_str: str) -> 'Range':
+    def without_hand(self, hand_str: str) -> "Range":
         """Return new Range with removed hand (immutable)."""
         new_hands = dict(self._hands)
         new_hands.pop(hand_str, None)
@@ -112,17 +112,19 @@ class Range:
                 else:
                     hand_str = f"{rank2}{rank1}o"
                 action = self._hands.get(hand_str, Action(ActionType.UNDEFINED))
-                row.append({
-                    "hand": hand_str,
-                    "action": str(action),
-                    "color": action.color,
-                })
+                row.append(
+                    {
+                        "hand": hand_str,
+                        "action": str(action),
+                        "color": action.color,
+                    }
+                )
             grid.append(row)
         return grid
 
     def statistics(self) -> dict:
         """Calculate range statistics."""
-        by_action = {}
+        by_action: dict[str, int] = {}
         for action in self._hands.values():
             by_action[action.type.name] = by_action.get(action.type.name, 0) + 1
         return {
@@ -146,12 +148,9 @@ class Range:
         return result
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'Range':
+    def from_dict(cls, data: dict) -> "Range":
         """Create from dictionary."""
-        hands = {
-            hand_str: Action(ActionType[action.upper()])
-            for hand_str, action in data.get("hands", {}).items()
-        }
+        hands = {hand_str: Action(ActionType[action.upper()]) for hand_str, action in data.get("hands", {}).items()}
         return cls(
             name=data.get("name", ""),
             description=data.get("description", ""),

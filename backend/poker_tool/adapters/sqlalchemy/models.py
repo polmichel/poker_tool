@@ -2,6 +2,7 @@
 SQLAlchemy models for Poker Tool.
 These models are internal implementation details of the SQLAlchemy adapter.
 """
+
 from datetime import UTC, datetime
 
 from flask_sqlalchemy import SQLAlchemy
@@ -17,16 +18,17 @@ def _utcnow_naive():
 
 class RangeModel(db.Model):
     """SQLAlchemy model for Range."""
-    __tablename__ = 'poker_range'
+
+    __tablename__ = "poker_range"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, default='')
-    range_type = db.Column(db.String(20), default='preflop')
-    position = db.Column(db.String(20), default='undefined')
+    description = db.Column(db.Text, default="")
+    range_type = db.Column(db.String(20), default="preflop")
+    position = db.Column(db.String(20), default="undefined")
     effective_stack_bb = db.Column(db.Integer, nullable=True)
     hands = db.Column(db.JSON, default={})  # Dict[str, str] (hand_str -> action_str)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     created_at = db.Column(db.DateTime, default=_utcnow_naive)
     updated_at = db.Column(db.DateTime, default=_utcnow_naive, onupdate=_utcnow_naive)
 
@@ -37,10 +39,7 @@ class RangeModel(db.Model):
         from ...objects.range import Range
         from ...objects.range_type import RangeType
 
-        hands = {
-            hand_str: Action(ActionType[action.upper()])
-            for hand_str, action in (self.hands or {}).items()
-        }
+        hands = {hand_str: Action(ActionType[action.upper()]) for hand_str, action in (self.hands or {}).items()}
         return Range(
             name=self.name,
             description=self.description or "",
@@ -55,7 +54,8 @@ class RangeModel(db.Model):
 
 class UserModel(db.Model):
     """SQLAlchemy model for User."""
-    __tablename__ = 'user'
+
+    __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -67,6 +67,7 @@ class UserModel(db.Model):
     def to_domain(self):
         """Convert to domain User object."""
         from ...objects.user import User
+
         return User(
             username=self.username,
             email=self.email,
@@ -77,12 +78,13 @@ class UserModel(db.Model):
 
 class TrainingSessionModel(db.Model):
     """SQLAlchemy model for TrainingSession."""
-    __tablename__ = 'training_session'
+
+    __tablename__ = "training_session"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    range_id = db.Column(db.Integer, db.ForeignKey('poker_range.id'), nullable=False)
-    mode = db.Column(db.String(20), default='fill')
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    range_id = db.Column(db.Integer, db.ForeignKey("poker_range.id"), nullable=False)
+    mode = db.Column(db.String(20), default="fill")
     total_questions = db.Column(db.Integer, default=10)
     current_question_index = db.Column(db.Integer, default=0)
     correct_answers = db.Column(db.Integer, default=0)

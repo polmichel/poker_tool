@@ -14,4 +14,5 @@ dependencies = [
     "treys==0.1.8",
     "phevaluator==0.6.0",
     "pre-commit>=4.6.2",
+    "ruff>=0.16.7",
 ]

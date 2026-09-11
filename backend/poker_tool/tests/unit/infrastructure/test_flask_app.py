@@ -8,6 +8,7 @@ a specific use-case result or a forced failure, small explicit fake use cases
 are injected instead \u2014 still real components passed through the constructor,
 never MagicMock.
 """
+
 import unittest
 
 from flask import Flask
@@ -51,7 +52,7 @@ class _StubGlobalStats(GlobalStats):
         self._result = result
         self._error = error
 
-    def compute(self) -> dict:
+    def compute(self) -> dict | None:
         if self._error is not None:
             raise self._error
         return self._result
@@ -76,7 +77,7 @@ class TestFlaskApp(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures with in-memory ports and real use cases."""
         self.app = Flask(__name__)
-        self.app.config['TESTING'] = True
+        self.app.config["TESTING"] = True
         self.users = FakeUsers()
         self.ranges = FakeRanges()
         self.sessions = FakeSessions()
@@ -92,7 +93,9 @@ class TestFlaskApp(unittest.TestCase):
         self.get_ranges_by_user = GetRangesByUser(self.ranges)
         self.delete_range = DeleteRange(self.ranges)
         self.start_training = StartTrainingSession(
-            self.ranges, self.sessions, self.resolve_user,
+            self.ranges,
+            self.sessions,
+            self.resolve_user,
         )
         self.answer_question = AnswerQuestion(self.sessions)
         self.end_training = EndTrainingSession(self.sessions)
@@ -139,11 +142,11 @@ class TestFlaskApp(unittest.TestCase):
         """Test that FlaskApp registers routes."""
         self._make_app()
         with self.app.test_client() as client:
-            response = client.get('/api/health')
+            response = client.get("/api/health")
             self.assertEqual(response.status_code, 200)
             data = response.get_json()
-            self.assertEqual(data['status'], 'healthy')
-            self.assertEqual(data['version'], '1.0.0')
+            self.assertEqual(data["status"], "healthy")
+            self.assertEqual(data["version"], "1.0.0")
 
     def test_get_ranges_route(self):
         """Test GET /api/ranges route lists ranges stored in the fake."""
@@ -151,21 +154,23 @@ class TestFlaskApp(unittest.TestCase):
         from poker_tool.objects.range import Range
         from poker_tool.objects.range_type import RangeType
 
-        self.ranges.add(Range(
-            name="Test Range",
-            range_type=RangeType.PREFLOP,
-            position=Position.BTN,
-            range_id=1,
-        ))
+        self.ranges.add(
+            Range(
+                name="Test Range",
+                range_type=RangeType.PREFLOP,
+                position=Position.BTN,
+                range_id=1,
+            )
+        )
         self._make_app()
 
         with self.app.test_client() as client:
-            response = client.get('/api/ranges')
+            response = client.get("/api/ranges")
             self.assertEqual(response.status_code, 200)
             data = response.get_json()
             self.assertIsInstance(data, list)
             self.assertEqual(len(data), 1)
-            self.assertEqual(data[0]['name'], 'Test Range')
+            self.assertEqual(data[0]["name"], "Test Range")
 
     def test_get_range_route(self):
         """Test GET /api/ranges/<id> route returns a stored range."""
@@ -173,18 +178,20 @@ class TestFlaskApp(unittest.TestCase):
         from poker_tool.objects.range import Range
         from poker_tool.objects.range_type import RangeType
 
-        stored = self.ranges.add(Range(
-            name="Test Range",
-            range_type=RangeType.PREFLOP,
-            position=Position.BTN,
-        ))
+        stored = self.ranges.add(
+            Range(
+                name="Test Range",
+                range_type=RangeType.PREFLOP,
+                position=Position.BTN,
+            )
+        )
         self._make_app()
 
         with self.app.test_client() as client:
-            response = client.get(f'/api/ranges/{stored.id}')
+            response = client.get(f"/api/ranges/{stored.id}")
             self.assertEqual(response.status_code, 200)
             data = response.get_json()
-            self.assertEqual(data['name'], 'Test Range')
+            self.assertEqual(data["name"], "Test Range")
 
     def test_get_range_route_not_found(self):
         """Test GET /api/ranges/<id> route with non-existent range (404)."""
@@ -192,7 +199,7 @@ class TestFlaskApp(unittest.TestCase):
         self._make_app()
 
         with self.app.test_client() as client:
-            response = client.get('/api/ranges/999')
+            response = client.get("/api/ranges/999")
             self.assertEqual(response.status_code, 404)
 
     def test_create_range_route(self):
@@ -200,41 +207,43 @@ class TestFlaskApp(unittest.TestCase):
         self._make_app()
 
         with self.app.test_client() as client:
-            response = client.post('/api/ranges', json={'name': 'New Range'})
+            response = client.post("/api/ranges", json={"name": "New Range"})
             self.assertEqual(response.status_code, 201)
             data = response.get_json()
-            self.assertEqual(data['name'], 'New Range')
+            self.assertEqual(data["name"], "New Range")
         # The range was actually stored in the fake.
         self.assertEqual(len(self.ranges.all()), 1)
-        self.assertEqual(self.ranges.all()[0].name, 'New Range')
+        self.assertEqual(self.ranges.all()[0].name, "New Range")
 
     def test_create_range_route_missing_name(self):
         """Test POST /api/ranges route with missing name."""
         self._make_app()
         with self.app.test_client() as client:
-            response = client.post('/api/ranges', json={})
+            response = client.post("/api/ranges", json={})
             self.assertEqual(response.status_code, 400)
 
     def test_get_global_stats_route(self):
         """Test GET /api/stats/global delegates to the GlobalStats use case."""
-        stub = _StubGlobalStats(result={
-            'total_ranges': 2,
-            'total_users': 1,
-            'total_sessions': 3,
-            'total_hands': 5,
-            'avg_score': 4.5,
-            'most_common_action': 'RAISE',
-        })
+        stub = _StubGlobalStats(
+            result={
+                "total_ranges": 2,
+                "total_users": 1,
+                "total_sessions": 3,
+                "total_hands": 5,
+                "avg_score": 4.5,
+                "most_common_action": "RAISE",
+            }
+        )
         self._make_app(global_stats=stub)
 
         with self.app.test_client() as client:
-            response = client.get('/api/stats/global')
+            response = client.get("/api/stats/global")
             self.assertEqual(response.status_code, 200)
             data = response.get_json()
-            self.assertEqual(data['total_ranges'], 2)
-            self.assertEqual(data['total_sessions'], 3)
-            self.assertEqual(data['avg_score'], 4.5)
-            self.assertEqual(data['most_common_action'], 'RAISE')
+            self.assertEqual(data["total_ranges"], 2)
+            self.assertEqual(data["total_sessions"], 3)
+            self.assertEqual(data["avg_score"], 4.5)
+            self.assertEqual(data["most_common_action"], "RAISE")
 
     def test_get_global_stats_route_error(self):
         """Test GET /api/stats/global returns a JSON 500 when the use case fails.
@@ -244,33 +253,34 @@ class TestFlaskApp(unittest.TestCase):
         failure surfaces as a structured JSON 500 (not Flask's default HTML
         error page) so the frontend receives a clean error body.
         """
-        stub = _StubGlobalStats(error=RuntimeError('db down'))
+        stub = _StubGlobalStats(error=RuntimeError("db down"))
         self._make_app(global_stats=stub)
 
         with self.app.test_client() as client:
-            response = client.get('/api/stats/global')
+            response = client.get("/api/stats/global")
             self.assertEqual(response.status_code, 500)
-            self.assertEqual(response.get_json()['error'],
-                             'Erreur lors du chargement des statistiques globales')
+            self.assertEqual(response.get_json()["error"], "Erreur lors du chargement des statistiques globales")
 
     def test_get_user_stats_route(self):
         """Test GET /api/stats/user/<id> delegates to the UserStats use case."""
-        stub = _StubUserStats(result={
-            'user_id': 1,
-            'total_sessions': 2,
-            'avg_score': 3.0,
-            'total_time_spent': 120,
-            'best_score': 5.0,
-            'most_played_range': 'R1',
-        })
+        stub = _StubUserStats(
+            result={
+                "user_id": 1,
+                "total_sessions": 2,
+                "avg_score": 3.0,
+                "total_time_spent": 120,
+                "best_score": 5.0,
+                "most_played_range": "R1",
+            }
+        )
         self._make_app(user_stats=stub)
 
         with self.app.test_client() as client:
-            response = client.get('/api/stats/user/1')
+            response = client.get("/api/stats/user/1")
             self.assertEqual(response.status_code, 200)
             data = response.get_json()
-            self.assertEqual(data['user_id'], 1)
-            self.assertEqual(data['total_sessions'], 2)
+            self.assertEqual(data["user_id"], 1)
+            self.assertEqual(data["total_sessions"], 2)
 
     def test_get_user_stats_route_not_found(self):
         """Test GET /api/stats/user/<id> returns 404 for an unknown user.
@@ -281,19 +291,19 @@ class TestFlaskApp(unittest.TestCase):
         self._make_app()
 
         with self.app.test_client() as client:
-            response = client.get('/api/stats/user/999')
+            response = client.get("/api/stats/user/999")
             self.assertEqual(response.status_code, 404)
 
     def test_get_user_stats_route_error(self):
         """Test GET /api/stats/user/<id> returns a JSON 500 on unexpected failure."""
-        stub = _StubUserStats(error=RuntimeError('db down'))
+        stub = _StubUserStats(error=RuntimeError("db down"))
         self._make_app(user_stats=stub)
 
         with self.app.test_client() as client:
-            response = client.get('/api/stats/user/1')
+            response = client.get("/api/stats/user/1")
             self.assertEqual(response.status_code, 500)
-            self.assertIn('error', response.get_json())
+            self.assertIn("error", response.get_json())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

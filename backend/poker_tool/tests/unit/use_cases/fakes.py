@@ -162,7 +162,10 @@ class FakeEquityCalculator(EquityCalculator):
         )
 
     def compute(
-        self, hero: str, range_hands: list[str], iterations: int | None = None,
+        self,
+        hero: str,
+        range_hands: list[str],
+        iterations: int | None = None,
     ) -> EquityResult:
         return self._result
 
@@ -175,7 +178,7 @@ class FakeHandEvaluator(HandEvaluator):
     without depending on a real evaluator implementation.
     """
 
-    _RANKS: ClassVar[list[str]] = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
+    _RANKS: ClassVar[list[str]] = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]
 
     def evaluate(self, hole_cards: list[str], board: list[str]) -> int:
         # Lower is better; use the best (lowest) rank index of the two hole cards.

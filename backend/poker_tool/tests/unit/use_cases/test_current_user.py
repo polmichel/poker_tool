@@ -1,6 +1,7 @@
 """
 Unit tests for the CurrentUser use case (with in-memory fakes, no mocks).
 """
+
 import unittest
 
 from poker_tool.use_cases.current_user import CurrentUser
@@ -10,7 +11,6 @@ from .fakes import FakeAuth, FakeUsers
 
 
 class TestCurrentUser(unittest.TestCase):
-
     def setUp(self):
         self.users = FakeUsers()
         self.auth = FakeAuth()
@@ -36,5 +36,5 @@ class TestCurrentUser(unittest.TestCase):
         self.assertIsNone(use_case.user())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

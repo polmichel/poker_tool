@@ -2,6 +2,7 @@
 Integration tests for application composition.
 Tests that all components work together correctly.
 """
+
 import os
 import sys
 import unittest
@@ -85,14 +86,14 @@ class TestAppComposition(unittest.TestCase):
         app = PokerTool()
         with app.app.test_client() as client:
             response = client.get(
-                '/api/health',
-                headers={'Origin': 'http://localhost'},
+                "/api/health",
+                headers={"Origin": "http://localhost"},
             )
             self.assertEqual(response.status_code, 200)
-            self.assertIn('Access-Control-Allow-Origin', response.headers)
+            self.assertIn("Access-Control-Allow-Origin", response.headers)
             self.assertEqual(
-                response.headers['Access-Control-Allow-Origin'],
-                'http://localhost',
+                response.headers["Access-Control-Allow-Origin"],
+                "http://localhost",
             )
 
 
@@ -215,7 +216,7 @@ class TestInterfaceImplementations(unittest.TestCase):
         from poker_tool.interfaces.users import Users
 
         self.assertTrue(issubclass(SqlUsers, Users))
-        for method_name in ['add', 'user_by_id', 'user_by_username', 'user_by_email', 'all']:
+        for method_name in ["add", "user_by_id", "user_by_username", "user_by_email", "all"]:
             self.assertTrue(hasattr(SqlUsers, method_name), f"SqlUsers should implement {method_name}")
 
     def test_ranges_interface_implementation(self):
@@ -224,7 +225,7 @@ class TestInterfaceImplementations(unittest.TestCase):
         from poker_tool.interfaces.ranges import Ranges
 
         self.assertTrue(issubclass(SqlRanges, Ranges))
-        for method_name in ['add', 'range_by_id', 'all', 'remove', 'ranges_by_user']:
+        for method_name in ["add", "range_by_id", "all", "remove", "ranges_by_user"]:
             self.assertTrue(hasattr(SqlRanges, method_name), f"SqlRanges should implement {method_name}")
 
     def test_training_sessions_interface_implementation(self):
@@ -233,10 +234,9 @@ class TestInterfaceImplementations(unittest.TestCase):
         from poker_tool.interfaces.training_sessions import TrainingSessions
 
         self.assertTrue(issubclass(SqlTrainingSessions, TrainingSessions))
-        for method_name in ['add', 'session_by_id', 'all', 'sessions_by_user']:
+        for method_name in ["add", "session_by_id", "all", "sessions_by_user"]:
             self.assertTrue(
-                hasattr(SqlTrainingSessions, method_name),
-                f"SqlTrainingSessions should implement {method_name}"
+                hasattr(SqlTrainingSessions, method_name), f"SqlTrainingSessions should implement {method_name}"
             )
 
     def test_auth_interface_implementation(self):
@@ -248,17 +248,10 @@ class TestInterfaceImplementations(unittest.TestCase):
         self.assertTrue(issubclass(JwtAuth, Auth))
 
         # Verify all abstract methods are implemented
-        required_methods = [
-            'create_user', 'current_user',
-            'generate_token'
-        ]
+        required_methods = ["create_user", "current_user", "generate_token"]
 
         for method_name in required_methods:
-            self.assertTrue(
-                hasattr(JwtAuth, method_name),
-                f"JwtAuth should implement {method_name}"
-            )
-
+            self.assertTrue(hasattr(JwtAuth, method_name), f"JwtAuth should implement {method_name}")
 
 
 class TestEquityEndpoint(unittest.TestCase):
@@ -365,5 +358,5 @@ class TestEquityEndpoint(unittest.TestCase):
         self.assertEqual(resp.status_code, 400)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

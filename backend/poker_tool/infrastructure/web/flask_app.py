@@ -5,6 +5,7 @@ This is the infrastructure layer — it only composes the HTTP controllers
 and delegates every business operation to the injected use cases. No
 business logic lives here.
 """
+
 from flask import Blueprint, Flask, jsonify
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import BadRequest, NotFound
@@ -64,8 +65,14 @@ class FlaskApp:
         # Build the controllers (each owns a resource's routes).
         self._controllers = [
             RangeController(
-                ranges, auth, create_range, update_range,
-                get_all_ranges, get_range_by_id, get_ranges_by_user, delete_range,
+                ranges,
+                auth,
+                create_range,
+                update_range,
+                get_all_ranges,
+                get_range_by_id,
+                get_ranges_by_user,
+                delete_range,
             ),
             AuthController(register_user, login_user, current_user),
             TrainingController(sessions, start_training, answer_question, end_training),
@@ -93,10 +100,10 @@ class FlaskApp:
         @self.app.errorhandler(IntegrityError)
         def handle_integrity_error(e):
             # Check if this is a duplicate user constraint violation
-            error_msg = str(e.orig) if hasattr(e, 'orig') else str(e)
-            if 'UNIQUE constraint failed' in error_msg and 'user.username' in error_msg:
+            error_msg = str(e.orig) if hasattr(e, "orig") else str(e)
+            if "UNIQUE constraint failed" in error_msg and "user.username" in error_msg:
                 return jsonify({"error": "Username already exists"}), 400
-            elif 'UNIQUE constraint failed' in error_msg and 'user.email' in error_msg:
+            elif "UNIQUE constraint failed" in error_msg and "user.email" in error_msg:
                 return jsonify({"error": "Email already exists"}), 400
             return jsonify({"error": "Database constraint violation"}), 400
 
@@ -111,8 +118,10 @@ class FlaskApp:
 
         @self.app.route("/")
         def home():
-            return jsonify({
-                "message": "Welcome to Poker Tool API",
-                "version": "1.0.0",
-                "docs": "/api/health",
-            })
+            return jsonify(
+                {
+                    "message": "Welcome to Poker Tool API",
+                    "version": "1.0.0",
+                    "docs": "/api/health",
+                }
+            )

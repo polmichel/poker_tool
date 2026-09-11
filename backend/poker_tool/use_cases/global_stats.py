@@ -4,6 +4,7 @@ Compute global statistics (use case).
 Encapsulates: aggregating ranges, users and sessions into a global stats
 payload. Dependencies (the three ports) are injected.
 """
+
 from ..interfaces.ranges import Ranges
 from ..interfaces.training_sessions import TrainingSessions
 from ..interfaces.users import Users
@@ -31,9 +32,7 @@ class GlobalStats:
             for action in r.hands.values():
                 action_name = action.type.name
                 action_counts[action_name] = action_counts.get(action_name, 0) + 1
-        most_common_action = (
-            max(action_counts.items(), key=lambda x: x[1])[0] if action_counts else "UNDEFINED"
-        )
+        most_common_action = max(action_counts.items(), key=lambda x: x[1])[0] if action_counts else "UNDEFINED"
 
         return {
             "total_ranges": len(ranges),

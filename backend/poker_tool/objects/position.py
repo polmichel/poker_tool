@@ -1,6 +1,7 @@
 """
 Immutable position value object (Elegant Objects).
 """
+
 from enum import Enum, auto
 
 
@@ -50,7 +51,7 @@ class Position(Enum):
         return colors[self]
 
     @classmethod
-    def from_string(cls, position_str: str) -> 'Position':
+    def from_string(cls, position_str: str) -> "Position":
         """Factory method from string."""
         # Map common string representations to enum names
         string_to_enum = {

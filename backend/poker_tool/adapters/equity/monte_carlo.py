@@ -11,6 +11,7 @@ This is the fallback strategy used when the exact table is missing or
 incomplete; it is also injectable on its own for future use cases
 (postflop, range vs range) where exact enumeration is not tractable.
 """
+
 from ...interfaces.equity_calculator import EquityCalculator
 from ...objects.equity import EquityResult
 from ...use_cases.simulate_equity import SimulateEquity
@@ -24,7 +25,10 @@ class MonteCarloEquityCalculator(EquityCalculator):
         self._iterations = iterations
 
     def compute(
-        self, hero: str, range_hands: list[str], iterations: int | None = None,
+        self,
+        hero: str,
+        range_hands: list[str],
+        iterations: int | None = None,
     ) -> EquityResult:
         """Run the Monte-Carlo simulation with the requested iteration count.
 

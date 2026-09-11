@@ -10,6 +10,7 @@ gets exact, reproducible equity by default from the table, but if an entry is
 missing or the table file is absent, it transparently degrades to
 Monte-Carlo instead of erroring.
 """
+
 from ...interfaces.equity_calculator import EquityCalculator
 from ...objects.equity import EquityResult
 
@@ -22,7 +23,10 @@ class ExactWithMonteCarloFallback(EquityCalculator):
         self._fallback = fallback
 
     def compute(
-        self, hero: str, range_hands: list[str], iterations: int | None = None,
+        self,
+        hero: str,
+        range_hands: list[str],
+        iterations: int | None = None,
     ) -> EquityResult:
         """Return primary result; on a missing entry, return the fallback result."""
         try:

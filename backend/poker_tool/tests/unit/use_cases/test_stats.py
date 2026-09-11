@@ -1,6 +1,7 @@
 """
 Unit tests for the GlobalStats and UserStats use cases (in-memory fakes).
 """
+
 import unittest
 
 from poker_tool.use_cases.create_range import CreateRange
@@ -12,7 +13,6 @@ from .fakes import FakeAuth, FakeRanges, FakeSessions, FakeUsers
 
 
 class TestGlobalStats(unittest.TestCase):
-
     def setUp(self):
         self.users = FakeUsers()
         self.ranges = FakeRanges()
@@ -30,11 +30,15 @@ class TestGlobalStats(unittest.TestCase):
 
     def test_with_data(self):
         RegisterUser(self.users, self.auth).register("alice", "a@t.com", "p")
-        CreateRange(self.ranges, self.auth).create({
-            "name": "R1", "range_type": "preflop", "position": "BTN",
-            "hands": {"AA": "raise", "KK": "call"},
-            "user_id": 1,
-        })
+        CreateRange(self.ranges, self.auth).create(
+            {
+                "name": "R1",
+                "range_type": "preflop",
+                "position": "BTN",
+                "hands": {"AA": "raise", "KK": "call"},
+                "user_id": 1,
+            }
+        )
 
         stats = self.use_case.compute()
         self.assertEqual(stats["total_ranges"], 1)
@@ -44,7 +48,6 @@ class TestGlobalStats(unittest.TestCase):
 
 
 class TestUserStats(unittest.TestCase):
-
     def setUp(self):
         self.users = FakeUsers()
         self.ranges = FakeRanges()
@@ -64,5 +67,5 @@ class TestUserStats(unittest.TestCase):
         self.assertEqual(stats["most_played_range"], "")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

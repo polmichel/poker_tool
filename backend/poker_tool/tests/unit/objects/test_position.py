@@ -1,6 +1,7 @@
 """
 Unit tests for Position value object.
 """
+
 import unittest
 
 from poker_tool.objects.position import Position
@@ -87,5 +88,5 @@ class TestPosition(unittest.TestCase):
         self.assertEqual(position, Position.UNDEFINED)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

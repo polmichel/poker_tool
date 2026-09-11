@@ -24,6 +24,7 @@ Usage:
     python -m poker_tool.scripts.generate_equity_table --resume     # continue
     python -m poker_tool.scripts.generate_equity_table --limit 20    # sample
 """
+
 import argparse
 import json
 import os
@@ -35,14 +36,10 @@ from phevaluator import Card, evaluate_cards
 from ..objects.hand import RANKS, generate_all_hands
 
 # Pre-computed card-string -> phevaluator int id (avoids per-call parsing).
-_CARD_IDS: dict[str, int] = {
-    f"{r}{s}": int(Card(f"{r}{s}")) for r in RANKS for s in "shdc"
-}
+_CARD_IDS: dict[str, int] = {f"{r}{s}": int(Card(f"{r}{s}")) for r in RANKS for s in "shdc"}
 
 TABLE_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(
-        os.path.abspath(__file__)
-    ))),
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data",
     "equity_table.json",
 )
@@ -78,18 +75,12 @@ def _all_combos(hand_str: str) -> list[tuple[str, str]]:
     """All real-card combos for a canonical hand."""
     r1, r2 = hand_str[0], hand_str[1]
     if len(hand_str) == 2:  # pair: C(4,2)=6
-        return [
-            (f"{r1}{SUITS[i]}", f"{r1}{SUITS[j]}")
-            for i in range(4) for j in range(i + 1, 4)
-        ]
+        return [(f"{r1}{SUITS[i]}", f"{r1}{SUITS[j]}") for i in range(4) for j in range(i + 1, 4)]
     suited = len(hand_str) == 3 and hand_str[2] == "s"
     if suited:
         return [(f"{r1}{s}", f"{r2}{s}") for s in SUITS]
     # offsuit: distinct suits, 4*3=12 (order matters for hero/opp separation)
-    return [
-        (f"{r1}{SUITS[i]}", f"{r2}{SUITS[j]}")
-        for i in range(4) for j in range(4) if i != j
-    ]
+    return [(f"{r1}{SUITS[i]}", f"{r2}{SUITS[j]}") for i in range(4) for j in range(4) if i != j]
 
 
 def _enumerate_combo(hero_combo, opp_combo) -> tuple[int, int, int]:
@@ -97,19 +88,11 @@ def _enumerate_combo(hero_combo, opp_combo) -> tuple[int, int, int]:
     hole = (_CARD_IDS[hero_combo[0]], _CARD_IDS[hero_combo[1]])
     opp = (_CARD_IDS[opp_combo[0]], _CARD_IDS[opp_combo[1]])
     used = {hero_combo[0], hero_combo[1], opp_combo[0], opp_combo[1]}
-    remaining = [
-        _CARD_IDS[f"{r}{s}"]
-        for r in RANKS for s in SUITS
-        if f"{r}{s}" not in used
-    ]
+    remaining = [_CARD_IDS[f"{r}{s}"] for r in RANKS for s in SUITS if f"{r}{s}" not in used]
     wins = ties = losses = 0
     for board in combinations(remaining, 5):
-        hero_eval = evaluate_cards(
-            hole[0], hole[1], board[0], board[1], board[2], board[3], board[4]
-        )
-        opp_eval = evaluate_cards(
-            opp[0], opp[1], board[0], board[1], board[2], board[3], board[4]
-        )
+        hero_eval = evaluate_cards(hole[0], hole[1], board[0], board[1], board[2], board[3], board[4])
+        opp_eval = evaluate_cards(opp[0], opp[1], board[0], board[1], board[2], board[3], board[4])
         if hero_eval < opp_eval:
             wins += 1
         elif hero_eval == opp_eval:
@@ -141,12 +124,16 @@ def _enumerate_entry(args: tuple[str, str]) -> tuple[str, str, dict]:
         total_ties += ties
         total_losses += losses
     total = total_wins + total_ties + total_losses
-    return (hero_hand, opp_hand, {
-        "win": total_wins / total * 100,
-        "tie": total_ties / total * 100,
-        "lose": total_losses / total * 100,
-        "boards": total,
-    })
+    return (
+        hero_hand,
+        opp_hand,
+        {
+            "win": total_wins / total * 100,
+            "tie": total_ties / total * 100,
+            "lose": total_losses / total * 100,
+            "boards": total,
+        },
+    )
 
 
 def _load_existing(path: str) -> dict:
@@ -159,12 +146,9 @@ def _load_existing(path: str) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--resume", action="store_true",
-                        help="Skip entries already present in the table file.")
-    parser.add_argument("--limit", type=int, default=None,
-                        help="Only compute the first N pairs (for sampling).")
-    parser.add_argument("--workers", type=int, default=None,
-                        help="Number of worker processes (default: cpu_count).")
+    parser.add_argument("--resume", action="store_true", help="Skip entries already present in the table file.")
+    parser.add_argument("--limit", type=int, default=None, help="Only compute the first N pairs (for sampling).")
+    parser.add_argument("--workers", type=int, default=None, help="Number of worker processes (default: cpu_count).")
     args = parser.parse_args()
 
     os.makedirs(os.path.dirname(TABLE_PATH), exist_ok=True)
@@ -201,9 +185,11 @@ def main() -> None:
                 # Checkpoint after each batch so an interruption is resumable.
                 with open(TABLE_PATH, "w", encoding="utf-8") as f:
                     json.dump(table, f)
-                print(f"  {done}/{len(jobs)} done ({hero} vs {opp}) -> "
-                      f"win={result['win']:.2f} tie={result['tie']:.2f} "
-                      f"lose={result['lose']:.2f})")
+                print(
+                    f"  {done}/{len(jobs)} done ({hero} vs {opp}) -> "
+                    f"win={result['win']:.2f} tie={result['tie']:.2f} "
+                    f"lose={result['lose']:.2f})"
+                )
 
     with open(TABLE_PATH, "w", encoding="utf-8") as f:
         json.dump(table, f)

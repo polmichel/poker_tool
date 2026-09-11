@@ -13,14 +13,13 @@ This object is a pure data reader: it loads the file once at construction and
 serves lookups in O(1). It knows nothing about ranges or aggregation — that is
 the responsibility of :class:`AggregateEquity`.
 """
+
 import json
 import os
 
 # Default location: backend/data/equity_table.json
 _DEFAULT_TABLE_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(
-        os.path.abspath(__file__)
-    ))),
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data",
     "equity_table.json",
 )

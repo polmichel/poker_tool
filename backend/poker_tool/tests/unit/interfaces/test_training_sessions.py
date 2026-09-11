@@ -1,6 +1,7 @@
 """
 Unit tests for the TrainingSessions port (interface contract).
 """
+
 import os
 import sys
 import unittest
@@ -23,21 +24,17 @@ class TestTrainingSessionsInterface(unittest.TestCase):
     def test_training_sessions_abstract_methods(self):
         """Test that TrainingSessions has required abstract methods."""
         required_methods = [
-            'add',
-            'session_by_id',
-            'all',
-            'sessions_by_user',
+            "add",
+            "session_by_id",
+            "all",
+            "sessions_by_user",
         ]
         for method_name in required_methods:
             self.assertTrue(
-                hasattr(TrainingSessions, method_name),
-                f"TrainingSessions should have method: {method_name}"
+                hasattr(TrainingSessions, method_name), f"TrainingSessions should have method: {method_name}"
             )
             method = getattr(TrainingSessions, method_name)
-            self.assertTrue(
-                getattr(method, '__isabstractmethod__', False),
-                f"Method {method_name} should be abstract"
-            )
+            self.assertTrue(getattr(method, "__isabstractmethod__", False), f"Method {method_name} should be abstract")
 
     def test_cannot_instantiate_training_sessions(self):
         """Test that TrainingSessions cannot be instantiated directly."""
@@ -45,5 +42,5 @@ class TestTrainingSessionsInterface(unittest.TestCase):
             TrainingSessions()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

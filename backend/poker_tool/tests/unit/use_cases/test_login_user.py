@@ -1,6 +1,7 @@
 """
 Unit tests for the LoginUser use case (with in-memory fakes, no mocks).
 """
+
 import unittest
 
 from poker_tool.use_cases.login_user import InvalidCredentials, LoginUser
@@ -10,7 +11,6 @@ from .fakes import FakeAuth, FakeUsers
 
 
 class TestLoginUser(unittest.TestCase):
-
     def setUp(self):
         self.users = FakeUsers()
         self.auth = FakeAuth()
@@ -33,5 +33,5 @@ class TestLoginUser(unittest.TestCase):
             self.use_case.login("ghost", "secret")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

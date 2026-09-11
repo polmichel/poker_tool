@@ -7,6 +7,7 @@ Run from the backend/ directory:
 
 Idempotent: re-running won't duplicate existing test data.
 """
+
 import os
 import sys
 
@@ -39,23 +40,25 @@ def main() -> None:
         range_obj = next((r for r in ranges if r.name == "Test Range E2E"), None)
 
         if not range_obj:
-            range_obj = Range.from_dict({
-                "name": "Test Range E2E",
-                "description": "Range de test pour E2E",
-                "range_type": "preflop",
-                "position": "BTN",
-                "hands": {
-                    "AA": "raise",
-                    "KK": "raise",
-                    "QQ": "raise",
-                    "AKs": "raise",
-                    "JJ": "call",
-                    "TT": "call",
-                    "AQs": "raise",
-                    "KQs": "call",
-                },
-                "user_id": user.id,
-            })
+            range_obj = Range.from_dict(
+                {
+                    "name": "Test Range E2E",
+                    "description": "Range de test pour E2E",
+                    "range_type": "preflop",
+                    "position": "BTN",
+                    "hands": {
+                        "AA": "raise",
+                        "KK": "raise",
+                        "QQ": "raise",
+                        "AKs": "raise",
+                        "JJ": "call",
+                        "TT": "call",
+                        "AQs": "raise",
+                        "KQs": "call",
+                    },
+                    "user_id": user.id,
+                }
+            )
             range_obj = app.ranges.add(range_obj)
             print(f"Range created: ID={range_obj.id}")
         else:

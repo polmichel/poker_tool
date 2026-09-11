@@ -1,4 +1,5 @@
 """Unit tests for the equity result value objects."""
+
 import unittest
 
 from poker_tool.objects.equity import EquityByHand, EquityResult, hand_combos

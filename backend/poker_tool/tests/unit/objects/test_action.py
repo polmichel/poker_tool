@@ -1,6 +1,7 @@
 """
 Unit tests for Action value object.
 """
+
 import unittest
 
 from poker_tool.objects.action import Action, ActionType
@@ -144,5 +145,5 @@ class TestAction(unittest.TestCase):
         self.assertEqual(action.type, ActionType.UNDEFINED)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

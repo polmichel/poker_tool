@@ -1,4 +1,5 @@
 """Unit tests for Auth interface."""
+
 import os
 import sys
 import unittest
@@ -22,20 +23,14 @@ class TestAuthInterface(unittest.TestCase):
         """Test that Auth has required abstract methods."""
         # Check that all required methods are abstract
         required_methods = [
-            'create_user',
-            'current_user',
-            'generate_token',
+            "create_user",
+            "current_user",
+            "generate_token",
         ]
         for method_name in required_methods:
-            self.assertTrue(
-                hasattr(Auth, method_name),
-                f"Auth should have method: {method_name}"
-            )
+            self.assertTrue(hasattr(Auth, method_name), f"Auth should have method: {method_name}")
             method = getattr(Auth, method_name)
-            self.assertTrue(
-                getattr(method, '__isabstractmethod__', False),
-                f"Method {method_name} should be abstract"
-            )
+            self.assertTrue(getattr(method, "__isabstractmethod__", False), f"Method {method_name} should be abstract")
 
     def test_cannot_instantiate_auth(self):
         """Test that Auth cannot be instantiated directly."""
@@ -43,5 +38,5 @@ class TestAuthInterface(unittest.TestCase):
             Auth()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

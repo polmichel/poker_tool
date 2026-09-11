@@ -1,4 +1,5 @@
 """HTTP controllers for the stats resource."""
+
 import logging
 
 from flask import Blueprint, jsonify

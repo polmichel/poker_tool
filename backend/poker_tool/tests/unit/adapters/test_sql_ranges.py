@@ -1,6 +1,7 @@
 """
 Unit tests for the SqlRanges adapter.
 """
+
 import os
 import sys
 import unittest
@@ -27,13 +28,13 @@ class TestSqlRanges(unittest.TestCase):
     def test_sql_ranges_creation(self):
         """Test SqlRanges creation delegates to the shared SQLAlchemy init."""
         mock_app = MagicMock(spec=Flask)
-        with patch('poker_tool.adapters.sqlalchemy.ranges.init_sqlalchemy') as mock_init:
+        with patch("poker_tool.adapters.sqlalchemy.ranges.init_sqlalchemy") as mock_init:
             SqlRanges(mock_app)
             mock_init.assert_called_once_with(mock_app)
 
     def test_sql_ranges_creation_without_app(self):
         """Test SqlRanges creation without app does not initialize the db."""
-        with patch('poker_tool.adapters.sqlalchemy.ranges.init_sqlalchemy') as mock_init:
+        with patch("poker_tool.adapters.sqlalchemy.ranges.init_sqlalchemy") as mock_init:
             SqlRanges()
             mock_init.assert_not_called()
 
@@ -41,11 +42,11 @@ class TestSqlRanges(unittest.TestCase):
         """When init_sqlalchemy is called twice on the same app, db.init_app runs once."""
         mock_app = MagicMock(spec=Flask)
         mock_app._sqlalchemy_initialized = False
-        with patch('poker_tool.adapters.sqlalchemy.db') as mock_db:
+        with patch("poker_tool.adapters.sqlalchemy.db") as mock_db:
             init_sqlalchemy(mock_app)  # first call initializes
             init_sqlalchemy(mock_app)  # second call is a no-op (flag set)
             self.assertEqual(mock_db.init_app.call_count, 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

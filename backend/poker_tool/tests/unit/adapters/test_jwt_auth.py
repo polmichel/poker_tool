@@ -1,6 +1,7 @@
 """
 Unit tests for JwtAuth adapter.
 """
+
 import os
 import sys
 import unittest
@@ -29,7 +30,7 @@ class TestJwtAuth(unittest.TestCase):
 
     def test_jwt_auth_creation_without_config(self):
         """Test JwtAuth creation falls back to dev defaults when no config."""
-        with patch('poker_tool.adapters.jwt.auth.JWTManager') as mock_jwt:
+        with patch("poker_tool.adapters.jwt.auth.JWTManager") as mock_jwt:
             JwtAuth(self.app)
 
             # Check that JWTManager was initialized
@@ -41,11 +42,13 @@ class TestJwtAuth(unittest.TestCase):
 
     def test_jwt_auth_creation_with_config(self):
         """Test JwtAuth uses the injected Config for secrets and expiry."""
-        config = Config({
-            "JWT_SECRET_KEY": "injected-jwt-secret",
-            "JWT_ACCESS_TOKEN_EXPIRES": "7200",
-        })
-        with patch('poker_tool.adapters.jwt.auth.JWTManager'):
+        config = Config(
+            {
+                "JWT_SECRET_KEY": "injected-jwt-secret",
+                "JWT_ACCESS_TOKEN_EXPIRES": "7200",
+            }
+        )
+        with patch("poker_tool.adapters.jwt.auth.JWTManager"):
             JwtAuth(self.app, config)
 
             self.assertEqual(self.app.config.get("JWT_SECRET_KEY"), "injected-jwt-secret")
@@ -53,7 +56,7 @@ class TestJwtAuth(unittest.TestCase):
 
     def test_create_user(self):
         """Test create_user method."""
-        with patch('poker_tool.adapters.jwt.auth.JWTManager'):
+        with patch("poker_tool.adapters.jwt.auth.JWTManager"):
             auth = JwtAuth(self.app)
 
             user = auth.create_user("testuser", "test@example.com", "password123")
@@ -63,8 +66,8 @@ class TestJwtAuth(unittest.TestCase):
             self.assertIsNotNone(user.password_hash)
             self.assertIsNone(user.id)
 
-    @patch('poker_tool.adapters.jwt.auth.JWTManager')
-    @patch('poker_tool.adapters.jwt.auth.create_access_token')
+    @patch("poker_tool.adapters.jwt.auth.JWTManager")
+    @patch("poker_tool.adapters.jwt.auth.create_access_token")
     def test_generate_token(self, mock_create_token, mock_jwt):
         """Test generate_token method."""
         mock_create_token.return_value = "mock_token"
@@ -76,9 +79,9 @@ class TestJwtAuth(unittest.TestCase):
         token = auth.generate_token(user)
 
         self.assertEqual(token, "mock_token")
-        mock_create_token.assert_called_once_with(identity='1')
+        mock_create_token.assert_called_once_with(identity="1")
 
-    @patch('poker_tool.adapters.jwt.auth.JWTManager')
+    @patch("poker_tool.adapters.jwt.auth.JWTManager")
     def test_generate_token_without_id(self, mock_jwt):
         """Test generate_token with user without ID."""
         auth = JwtAuth(self.app)
@@ -87,8 +90,8 @@ class TestJwtAuth(unittest.TestCase):
         with self.assertRaises(ValueError):
             auth.generate_token(user)
 
-    @patch('poker_tool.adapters.jwt.auth.JWTManager')
-    @patch('poker_tool.adapters.jwt.auth.get_jwt_identity')
+    @patch("poker_tool.adapters.jwt.auth.JWTManager")
+    @patch("poker_tool.adapters.jwt.auth.get_jwt_identity")
     def test_current_user(self, mock_get_identity, mock_jwt):
         """Test current_user method."""
         mock_get_identity.return_value = 1
@@ -100,8 +103,8 @@ class TestJwtAuth(unittest.TestCase):
         self.assertEqual(user.id, 1)
         mock_get_identity.assert_called_once()
 
-    @patch('poker_tool.adapters.jwt.auth.JWTManager')
-    @patch('poker_tool.adapters.jwt.auth.get_jwt_identity')
+    @patch("poker_tool.adapters.jwt.auth.JWTManager")
+    @patch("poker_tool.adapters.jwt.auth.get_jwt_identity")
     def test_current_user_no_identity(self, mock_get_identity, mock_jwt):
         """Test current_user with no identity."""
         mock_get_identity.side_effect = Exception("No identity")
@@ -112,10 +115,10 @@ class TestJwtAuth(unittest.TestCase):
 
         self.assertIsNone(user)
 
-    @patch('poker_tool.adapters.jwt.auth.JWTManager')
+    @patch("poker_tool.adapters.jwt.auth.JWTManager")
     def test_check_password(self, mock_jwt):
         """Test check_password method."""
-        with patch('poker_tool.adapters.jwt.auth.check_password_hash') as mock_check:
+        with patch("poker_tool.adapters.jwt.auth.check_password_hash") as mock_check:
             mock_check.return_value = True
 
             auth = JwtAuth(self.app)
@@ -126,5 +129,5 @@ class TestJwtAuth(unittest.TestCase):
             mock_check.assert_called_once_with("hashed_password", "password123")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

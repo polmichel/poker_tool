@@ -1,6 +1,7 @@
 """
 Unit tests for the SqlTrainingSessions adapter.
 """
+
 import os
 import sys
 import unittest
@@ -26,16 +27,16 @@ class TestSqlTrainingSessions(unittest.TestCase):
     def test_sql_training_sessions_creation(self):
         """Test SqlTrainingSessions creation delegates to the shared SQLAlchemy init."""
         mock_app = MagicMock(spec=Flask)
-        with patch('poker_tool.adapters.sqlalchemy.training_sessions.init_sqlalchemy') as mock_init:
+        with patch("poker_tool.adapters.sqlalchemy.training_sessions.init_sqlalchemy") as mock_init:
             SqlTrainingSessions(mock_app)
             mock_init.assert_called_once_with(mock_app)
 
     def test_sql_training_sessions_creation_without_app(self):
         """Test creation without app does not initialize the db."""
-        with patch('poker_tool.adapters.sqlalchemy.training_sessions.init_sqlalchemy') as mock_init:
+        with patch("poker_tool.adapters.sqlalchemy.training_sessions.init_sqlalchemy") as mock_init:
             SqlTrainingSessions()
             mock_init.assert_not_called()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

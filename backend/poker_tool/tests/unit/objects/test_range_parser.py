@@ -1,4 +1,5 @@
 """Unit tests for the range notation parser."""
+
 import unittest
 
 from poker_tool.objects.range_parser import (

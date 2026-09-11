@@ -1,4 +1,5 @@
 """Unit tests for EquityTable (reader) and AggregateEquity."""
+
 import json
 import os
 import tempfile
@@ -35,6 +36,7 @@ class _TmpTable:
 
     def __exit__(self, *exc):
         import shutil
+
         shutil.rmtree(self.dir, ignore_errors=True)
 
 

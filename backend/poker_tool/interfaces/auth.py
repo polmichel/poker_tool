@@ -9,6 +9,7 @@ separated interfaces:
 
 This interface is kept for backward compatibility with existing code.
 """
+
 from abc import abstractmethod
 
 from ..objects.user import User

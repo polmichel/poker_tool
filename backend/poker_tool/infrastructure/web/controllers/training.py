@@ -1,4 +1,5 @@
 """HTTP controllers for the training resource."""
+
 from flask import Blueprint, jsonify, request
 from werkzeug.exceptions import BadRequest, NotFound
 
@@ -13,10 +14,13 @@ from ....use_cases.training_errors import SessionNotFound
 class TrainingController:
     """Thin HTTP controller for /api/training."""
 
-    def __init__(self, sessions: TrainingSessions,
-                 start_training: StartTrainingSession,
-                 answer_question: AnswerQuestion,
-                 end_training: EndTrainingSession) -> None:
+    def __init__(
+        self,
+        sessions: TrainingSessions,
+        start_training: StartTrainingSession,
+        answer_question: AnswerQuestion,
+        end_training: EndTrainingSession,
+    ) -> None:
         self._sessions = sessions
         self._start_training = start_training
         self._answer_question = answer_question
@@ -42,11 +46,13 @@ class TrainingController:
             except UserRequired:
                 raise BadRequest("User required")
             session = result.session
-            return jsonify({
-                "id": session.id,
-                "session": session.to_dict(),
-                "first_question": session.current_question.to_dict() if session.current_question else None,
-            }), 201
+            return jsonify(
+                {
+                    "id": session.id,
+                    "session": session.to_dict(),
+                    "first_question": session.current_question.to_dict() if session.current_question else None,
+                }
+            ), 201
 
         @api.route("/training/sessions", methods=["GET"])
         def list_training_sessions():
@@ -58,35 +64,41 @@ class TrainingController:
             session = self._sessions.session_by_id(session_id)
             if not session:
                 raise NotFound(f"Session {session_id} not found")
-            return jsonify({
-                "id": session.id,
-                "session": session.to_dict(),
-                "current_question": session.current_question.to_dict() if session.current_question else None,
-                "progress": {
-                    "current": session.current_index,
-                    "total": session.total_questions,
-                    "correct": session.correct_answers,
-                    "score": session.score,
-                },
-            })
+            return jsonify(
+                {
+                    "id": session.id,
+                    "session": session.to_dict(),
+                    "current_question": session.current_question.to_dict() if session.current_question else None,
+                    "progress": {
+                        "current": session.current_index,
+                        "total": session.total_questions,
+                        "correct": session.correct_answers,
+                        "score": session.score,
+                    },
+                }
+            )
 
         @api.route("/training/sessions/<int:session_id>/start", methods=["POST"])
         def start_training_session(session_id: int):
             session = self._sessions.session_by_id(session_id)
             if not session:
                 raise NotFound(f"Session {session_id} not found")
-            return jsonify({
-                "session": session.to_dict(),
-                "first_question": session.current_question.to_dict() if session.current_question else None,
-            })
+            return jsonify(
+                {
+                    "session": session.to_dict(),
+                    "first_question": session.current_question.to_dict() if session.current_question else None,
+                }
+            )
 
         @api.route("/training/modes", methods=["GET"])
         def get_training_modes():
-            return jsonify([
-                {"value": "fill", "label": "Remplir une range"},
-                {"value": "guess", "label": "Deviner une range"},
-                {"value": "complete", "label": "Completer une range"},
-            ])
+            return jsonify(
+                [
+                    {"value": "fill", "label": "Remplir une range"},
+                    {"value": "guess", "label": "Deviner une range"},
+                    {"value": "complete", "label": "Completer une range"},
+                ]
+            )
 
         @api.route("/training/sessions/<int:session_id>/next", methods=["POST"])
         def next_question(session_id: int):

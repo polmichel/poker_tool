@@ -4,6 +4,7 @@ User factory port (Elegant Objects).
 A single-responsibility port for creating user entities. This separates
 user creation logic from authentication and persistence concerns.
 """
+
 from abc import ABC, abstractmethod
 
 from ..objects.user import User

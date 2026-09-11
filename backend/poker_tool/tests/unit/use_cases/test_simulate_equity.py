@@ -1,4 +1,5 @@
 """Unit tests for the SimulateEquity use case."""
+
 import random
 import unittest
 
@@ -18,8 +19,19 @@ class FakeDeterministicEvaluator(HandEvaluator):
     def evaluate(self, hole_cards, board):
         # Return a deterministic value based on the first card's rank
         ranks = {
-            'A': 0, 'K': 1, 'Q': 2, 'J': 3, 'T': 4, '9': 5, '8': 6, '7': 7,
-            '6': 8, '5': 9, '4': 10, '3': 11, '2': 12
+            "A": 0,
+            "K": 1,
+            "Q": 2,
+            "J": 3,
+            "T": 4,
+            "9": 5,
+            "8": 6,
+            "7": 7,
+            "6": 8,
+            "5": 9,
+            "4": 10,
+            "3": 11,
+            "2": 12,
         }
         return ranks.get(hole_cards[0][0], 13)
 
@@ -101,12 +113,12 @@ class TestSimulateEquity(unittest.TestCase):
 
     def test_deterministic_with_seed(self):
         """Test that the same seed yields identical results."""
-        r1 = SimulateEquity(
-            TreysEvaluator(), rng=random.Random(42)
-        ).simulate(hero="AKs", range_hands=["QQ"], iterations=500)
-        r2 = SimulateEquity(
-            TreysEvaluator(), rng=random.Random(42)
-        ).simulate(hero="AKs", range_hands=["QQ"], iterations=500)
+        r1 = SimulateEquity(TreysEvaluator(), rng=random.Random(42)).simulate(
+            hero="AKs", range_hands=["QQ"], iterations=500
+        )
+        r2 = SimulateEquity(TreysEvaluator(), rng=random.Random(42)).simulate(
+            hero="AKs", range_hands=["QQ"], iterations=500
+        )
         self.assertEqual(r1.win, r2.win)
         self.assertEqual(r1.tie, r2.tie)
         self.assertEqual(r1.lose, r2.lose)

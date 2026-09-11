@@ -66,7 +66,7 @@ class User:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'User':
+    def from_dict(cls, data: dict) -> "User":
         """Create from dictionary."""
         return cls(
             username=data.get("username", ""),

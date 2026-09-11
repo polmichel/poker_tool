@@ -5,10 +5,7 @@ Immutable effective stack value object (Elegant Objects).
 from enum import Enum
 
 # Valeurs de stack effectif en BB (Big Blinds)
-EFFECTIVE_STACK_VALUES = [
-    50, 100, 30, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10,
-    9, 8, 7, 6, 5
-]
+EFFECTIVE_STACK_VALUES = [50, 100, 30, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5]
 
 
 class EffectiveStack(Enum):
@@ -45,7 +42,7 @@ class EffectiveStack(Enum):
         return f"{self.value} BB"
 
     @classmethod
-    def from_int(cls, stack_value: int) -> 'EffectiveStack':
+    def from_int(cls, stack_value: int) -> "EffectiveStack":
         """Factory method from integer value."""
         for stack in cls:
             if stack.value == stack_value:
@@ -54,7 +51,7 @@ class EffectiveStack(Enum):
         return cls.BB_100
 
     @classmethod
-    def from_string(cls, stack_str: str) -> 'EffectiveStack':
+    def from_string(cls, stack_str: str) -> "EffectiveStack":
         """Factory method from string."""
         try:
             # Try to parse as integer first

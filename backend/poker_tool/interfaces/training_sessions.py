@@ -4,6 +4,7 @@ Training sessions port (Elegant Objects).
 A single-responsibility port for reading and writing
 :class:`TrainingSession` objects.
 """
+
 from abc import ABC, abstractmethod
 
 from ..objects.training.session import TrainingSession

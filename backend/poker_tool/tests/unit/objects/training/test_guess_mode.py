@@ -5,6 +5,7 @@ The guess mode displays a range's 169-cell grid (without its name) and asks the
 user to identify which range of the library it matches, as a multiple-choice
 question on range names.
 """
+
 import json
 import unittest
 from unittest.mock import patch
@@ -49,8 +50,8 @@ class TestGuessMode(unittest.TestCase):
         )
         self.library = [self.target, self.other_a, self.other_b]
 
-    @patch('poker_tool.objects.training.session.random.shuffle')
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.shuffle")
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_guess_generates_qcm_questions_from_library(self, mock_sample, mock_shuffle):
         """Each guess question carries a grid, options, and the target name."""
         # random.sample picks the target ranges (one per question).
@@ -80,8 +81,8 @@ class TestGuessMode(unittest.TestCase):
         # Options are range names and include the correct one.
         self.assertIn("UTG Open", question.options)
 
-    @patch('poker_tool.objects.training.session.random.shuffle')
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.shuffle")
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_guess_question_count_capped_by_library_size(self, mock_sample, mock_shuffle):
         """Cannot generate more questions than distinct ranges available."""
         mock_sample.return_value = self.library  # 3 distinct targets
@@ -97,8 +98,8 @@ class TestGuessMode(unittest.TestCase):
         )
         self.assertEqual(len(session._questions), 3)
 
-    @patch('poker_tool.objects.training.session.random.shuffle')
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.shuffle")
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_guess_answer_correct_increments_score(self, mock_sample, mock_shuffle):
         """Answering the correct range name scores a point."""
         mock_sample.return_value = [self.target]
@@ -118,8 +119,8 @@ class TestGuessMode(unittest.TestCase):
         self.assertTrue(answered.is_complete)
         self.assertEqual(answered.score, 100.0)
 
-    @patch('poker_tool.objects.training.session.random.shuffle')
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.shuffle")
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_guess_answer_wrong_does_not_score(self, mock_sample, mock_shuffle):
         """A wrong range name scores zero."""
         mock_sample.return_value = [self.target]
@@ -139,8 +140,8 @@ class TestGuessMode(unittest.TestCase):
         self.assertTrue(answered.is_complete)
         self.assertEqual(answered.score, 0.0)
 
-    @patch('poker_tool.objects.training.session.random.shuffle')
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.shuffle")
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_guess_answer_is_case_insensitive(self, mock_sample, mock_shuffle):
         mock_sample.return_value = [self.target]
         mock_shuffle.return_value = None
@@ -156,8 +157,8 @@ class TestGuessMode(unittest.TestCase):
         answered = session.answer("utg open")
         self.assertEqual(answered.correct_answers, 1)
 
-    @patch('poker_tool.objects.training.session.random.shuffle')
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.shuffle")
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_guess_answer_does_not_mutate_original(self, mock_sample, mock_shuffle):
         """Answering must not mutate the original session (immutability)."""
         mock_sample.return_value = [self.target]
@@ -208,8 +209,8 @@ class TestGuessMode(unittest.TestCase):
         )
         self.assertEqual(len(session._questions), 0)
 
-    @patch('poker_tool.objects.training.session.random.shuffle')
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.shuffle")
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_guess_question_serializes_options_and_grid(self, mock_sample, mock_shuffle):
         """to_dict round-trips the options and grid fields."""
         mock_sample.return_value = [self.target]
@@ -230,11 +231,12 @@ class TestGuessMode(unittest.TestCase):
         self.assertIn("UTG Open", data["options"])
 
         from poker_tool.objects.training.question import TrainingQuestion
+
         restored = TrainingQuestion.from_dict(data)
         self.assertEqual(restored.correct_answer, "UTG Open")
         self.assertEqual(restored.options, data["options"])
         self.assertEqual(restored.grid, data["grid"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

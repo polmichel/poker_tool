@@ -5,6 +5,7 @@ KAs is invalid because A > K, so the hand should be AKs, not KAs.
 
 Similarly, KQo+ should expand to [KQo] only, not [KQo, KAo].
 """
+
 import unittest
 
 from poker_tool.objects.range_parser import parse_range
@@ -80,10 +81,18 @@ class TestRangeParserBug(unittest.TestCase):
         # KQo (from KQo+) - KQo+ means kicker >= Q, so only Q is valid for K
 
         expected = [
-            "QQ", "KK", "AA",
-            "ATs", "AJs", "AQs", "AKs",
-            "AJo", "AQo", "AKo",
-            "KJs", "KQs",
+            "QQ",
+            "KK",
+            "AA",
+            "ATs",
+            "AJs",
+            "AQs",
+            "AKs",
+            "AJo",
+            "AQo",
+            "AKo",
+            "KJs",
+            "KQs",
             "KQo",
         ]
 

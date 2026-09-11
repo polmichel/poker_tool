@@ -5,6 +5,7 @@ This is the composition root: it constructs every object and wires its
 dependencies. Nothing else in the codebase reads the environment or decides
 which concrete adapter or use case to use.
 """
+
 from flask import Flask
 from flask_cors import CORS
 
@@ -72,7 +73,9 @@ class PokerTool:
         self.get_ranges_by_user = GetRangesByUser(self.ranges)
         self.delete_range = DeleteRange(self.ranges)
         self.start_training = StartTrainingSession(
-            self.ranges, self.sessions, self.resolve_user,
+            self.ranges,
+            self.sessions,
+            self.resolve_user,
         )
         self.answer_question = AnswerQuestion(self.sessions)
         self.end_training = EndTrainingSession(self.sessions)
@@ -129,6 +132,7 @@ class PokerTool:
         self.app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         # Ensure the instance folder exists so SQLite can write to it.
         import os
+
         os.makedirs(self.app.instance_path, exist_ok=True)
         # Accept both "/api/ranges" and "/api/ranges/" (the frontend uses
         # trailing slashes). Avoids 404s from strict_slashes default behavior.

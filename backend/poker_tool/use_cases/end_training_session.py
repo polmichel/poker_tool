@@ -4,6 +4,7 @@ End a training session (use case).
 Encapsulates: fetching the session, ending it (immutable) and persisting the
 result. Dependencies (TrainingSessions port) are injected.
 """
+
 from ..interfaces.training_sessions import TrainingSessions
 from ..objects.training.session import TrainingSession
 from .errors import SessionNotFound

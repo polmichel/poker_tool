@@ -4,6 +4,7 @@ Delete a range (use case).
 Encapsulates: removing a range from the persistence layer.
 Dependencies (Ranges port) are injected.
 """
+
 from ..interfaces.ranges import Ranges
 from ..objects.range import Range
 

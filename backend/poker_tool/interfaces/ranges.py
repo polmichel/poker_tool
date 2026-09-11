@@ -3,6 +3,7 @@ Ranges port (Elegant Objects).
 
 A single-responsibility port for reading and writing :class:`Range` objects.
 """
+
 from abc import ABC, abstractmethod
 
 from ..objects.range import Range

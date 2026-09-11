@@ -1,4 +1,5 @@
 """HTTP controllers for the ranges resource."""
+
 from flask import Blueprint, jsonify, request
 from werkzeug.exceptions import BadRequest, NotFound
 
@@ -14,13 +15,17 @@ from ....use_cases.update_range import UpdateRange
 class RangeController:
     """Thin HTTP controller for /api/ranges."""
 
-    def __init__(self, ranges, auth,
-                 create_range: CreateRange,
-                 update_range: UpdateRange,
-                 get_all_ranges: GetAllRanges,
-                 get_range_by_id: GetRangeById,
-                 get_ranges_by_user: GetRangesByUser,
-                 delete_range: DeleteRange) -> None:
+    def __init__(
+        self,
+        ranges,
+        auth,
+        create_range: CreateRange,
+        update_range: UpdateRange,
+        get_all_ranges: GetAllRanges,
+        get_range_by_id: GetRangeById,
+        get_ranges_by_user: GetRangesByUser,
+        delete_range: DeleteRange,
+    ) -> None:
         self._create_range = create_range
         self._update_range = update_range
         self._get_all_ranges = get_all_ranges

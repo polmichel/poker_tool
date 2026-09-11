@@ -1,6 +1,7 @@
 """
 Unit tests for RangeType value object.
 """
+
 import unittest
 
 from poker_tool.objects.range_type import RangeType
@@ -54,5 +55,5 @@ class TestRangeType(unittest.TestCase):
         self.assertEqual(range_type, RangeType.PREFLOP)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,7 @@
 """
 Pytest configuration for poker_tool tests.
 """
+
 import os
 import sys
 

@@ -1,4 +1,5 @@
 """HTTP controllers for the equity resource."""
+
 import re
 
 from flask import Blueprint, jsonify, request
@@ -76,13 +77,16 @@ class EquityController:
             if iterations is None:
                 try:
                     result = self._table_equity.compute(
-                        hero=hero, range_hands=range_hands,
+                        hero=hero,
+                        range_hands=range_hands,
                     )
                 except MissingEquityEntry as exc:
-                    return jsonify({
-                        "error": "Equit\u00e9 exacte indisponible pour certaines mains",
-                        "missing": exc.missing,
-                    }), 409
+                    return jsonify(
+                        {
+                            "error": "Equit\u00e9 exacte indisponible pour certaines mains",
+                            "missing": exc.missing,
+                        }
+                    ), 409
                 return jsonify(result.to_dict()), 200
 
             # Iterations provided: run Monte-Carlo explicitly.
@@ -91,7 +95,9 @@ class EquityController:
                 raise BadRequest("iterations must be between 1 and 100000")
             try:
                 result = self._monte_carlo_equity.compute(
-                    hero=hero, range_hands=range_hands, iterations=iterations,
+                    hero=hero,
+                    range_hands=range_hands,
+                    iterations=iterations,
                 )
             except ValueError as exc:
                 raise BadRequest(str(exc)) from exc

@@ -5,6 +5,7 @@ A single-responsibility port for authentication operations: token generation
 and password verification. This separates authentication concerns from user
 creation and persistence.
 """
+
 from abc import ABC, abstractmethod
 
 from ..objects.user import User

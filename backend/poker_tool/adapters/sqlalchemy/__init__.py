@@ -5,6 +5,7 @@ implementation delegates the shared Flask-SQLAlchemy initialization to one
 place instead of duplicating the idempotent ``init_app`` + ``create_all``
 block in each adapter.
 """
+
 from .models import db
 
 

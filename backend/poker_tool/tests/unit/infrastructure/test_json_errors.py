@@ -10,6 +10,7 @@ fakes of the ports, so the HTTP error path is exercised against genuine
 behavior (e.g. RegisterUser raising UserAlreadyExists, an empty FakeRanges
 returning None for a missing id).
 """
+
 import os
 import sys
 import unittest
@@ -50,7 +51,7 @@ class TestJsonErrorHandling(unittest.TestCase):
     def setUp(self):
         """Compose a real Flask app from in-memory fakes (no mocks)."""
         self.app = Flask(__name__)
-        self.app.config['TESTING'] = True
+        self.app.config["TESTING"] = True
 
         # In-memory ports.
         self.users = FakeUsers()
@@ -70,7 +71,9 @@ class TestJsonErrorHandling(unittest.TestCase):
         self.get_ranges_by_user = GetRangesByUser(self.ranges)
         self.delete_range = DeleteRange(self.ranges)
         self.start_training = StartTrainingSession(
-            self.ranges, self.sessions, self.resolve_user,
+            self.ranges,
+            self.sessions,
+            self.resolve_user,
         )
         self.answer_question = AnswerQuestion(self.sessions)
         self.end_training = EndTrainingSession(self.sessions)
@@ -105,39 +108,48 @@ class TestJsonErrorHandling(unittest.TestCase):
         """BadRequest exceptions should return JSON with an 'error' field."""
         with self.app.test_client() as client:
             # POST /api/ranges without a name triggers BadRequest("Missing name")
-            response = client.post('/api/ranges', json={})
+            response = client.post("/api/ranges", json={})
             self.assertEqual(response.status_code, 400)
             data = response.get_json()
             self.assertIsNotNone(data)
-            self.assertIn('error', data)
-            self.assertEqual(data['error'], 'Missing name')
+            self.assertIn("error", data)
+            self.assertEqual(data["error"], "Missing name")
 
     def test_not_found_returns_json(self):
         """NotFound exceptions should return JSON with an 'error' field."""
         # FakeRanges is empty, so range_by_id returns None -> 404.
         with self.app.test_client() as client:
-            response = client.get('/api/ranges/99999')
+            response = client.get("/api/ranges/99999")
             self.assertEqual(response.status_code, 404)
             data = response.get_json()
             self.assertIsNotNone(data)
-            self.assertIn('error', data)
+            self.assertIn("error", data)
 
     def test_register_duplicate_returns_json_error(self):
         """Registration with a duplicate username returns JSON, not HTML."""
         # Seed the in-memory store with an existing user so RegisterUser raises
         # UserAlreadyExists on the second registration.
-        self.users.add(self.auth.create_user(
-            username='test', email='taken@test.com', password='pass123',
-        ))
+        self.users.add(
+            self.auth.create_user(
+                username="test",
+                email="taken@test.com",
+                password="pass123",
+            )
+        )
         with self.app.test_client() as client:
-            response = client.post('/api/auth/register', json={
-                'username': 'test', 'email': 'test@test.com', 'password': 'pass123',
-            })
+            response = client.post(
+                "/api/auth/register",
+                json={
+                    "username": "test",
+                    "email": "test@test.com",
+                    "password": "pass123",
+                },
+            )
             self.assertEqual(response.status_code, 400)
             data = response.get_json()
             self.assertIsNotNone(data)
-            self.assertEqual(data['error'], 'Username already exists')
+            self.assertEqual(data["error"], "Username already exists")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

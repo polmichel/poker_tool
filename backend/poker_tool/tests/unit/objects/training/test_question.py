@@ -1,6 +1,7 @@
 """
 Unit tests for TrainingQuestion value object.
 """
+
 import unittest
 
 from poker_tool.objects.training.question import TrainingQuestion
@@ -67,5 +68,5 @@ class TestTrainingQuestion(unittest.TestCase):
         self.assertEqual(len(question_set), 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -3,7 +3,7 @@ Immutable poker hand value object (Elegant Objects).
 """
 
 # Poker ranks in order (Ace to 2)
-RANKS = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
+RANKS = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]
 
 
 class Hand:
@@ -44,18 +44,14 @@ class Hand:
         """Equality comparison."""
         if not isinstance(other, Hand):
             return False
-        return (
-            self._rank1 == other._rank1 and
-            self._rank2 == other._rank2 and
-            self._suited == other._suited
-        )
+        return self._rank1 == other._rank1 and self._rank2 == other._rank2 and self._suited == other._suited
 
     def __hash__(self) -> int:
         """Hash for use in sets/dicts."""
         return hash((self._rank1, self._rank2, self._suited))
 
     @classmethod
-    def from_string(cls, hand_str: str) -> 'Hand':
+    def from_string(cls, hand_str: str) -> "Hand":
         """Factory method from string.
 
         Normalizes the hand so that rank1 >= rank2 (higher rank first).
@@ -67,7 +63,7 @@ class Hand:
             return cls(r1, r2, False) if RANKS.index(r1) < RANKS.index(r2) else cls(r2, r1, False)
         elif len(hand_str) == 3:
             r1, r2, suited_char = hand_str[0], hand_str[1], hand_str[2]
-            suited = suited_char == 'S'
+            suited = suited_char == "S"
             if RANKS.index(r1) < RANKS.index(r2):
                 return cls(r1, r2, suited)
             else:
@@ -75,7 +71,7 @@ class Hand:
         else:
             raise ValueError(f"Invalid hand string: {hand_str}")
 
-    def __lt__(self, other: 'Hand') -> bool:
+    def __lt__(self, other: "Hand") -> bool:
         """Compare hands by rank."""
         rank1_idx = RANKS.index(self._rank1)
         rank2_idx = RANKS.index(self._rank2)

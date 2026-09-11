@@ -64,7 +64,7 @@ class UserStats:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'UserStats':
+    def from_dict(cls, data: dict) -> "UserStats":
         """Create from dictionary."""
         return cls(
             user_id=data.get("user_id", 0),
@@ -80,21 +80,23 @@ class UserStats:
         if not isinstance(other, UserStats):
             return False
         return (
-            self._user_id == other._user_id and
-            self._total_sessions == other._total_sessions and
-            self._avg_score == other._avg_score and
-            self._total_time_spent == other._total_time_spent and
-            self._best_score == other._best_score and
-            self._most_played_range == other._most_played_range
+            self._user_id == other._user_id
+            and self._total_sessions == other._total_sessions
+            and self._avg_score == other._avg_score
+            and self._total_time_spent == other._total_time_spent
+            and self._best_score == other._best_score
+            and self._most_played_range == other._most_played_range
         )
 
     def __hash__(self) -> int:
         """Hash for use in sets/dicts."""
-        return hash((
-            self._user_id,
-            self._total_sessions,
-            self._avg_score,
-            self._total_time_spent,
-            self._best_score,
-            self._most_played_range,
-        ))
+        return hash(
+            (
+                self._user_id,
+                self._total_sessions,
+                self._avg_score,
+                self._total_time_spent,
+                self._best_score,
+                self._most_played_range,
+            )
+        )

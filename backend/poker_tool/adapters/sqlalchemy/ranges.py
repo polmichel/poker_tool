@@ -56,7 +56,4 @@ class SqlRanges(Ranges):
                 self.db.session.commit()
 
     def ranges_by_user(self, user_id: int) -> list[Range]:
-        return [
-            model.to_domain()
-            for model in RangeModel.query.filter_by(user_id=user_id).all()
-        ]
+        return [model.to_domain() for model in RangeModel.query.filter_by(user_id=user_id).all()]

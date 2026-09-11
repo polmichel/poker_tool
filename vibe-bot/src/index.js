@@ -90,7 +90,7 @@ webhooks.onError((error) => {
 app.use('/webhook', (req, res) => {
   // Vérification de la signature du webhook
   const signature = req.headers['x-hub-signature-256'];
-  
+
   if (!signature) {
     console.error('❌ Pas de signature de webhook');
     return res.status(401).send('Unauthorized');
@@ -269,7 +269,7 @@ async function handlePRReviewComment({ payload }) {
  */
 async function handlePullRequest({ payload }) {
   const action = payload.action;
-  
+
   // On ne traite que les actions spécifiques
   if (!['opened', 'reopened', 'synchronize'].includes(action)) {
     return;
@@ -351,7 +351,7 @@ async function handlePullRequest({ payload }) {
  */
 async function handleIssue({ payload }) {
   const action = payload.action;
-  
+
   // On ne traite que les actions spécifiques
   if (!['opened', 'reopened'].includes(action)) {
     return;
@@ -441,7 +441,7 @@ function buildContextForIssue(commentBody, issueDetails, repository) {
   context += `Commentaire : ${commentBody}\n\n`;
   context += `Dépôt : ${repository.full_name}\n`;
   context += `URL : ${issueDetails.html_url}\n`;
-  
+
   if (issueDetails.labels && issueDetails.labels.length > 0) {
     context += `\nLabels : ${issueDetails.labels.map(l => l.name).join(', ')}`;
   }
@@ -460,7 +460,7 @@ function buildContextForPR(commentBody, prDetails, repository) {
   context += `URL : ${prDetails.html_url}\n`;
   context += `Branche source : ${prDetails.head.ref}\n`;
   context += `Branche cible : ${prDetails.base.ref}\n`;
-  
+
   if (prDetails.labels && prDetails.labels.length > 0) {
     context += `\nLabels : ${prDetails.labels.map(l => l.name).join(', ')}`;
   }

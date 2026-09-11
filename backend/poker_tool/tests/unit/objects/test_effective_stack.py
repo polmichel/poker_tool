@@ -1,6 +1,7 @@
 """
 Unit tests for EffectiveStack value object.
 """
+
 import unittest
 
 from poker_tool.objects.effective_stack import EFFECTIVE_STACK_VALUES, EffectiveStack
@@ -68,5 +69,5 @@ class TestEffectiveStack(unittest.TestCase):
         self.assertEqual(EFFECTIVE_STACK_VALUES, expected)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

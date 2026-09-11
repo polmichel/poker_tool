@@ -1,6 +1,7 @@
 """
 Unit tests for TrainingSession entity.
 """
+
 import unittest
 from datetime import datetime
 from unittest.mock import patch
@@ -27,7 +28,7 @@ class TestTrainingSession(unittest.TestCase):
             range_id=1,
         )
 
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_session_creation(self, mock_sample):
         """Test TrainingSession creation."""
         # Mock random.sample to return predictable results
@@ -50,7 +51,7 @@ class TestTrainingSession(unittest.TestCase):
         self.assertEqual(session.correct_answers, 0)
         self.assertFalse(session.is_complete)
 
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_session_answer_correct(self, mock_sample):
         """Test answering a question correctly (one-question-per-hand mode)."""
         mock_sample.return_value = ["AKs", "TT"]
@@ -71,7 +72,7 @@ class TestTrainingSession(unittest.TestCase):
         self.assertEqual(new_session.score, 100.0)
         self.assertFalse(new_session.is_complete)
 
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_session_answer_does_not_mutate_original(self, mock_sample):
         """Answering must not mutate the original session (true immutability)."""
         mock_sample.return_value = ["AKs", "TT"]
@@ -96,7 +97,7 @@ class TestTrainingSession(unittest.TestCase):
         # The clone must not share the questions list reference.
         self.assertIsNot(session._questions, new_session._questions)
 
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_session_answer_incorrect(self, mock_sample):
         """Test answering a question incorrectly (one-question-per-hand mode)."""
         mock_sample.return_value = ["AKs", "TT"]
@@ -117,7 +118,7 @@ class TestTrainingSession(unittest.TestCase):
         self.assertEqual(new_session.score, 0.0)
         self.assertFalse(new_session.is_complete)
 
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_session_complete(self, mock_sample):
         """Test session completion (one-question-per-hand mode)."""
         mock_sample.return_value = ["AKs", "TT"]
@@ -140,7 +141,7 @@ class TestTrainingSession(unittest.TestCase):
         self.assertEqual(session.score, 100.0)
         self.assertIsNotNone(session._ended_at)
 
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_session_end(self, mock_sample):
         """Test ending a session manually."""
         mock_sample.return_value = ["AKs", "TT"]
@@ -161,7 +162,7 @@ class TestTrainingSession(unittest.TestCase):
         # Note: end() doesn't automatically mark as complete unless current_index >= total_questions
         # This is by design - end() just sets the end time
 
-    @patch('poker_tool.objects.training.session.random.sample')
+    @patch("poker_tool.objects.training.session.random.sample")
     def test_session_to_dict(self, mock_sample):
         """Test serialization to dictionary."""
         mock_sample.return_value = ["AKs", "TT"]
@@ -188,8 +189,8 @@ class TestTrainingSession(unittest.TestCase):
         self.assertIsNotNone(session_dict["start_time"])
         self.assertIsNone(session_dict["ended_at"])
 
-    @patch('poker_tool.objects.training.session.random.sample')
-    @patch('poker_tool.objects.training.session.datetime')
+    @patch("poker_tool.objects.training.session.random.sample")
+    @patch("poker_tool.objects.training.session.datetime")
     def test_session_time_spent(self, mock_datetime, mock_sample):
         """Test time spent calculation."""
         mock_sample.return_value = ["AKs", "TT"]
@@ -213,7 +214,6 @@ class TestTrainingSession(unittest.TestCase):
         session._ended_at = end_time
 
         self.assertEqual(session.time_spent, 330)  # 5 minutes 30 seconds
-
 
 
 class TestTrainingSessionGridMode(unittest.TestCase):
@@ -302,5 +302,6 @@ class TestTrainingSessionGridMode(unittest.TestCase):
         self.assertEqual(session._questions, original_questions)
         self.assertEqual(session.current_index, 0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

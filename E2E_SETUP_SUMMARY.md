@@ -46,7 +46,7 @@ frontend/
 #### 🎛️ `playwright.config.ts`
 - **Base URL** : `http://localhost:3000` (configurable via `.env.test`)
 - **Navigateurs** : Chromium, Firefox, WebKit
-- **Timeouts** : 
+- **Timeouts** :
   - Test timeout: 60 secondes
   - Action timeout: 5 secondes
   - Navigation timeout: 30 secondes
@@ -235,12 +235,12 @@ Si votre application nécessite une authentification, vous devez :
 async function globalSetup(config: FullConfig) {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  
+
   await page.goto('/login');
   await page.fill('input[name="email"]', process.env.TEST_USER_EMAIL || '');
   await page.fill('input[name="password"]', process.env.TEST_USER_PASSWORD || '');
   await page.click('button[type="submit"]');
-  
+
   await page.context().storageState({ path: 'storageState.json' });
   await browser.close();
 }

@@ -22,6 +22,7 @@ type (``EquityResult``) is identical to :class:`SimulateEquity` so the frontend
 and controllers are unchanged. For bulk generation of the full 169x169 table,
 use :mod:`poker_tool.scripts.generate_equity_table` (multiprocessing).
 """
+
 from itertools import combinations
 
 from ..interfaces.hand_evaluator import HandEvaluator
@@ -35,19 +36,10 @@ def _all_combos(hand: Hand) -> list[tuple[str, str]]:
     """All real-card combos for a canonical hand."""
     r1, r2 = hand.rank1, hand.rank2
     if hand.is_pair:
-        return [
-            (f"{r1}{SUITS[i]}", f"{r1}{SUITS[j]}")
-            for i in range(len(SUITS))
-            for j in range(i + 1, len(SUITS))
-        ]
+        return [(f"{r1}{SUITS[i]}", f"{r1}{SUITS[j]}") for i in range(len(SUITS)) for j in range(i + 1, len(SUITS))]
     if hand.suited:
         return [(f"{r1}{s}", f"{r2}{s}") for s in SUITS]
-    return [
-        (f"{r1}{SUITS[i]}", f"{r2}{SUITS[j]}")
-        for i in range(len(SUITS))
-        for j in range(len(SUITS))
-        if i != j
-    ]
+    return [(f"{r1}{SUITS[i]}", f"{r2}{SUITS[j]}") for i in range(len(SUITS)) for j in range(len(SUITS)) if i != j]
 
 
 def _disjoint_combos(hero_hand: Hand, opp_hand: Hand) -> list[tuple[tuple[str, str], tuple[str, str]]]:
@@ -71,9 +63,7 @@ def _disjoint_combos(hero_hand: Hand, opp_hand: Hand) -> list[tuple[tuple[str, s
 
 def _remaining_deck(used: set[str]) -> list[str]:
     """All 52 cards minus the used ones, as 2-char strings."""
-    return [
-        f"{r}{s}" for r in RANKS for s in SUITS if f"{r}{s}" not in used
-    ]
+    return [f"{r}{s}" for r in RANKS for s in SUITS if f"{r}{s}" not in used]
 
 
 class EnumerateEquity:
@@ -144,12 +134,15 @@ class EnumerateEquity:
             if sub == 0:
                 by_hand.append(EquityByHand(str(opp), combos, 0.0, 0.0, 0.0))
                 continue
-            by_hand.append(EquityByHand(
-                str(opp), combos,
-                stats["win"] / sub * 100,
-                stats["tie"] / sub * 100,
-                stats["lose"] / sub * 100,
-            ))
+            by_hand.append(
+                EquityByHand(
+                    str(opp),
+                    combos,
+                    stats["win"] / sub * 100,
+                    stats["tie"] / sub * 100,
+                    stats["lose"] / sub * 100,
+                )
+            )
 
         return EquityResult(
             hero=str(hero_hand),

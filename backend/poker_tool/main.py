@@ -1,6 +1,7 @@
 """
 Main entry point for Poker Tool backend.
 """
+
 from .app import PokerTool
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ Encapsulates: fetching the session, submitting the answer (immutable),
 persisting the new session and computing the response payload. Dependencies
 (TrainingSessions port) are injected.
 """
+
 from ..interfaces.training_sessions import TrainingSessions
 from ..objects.training.session import TrainingSession
 from .errors import SessionNotFound

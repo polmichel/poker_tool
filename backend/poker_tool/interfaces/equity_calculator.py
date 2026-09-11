@@ -12,6 +12,7 @@ already-expanded list of canonical opponent hand notations. The output is an
 :class:`EquityResult` (the same value object used by every equity path), so
 swapping strategies never changes the API contract.
 """
+
 from abc import ABC, abstractmethod
 
 from ..objects.equity import EquityResult
@@ -37,7 +38,10 @@ class EquityCalculator(ABC):
 
     @abstractmethod
     def compute(
-        self, hero: str, range_hands: list[str], iterations: int | None = None,
+        self,
+        hero: str,
+        range_hands: list[str],
+        iterations: int | None = None,
     ) -> EquityResult:
         """Return the equity of ``hero`` against the expanded ``range_hands``.
 

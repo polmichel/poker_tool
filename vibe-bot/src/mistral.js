@@ -47,7 +47,7 @@ class MistralClient {
       return response.data.choices[0].message.content;
     } catch (error) {
       console.error('❌ Erreur lors de l\'appel à l\'API Mistral :', error.message);
-      
+
       if (error.response) {
         console.error('Réponse de l\'API :', error.response.data);
         console.error('Status :', error.response.status);
@@ -66,7 +66,7 @@ class MistralClient {
    */
   async generateCommandResponse(command, context, metadata = {}) {
     const { repo, issueNumber, prNumber, user } = metadata;
-    
+
     // Construction de la prompt en fonction de la commande
     let prompt = this.buildPrompt(command, context, metadata);
 
@@ -117,18 +117,18 @@ class MistralClient {
    */
   buildPrompt(command, context, metadata) {
     const commands = {
-      fix: `Analyse le code ou le problème suivant et propose une correction détaillée. 
-Si c'est du code, identifie les erreurs et suggère des fixes. 
+      fix: `Analyse le code ou le problème suivant et propose une correction détaillée.
+Si c'est du code, identifie les erreurs et suggère des fixes.
 Si c'est une description de bug, propose une solution.
 
 Problème/Code :\n${context}`,
 
-      explain: `Explique le code ou le concept suivant de manière claire et détaillée. 
+      explain: `Explique le code ou le concept suivant de manière claire et détaillée.
 Utilise des exemples si nécessaire.
 
 À expliquer :\n${context}`,
 
-      review: `Fais une revue de code complète du code suivant. 
+      review: `Fais une revue de code complète du code suivant.
 Analyse :
 - Les bonnes pratiques
 - Les erreurs potentielles
@@ -137,7 +137,7 @@ Analyse :
 
 Code à revoir :\n${context}`,
 
-      suggest: `Propose des améliorations pour le code ou la fonctionnalité suivante. 
+      suggest: `Propose des améliorations pour le code ou la fonctionnalité suivante.
 Suggère :
 - Des optimisations de performance
 - Des améliorations de structure
@@ -145,7 +145,7 @@ Suggère :
 
 Code/Fonctionnalité :\n${context}`,
 
-      docs: `Génère de la documentation complète pour le code suivant. 
+      docs: `Génère de la documentation complète pour le code suivant.
 Inclus :
 - Une description générale
 - Les paramètres et leurs types
@@ -154,7 +154,7 @@ Inclus :
 
 Code à documenter :\n${context}`,
 
-      help: `Affiche l'aide pour utiliser ce bot. 
+      help: `Affiche l'aide pour utiliser ce bot.
 Liste toutes les commandes disponibles avec des exemples.`,
 
       default: `Réponds à la question ou au commentaire suivant de manière utile et détaillée.

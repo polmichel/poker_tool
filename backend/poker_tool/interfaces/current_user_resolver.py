@@ -5,6 +5,7 @@ A single-responsibility port for resolving the currently authenticated user
 from the request context (e.g., JWT token). This separates the concern of
 "who is the current user" from user creation, authentication, and persistence.
 """
+
 from abc import ABC, abstractmethod
 
 from ..objects.user import User

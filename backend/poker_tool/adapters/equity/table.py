@@ -12,6 +12,7 @@ return a 409 and let the frontend prompt the user to run a Monte-Carlo
 simulation. The exact path never silently degrades to a high-variance
 estimate; the Monte-Carlo engine is used only on explicit request.
 """
+
 from ...interfaces.equity_calculator import EquityCalculator, MissingEquityEntry
 from ...objects.equity import EquityResult
 from ...use_cases.aggregate_equity import AggregateEquity
@@ -24,7 +25,10 @@ class TableEquityCalculator(EquityCalculator):
         self._aggregate_equity = aggregate_equity
 
     def compute(
-        self, hero: str, range_hands: list[str], iterations: int | None = None,
+        self,
+        hero: str,
+        range_hands: list[str],
+        iterations: int | None = None,
     ) -> EquityResult:
         """Aggregate exact table entries; raise MissingEquityEntry if any is absent.
 

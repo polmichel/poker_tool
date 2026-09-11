@@ -1,6 +1,7 @@
 """
 Unit tests for the CreateRange and UpdateRange use cases (in-memory fakes).
 """
+
 import unittest
 
 from poker_tool.use_cases.create_range import CreateRange
@@ -12,7 +13,6 @@ from .fakes import FakeAuth, FakeRanges, FakeUsers
 
 
 class TestCreateRange(unittest.TestCase):
-
     def setUp(self):
         self.users = FakeUsers()
         self.ranges = FakeRanges()
@@ -22,10 +22,15 @@ class TestCreateRange(unittest.TestCase):
         self.use_case = CreateRange(self.ranges, self.resolve_user)
 
     def test_create_with_explicit_user(self):
-        result = self.use_case.create({
-            "name": "R1", "range_type": "preflop", "position": "BTN",
-            "hands": {"AA": "raise"}, "user_id": 1,
-        })
+        result = self.use_case.create(
+            {
+                "name": "R1",
+                "range_type": "preflop",
+                "position": "BTN",
+                "hands": {"AA": "raise"},
+                "user_id": 1,
+            }
+        )
         self.assertEqual(result.name, "R1")
         self.assertEqual(result.user_id, 1)
         self.assertIsNotNone(result.id)
@@ -33,33 +38,45 @@ class TestCreateRange(unittest.TestCase):
     def test_create_resolves_user_from_auth(self):
         alice = self.users.user_by_username("alice")
         self.auth.set_current_user(alice)
-        result = self.use_case.create({
-            "name": "R2", "range_type": "preflop", "position": "BTN",
-            "hands": {"KK": "call"},
-        })
+        result = self.use_case.create(
+            {
+                "name": "R2",
+                "range_type": "preflop",
+                "position": "BTN",
+                "hands": {"KK": "call"},
+            }
+        )
         self.assertEqual(result.user_id, 1)
 
     def test_create_without_user_stores_none(self):
         # When no user is authenticated and no explicit user_id is provided,
         # ResolveUser returns None (no fallback to first user)
         self.auth.set_current_user(None)
-        result = self.use_case.create({
-            "name": "R3", "range_type": "preflop", "position": "BTN",
-            "hands": {"QQ": "call"},
-        })
+        result = self.use_case.create(
+            {
+                "name": "R3",
+                "range_type": "preflop",
+                "position": "BTN",
+                "hands": {"QQ": "call"},
+            }
+        )
         # No user resolved, so user_id is None
         self.assertIsNone(result.user_id)
 
 
 class TestUpdateRange(unittest.TestCase):
-
     def setUp(self):
         self.ranges = FakeRanges()
         self.auth = FakeAuth()
-        self.created = CreateRange(self.ranges, self.auth).create({
-            "name": "Original", "range_type": "preflop", "position": "BTN",
-            "hands": {"AA": "raise"}, "user_id": 1,
-        })
+        self.created = CreateRange(self.ranges, self.auth).create(
+            {
+                "name": "Original",
+                "range_type": "preflop",
+                "position": "BTN",
+                "hands": {"AA": "raise"},
+                "user_id": 1,
+            }
+        )
         self.use_case = UpdateRange(self.ranges)
 
     def test_update_changes_name(self):
@@ -75,5 +92,5 @@ class TestUpdateRange(unittest.TestCase):
         self.assertEqual(result.position.name, "BTN")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

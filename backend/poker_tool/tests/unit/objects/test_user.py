@@ -1,6 +1,7 @@
 """
 Unit tests for User entity.
 """
+
 import unittest
 
 from poker_tool.objects.user import User
@@ -80,5 +81,5 @@ class TestUser(unittest.TestCase):
         self.assertIsNone(user.password_hash)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

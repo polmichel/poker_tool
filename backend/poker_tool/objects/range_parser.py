@@ -11,6 +11,7 @@ Expands poker range notation into a canonical list of ``Hand`` objects:
 
 Supported separators: comma, semicolon, space, newline.
 """
+
 from .hand import RANKS, Hand
 
 
@@ -36,7 +37,7 @@ def _parse_single(token: str) -> list[Hand]:
 def _expand_pair_plus(rank: str) -> list[Hand]:
     """Expand 'QQ+' -> QQ, KK, AA (ascending order)."""
     idx = _rank_index(rank)
-    return [Hand(r, r, False) for r in reversed(RANKS[:idx + 1])]
+    return [Hand(r, r, False) for r in reversed(RANKS[: idx + 1])]
 
 
 def _expand_suited_plus(high: str, low: str) -> list[Hand]:
@@ -47,10 +48,7 @@ def _expand_suited_plus(high: str, low: str) -> list[Hand]:
         raise InvalidRangeNotation(f"Invalid plus range: {high}{low}s+")
     # Kickers at least as good as `low` (index <= low_idx), excluding the pair,
     # and lower than high in rank order (index > high_idx).
-    kickers = [
-        RANKS[k] for k in range(low_idx, -1, -1)
-        if RANKS[k] != high and k > high_idx
-    ]
+    kickers = [RANKS[k] for k in range(low_idx, -1, -1) if RANKS[k] != high and k > high_idx]
     return [Hand(high, k, True) for k in kickers]
 
 
@@ -84,7 +82,7 @@ def _expand_dash_range(token: str) -> list[Hand]:
         end = _rank_index(rl)
         if start < end:
             start, end = end, start
-        kickers = RANKS[end:start + 1]
+        kickers = RANKS[end : start + 1]
         return [Hand(high, k, suited) for k in kickers if k != high]
     if ll == rl:
         # Same low (kicker), vary high: 75s-95s -> 95s 85s 75s
@@ -93,7 +91,7 @@ def _expand_dash_range(token: str) -> list[Hand]:
         end = _rank_index(rh)
         if start < end:
             start, end = end, start
-        highs = RANKS[end:start + 1]
+        highs = RANKS[end : start + 1]
         return [Hand(h, low, suited) for h in highs if h != low]
     raise InvalidRangeNotation(f"Unsupported dash range shape: {token}")
 

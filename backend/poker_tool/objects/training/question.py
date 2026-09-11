@@ -59,9 +59,9 @@ class TrainingQuestion:
         """Check if answer is correct."""
         return answer.lower() == self._correct_answer.lower()
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, str | list[str] | None]:
         """Serialize to dictionary."""
-        data = {
+        data: dict[str, str | list[str] | None] = {
             "hand": self._hand,
             "question": self._question,
             "correct_answer": self._correct_answer,
@@ -74,7 +74,7 @@ class TrainingQuestion:
         return data
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'TrainingQuestion':
+    def from_dict(cls, data: dict) -> "TrainingQuestion":
         """Create from dictionary."""
         return cls(
             hand=data["hand"],
@@ -90,9 +90,9 @@ class TrainingQuestion:
         if not isinstance(other, TrainingQuestion):
             return False
         return (
-            self._hand == other._hand and
-            self._question == other._question and
-            self._correct_answer == other._correct_answer
+            self._hand == other._hand
+            and self._question == other._question
+            and self._correct_answer == other._correct_answer
         )
 
     def __hash__(self) -> int:

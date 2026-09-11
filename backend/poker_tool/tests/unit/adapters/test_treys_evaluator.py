@@ -1,4 +1,5 @@
 """Unit tests for the TreysEvaluator adapter."""
+
 import unittest
 
 from poker_tool.adapters.treys.evaluator import TreysEvaluator

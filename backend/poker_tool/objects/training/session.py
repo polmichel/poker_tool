@@ -1,6 +1,7 @@
 """
 Immutable training session entity (Elegant Objects).
 """
+
 import json
 import random
 from datetime import UTC, datetime
@@ -114,11 +115,9 @@ class TrainingSession:
     @property
     def is_complete(self) -> bool:
         """Is session complete."""
-        return self._current_index >= len(self._questions) or \
-               self._current_index >= self._total_questions
+        return self._current_index >= len(self._questions) or self._current_index >= self._total_questions
 
-    def _clone(self, questions=None, current_index=None,
-              correct_answers=None, ended_at=_UNSET) -> 'TrainingSession':
+    def _clone(self, questions=None, current_index=None, correct_answers=None, ended_at=_UNSET) -> "TrainingSession":
         """Return a copy of this session with overridden fields (immutable).
 
         ``_questions`` is copied by value (a new list) so the original and the
@@ -138,7 +137,7 @@ class TrainingSession:
         new_session._ended_at = self._ended_at if ended_at is _UNSET else ended_at
         return new_session
 
-    def answer(self, answer: str) -> 'TrainingSession':
+    def answer(self, answer: str) -> "TrainingSession":
         """Submit an answer and move to next question (immutable).
 
         For ``grid_paint`` questions the answer is a JSON object mapping each
@@ -159,9 +158,11 @@ class TrainingSession:
             new_correct = self._correct_answers
 
         new_index = self._current_index + 1
-        ended_at = datetime.now(UTC).replace(tzinfo=None) if (
-            new_index >= len(self._questions) or new_index >= self._total_questions
-        ) else None
+        ended_at = (
+            datetime.now(UTC).replace(tzinfo=None)
+            if (new_index >= len(self._questions) or new_index >= self._total_questions)
+            else None
+        )
         return self._clone(
             current_index=new_index,
             correct_answers=new_correct,
@@ -190,6 +191,7 @@ class TrainingSession:
                 action = reference_range.hands.get(hand_str)
                 reference[hand_str] = str(action) if action else "fold"
         return reference
+
     def _score_grid(self, answer: str) -> int:
         """Count how many of the 169 grid cells match the reference range.
 
@@ -226,7 +228,7 @@ class TrainingSession:
                     correct += 1
         return correct
 
-    def end(self) -> 'TrainingSession':
+    def end(self) -> "TrainingSession":
         """End the session (immutable)."""
         return self._clone(ended_at=datetime.now(UTC).replace(tzinfo=None))
 
@@ -248,7 +250,7 @@ class TrainingSession:
         }
 
     @classmethod
-    def from_dict(cls, data: dict, user: User, range_obj: Range) -> 'TrainingSession':
+    def from_dict(cls, data: dict, user: User, range_obj: Range) -> "TrainingSession":
         """Create from dictionary."""
         session = cls(
             user=user,

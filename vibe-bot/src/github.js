@@ -139,7 +139,7 @@ class GitHubClient {
       // Extraire la commande après le préfixe/mention
       const parts = commentBody.split(prefix)[1] || commentBody.split(`@${config.bot.name.replace(/\s+/g, '')}`)[1] || '';
       const commandMatch = parts.match(/^\\s*(\\w+)/i);
-      
+
       if (commandMatch) {
         return {
           command: commandMatch[1].toLowerCase(),
@@ -185,7 +185,7 @@ class GitHubClient {
   }) {
     try {
       const octokit = await this.getInstallationClient(installationId);
-      
+
       if (isPr) {
         return await octokit.request(
           `POST /repos/${owner}/${repo}/pulls/${issueNumber}/comments`,
@@ -232,7 +232,7 @@ class GitHubClient {
   }) {
     try {
       const octokit = await this.getInstallationClient(installationId);
-      
+
       if (isPr) {
         const response = await octokit.request(
           `GET /repos/${owner}/${repo}/pulls/${issueNumber}`
@@ -269,7 +269,7 @@ class GitHubClient {
   }) {
     try {
       const octokit = await this.getInstallationClient(installationId);
-      
+
       const response = await octokit.request(
         `GET /repos/${owner}/${repo}/contents/${path}`,
         {

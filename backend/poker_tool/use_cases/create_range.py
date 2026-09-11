@@ -4,6 +4,7 @@ Create a range (use case).
 Encapsulates: resolving the user (from auth or explicit id) and persisting
 the range. Dependencies (Ranges port, ResolveUser use case) are injected.
 """
+
 from ..interfaces.ranges import Ranges
 from ..objects.range import Range
 from .resolve_user import ResolveUser

@@ -1,4 +1,5 @@
 """Unit tests for the EnumerateEquity use case (exact enumeration)."""
+
 import unittest
 
 from poker_tool.interfaces.hand_evaluator import HandEvaluator
@@ -18,7 +19,7 @@ class FakeHandEvaluator(HandEvaluator):
     This makes tests fast but still exercises the enumeration logic.
     """
 
-    _RANKS: list[str] = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']  # noqa: RUF012
+    _RANKS: list[str] = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]  # noqa: RUF012
 
     def evaluate(self, hole_cards, board):
         ranks = [self._RANKS.index(c[0].upper()) for c in hole_cards]

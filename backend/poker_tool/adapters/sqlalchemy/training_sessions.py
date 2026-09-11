@@ -60,7 +60,4 @@ class SqlTrainingSessions(TrainingSessions):
         return [model.to_domain() for model in TrainingSessionModel.query.all()]
 
     def sessions_by_user(self, user_id: int) -> list[TrainingSession]:
-        return [
-            model.to_domain()
-            for model in TrainingSessionModel.query.filter_by(user_id=user_id).all()
-        ]
+        return [model.to_domain() for model in TrainingSessionModel.query.filter_by(user_id=user_id).all()]

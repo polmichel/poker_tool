@@ -1,6 +1,7 @@
 """
 Unit tests for the Users port (interface contract).
 """
+
 import os
 import sys
 import unittest
@@ -23,22 +24,16 @@ class TestUsersInterface(unittest.TestCase):
     def test_users_abstract_methods(self):
         """Test that Users has required abstract methods."""
         required_methods = [
-            'add',
-            'user_by_id',
-            'user_by_username',
-            'user_by_email',
-            'all',
+            "add",
+            "user_by_id",
+            "user_by_username",
+            "user_by_email",
+            "all",
         ]
         for method_name in required_methods:
-            self.assertTrue(
-                hasattr(Users, method_name),
-                f"Users should have method: {method_name}"
-            )
+            self.assertTrue(hasattr(Users, method_name), f"Users should have method: {method_name}")
             method = getattr(Users, method_name)
-            self.assertTrue(
-                getattr(method, '__isabstractmethod__', False),
-                f"Method {method_name} should be abstract"
-            )
+            self.assertTrue(getattr(method, "__isabstractmethod__", False), f"Method {method_name} should be abstract")
 
     def test_cannot_instantiate_users(self):
         """Test that Users cannot be instantiated directly."""
@@ -46,5 +41,5 @@ class TestUsersInterface(unittest.TestCase):
             Users()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

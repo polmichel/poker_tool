@@ -1,4 +1,5 @@
 """Unit tests for the Phevaluator adapter."""
+
 import unittest
 
 from poker_tool.adapters.phevaluator.evaluator import Phevaluator
@@ -13,6 +14,7 @@ class TestPhevaluator(unittest.TestCase):
     def test_implements_port(self):
         """Phevaluator must be a HandEvaluator (injectable)."""
         from poker_tool.interfaces.hand_evaluator import HandEvaluator
+
         self.assertIsInstance(self.ev, HandEvaluator)
 
     def test_returns_int(self):

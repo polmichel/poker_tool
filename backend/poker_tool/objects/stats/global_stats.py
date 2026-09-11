@@ -56,7 +56,7 @@ class GlobalStats:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'GlobalStats':
+    def from_dict(cls, data: dict) -> "GlobalStats":
         """Create from dictionary."""
         return cls(
             total_ranges=data.get("total_ranges", 0),
@@ -71,19 +71,21 @@ class GlobalStats:
         if not isinstance(other, GlobalStats):
             return False
         return (
-            self._total_ranges == other._total_ranges and
-            self._total_users == other._total_users and
-            self._total_sessions == other._total_sessions and
-            self._avg_score == other._avg_score and
-            self._most_common_action == other._most_common_action
+            self._total_ranges == other._total_ranges
+            and self._total_users == other._total_users
+            and self._total_sessions == other._total_sessions
+            and self._avg_score == other._avg_score
+            and self._most_common_action == other._most_common_action
         )
 
     def __hash__(self) -> int:
         """Hash for use in sets/dicts."""
-        return hash((
-            self._total_ranges,
-            self._total_users,
-            self._total_sessions,
-            self._avg_score,
-            self._most_common_action,
-        ))
+        return hash(
+            (
+                self._total_ranges,
+                self._total_users,
+                self._total_sessions,
+                self._avg_score,
+                self._most_common_action,
+            )
+        )

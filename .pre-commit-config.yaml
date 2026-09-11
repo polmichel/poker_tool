@@ -19,21 +19,21 @@ repos:
       - id: mypy
         args: [--ignore-missing-imports]
 
-  # ---- Frontend: lint (uses project dependencies via npm) ----
+  # ---- Frontend: lint (uses project dependencies via npm exec) ----
   - repo: local
     hooks:
       - id: lint-frontend
         name: lint-frontend
-        entry: bash -c 'cd frontend && npm run lint -- --check'
+        entry: bash -c 'cd frontend && npm exec -- eslint src/ --ext .ts,.tsx'
         language: system
         pass_filenames: false
 
-  # ---- Frontend: format (uses project dependencies via npm) ----
+  # ---- Frontend: format (uses project dependencies via npm exec) ----
   - repo: local
     hooks:
       - id: format-frontend
         name: format-frontend
-        entry: bash -c 'cd frontend && npm run format'
+        entry: bash -c 'cd frontend && npm exec prettier --write "src/**/*.{ts,tsx,css,md}"'
         language: system
         pass_filenames: false
 

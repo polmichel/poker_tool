@@ -4,6 +4,7 @@ Get ranges by user (use case).
 Encapsulates: fetching all ranges belonging to a specific user.
 Dependencies (Ranges port) are injected.
 """
+
 from ..interfaces.ranges import Ranges
 from ..objects.range import Range
 

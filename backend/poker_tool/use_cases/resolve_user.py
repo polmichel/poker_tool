@@ -8,6 +8,7 @@ in multiple use cases (CurrentUser, CreateRange, StartTrainingSession).
 Dependencies (Users port, Auth port) are injected, making this unit-testable
 with fakes.
 """
+
 from ..interfaces.auth import Auth
 from ..interfaces.users import Users
 from ..objects.user import User

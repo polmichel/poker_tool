@@ -1,6 +1,7 @@
 """
 Unit tests for the RegisterUser use case (with in-memory fakes, no mocks).
 """
+
 import unittest
 
 from poker_tool.use_cases.register_user import RegisterUser, UserAlreadyExists
@@ -9,7 +10,6 @@ from .fakes import FakeAuth, FakeUsers
 
 
 class TestRegisterUser(unittest.TestCase):
-
     def setUp(self):
         self.users = FakeUsers()
         self.auth = FakeAuth()
@@ -46,5 +46,5 @@ class TestRegisterUser(unittest.TestCase):
         self.assertEqual(r2.user.id, 2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

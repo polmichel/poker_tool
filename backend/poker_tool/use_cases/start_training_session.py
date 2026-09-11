@@ -6,6 +6,7 @@ user (explicit or auth) and creating + persisting the session.
 Dependencies (Ranges port, TrainingSessions port, ResolveUser use case) are
 injected.
 """
+
 from ..interfaces.ranges import Ranges
 from ..interfaces.training_sessions import TrainingSessions
 from ..objects.training.session import TrainingSession
@@ -39,8 +40,7 @@ class StartTrainingSession:
             raise RangeNotFound(range_id)
         if not range_obj.hands or len(range_obj.hands) == 0:
             raise RangeHasNoHands(
-                f"Range {range_id} has no hands. Please add hands to your range "
-                f"before starting a training session."
+                f"Range {range_id} has no hands. Please add hands to your range before starting a training session."
             )
 
         user = self._resolve_user.resolve_or_raise(user_id)

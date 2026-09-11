@@ -1,11 +1,13 @@
 """
 Immutable action value object (Elegant Objects).
 """
+
 from enum import Enum, auto
 
 
 class ActionType(Enum):
     """Action types."""
+
     OPEN = auto()
     RAISE = auto()
     CALL = auto()
@@ -78,7 +80,7 @@ class Action:
         return hash(self._type)
 
     @classmethod
-    def from_string(cls, action_str: str) -> 'Action':
+    def from_string(cls, action_str: str) -> "Action":
         """Factory method from string."""
         try:
             action_type = ActionType[action_str.upper()]

@@ -1,6 +1,7 @@
 """
 Unit tests for Range entity.
 """
+
 import unittest
 
 from poker_tool.objects.action import Action, ActionType
@@ -199,5 +200,5 @@ class TestRange(unittest.TestCase):
         self.assertIsNone(range_obj.effective_stack_bb)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

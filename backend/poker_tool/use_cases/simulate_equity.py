@@ -12,6 +12,7 @@ external library dependency and can be tested with a fake evaluator, and the
 evaluation backend can be swapped (treys -> PokerKit -> custom) by adding a new
 adapter without touching this file.
 """
+
 import random
 
 from ..interfaces.hand_evaluator import HandEvaluator
@@ -49,13 +50,11 @@ def _card_string_split(card_str: str) -> list[str]:
 class SimulateEquity:
     """Simulate the equity of a hero hand against a range (Monte-Carlo)."""
 
-    def __init__(self, evaluator: HandEvaluator,
-                 rng: random.Random | None = None) -> None:
+    def __init__(self, evaluator: HandEvaluator, rng: random.Random | None = None) -> None:
         self._evaluator = evaluator
         self._rng = rng or random.Random()
 
-    def simulate(self, hero: str, range_hands: list[str],
-                 iterations: int = 10000) -> EquityResult:
+    def simulate(self, hero: str, range_hands: list[str], iterations: int = 10000) -> EquityResult:
         """Run the simulation and return the aggregated equity.
 
         ``range_hands`` is a list of canonical hand notations (already expanded).
@@ -151,12 +150,15 @@ class SimulateEquity:
             if total == 0:
                 by_hand.append(EquityByHand(str(opp), combos, 0.0, 0.0, 0.0))
                 continue
-            by_hand.append(EquityByHand(
-                str(opp), combos,
-                stats["win"] / total * 100,
-                stats["tie"] / total * 100,
-                stats["lose"] / total * 100,
-            ))
+            by_hand.append(
+                EquityByHand(
+                    str(opp),
+                    combos,
+                    stats["win"] / total * 100,
+                    stats["tie"] / total * 100,
+                    stats["lose"] / total * 100,
+                )
+            )
 
         return EquityResult(
             hero=str(hero_hand),
@@ -167,8 +169,7 @@ class SimulateEquity:
             by_hand=by_hand,
         )
 
-    def simulate_notation(self, hero: str, range_notation: str,
-                          iterations: int = 10000) -> EquityResult:
+    def simulate_notation(self, hero: str, range_notation: str, iterations: int = 10000) -> EquityResult:
         """Convenience: parse the range notation then simulate."""
         hands = parse_range(range_notation)
         return self.simulate(hero, [str(h) for h in hands], iterations)

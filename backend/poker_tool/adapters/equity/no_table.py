@@ -7,6 +7,7 @@ a 409 and the frontend prompts the user to run a Monte-Carlo simulation. This
 keeps the application startable without the table while never silently
 producing a high-variance estimate from the exact endpoint.
 """
+
 from ...interfaces.equity_calculator import (
     EquityCalculator,
     MissingEquityEntry,
@@ -21,6 +22,9 @@ class NoTableEquityCalculator(EquityCalculator):
         self._message = message
 
     def compute(
-        self, hero: str, range_hands: list[str], iterations: int | None = None,
+        self,
+        hero: str,
+        range_hands: list[str],
+        iterations: int | None = None,
     ) -> EquityResult:
         raise MissingEquityEntry(range_hands, message=self._message)

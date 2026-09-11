@@ -1,11 +1,13 @@
 """
 Immutable range type value object (Elegant Objects).
 """
+
 from enum import Enum, auto
 
 
 class RangeType(Enum):
     """Types of poker ranges."""
+
     PREFLOP = auto()
     POSTFLOP = auto()
     PUSH_FOLD = auto()
@@ -31,7 +33,7 @@ class RangeType(Enum):
         return descriptions[self]
 
     @classmethod
-    def from_string(cls, range_type_str: str) -> 'RangeType':
+    def from_string(cls, range_type_str: str) -> "RangeType":
         """Factory method from string."""
         try:
             return RangeType[range_type_str.upper()]

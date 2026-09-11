@@ -1,4 +1,5 @@
 """JWT implementation of the Auth interface (Elegant Objects)."""
+
 from flask import Flask
 from flask_jwt_extended import (
     JWTManager,
@@ -55,6 +56,7 @@ class JwtAuth(Auth):
                 except (TypeError, ValueError):
                     pass
                 return User(username="", email="", user_id=user_id)
+            return None
         except Exception:  # noqa: BLE001 - JWT errors are expected; return None
             return None
 

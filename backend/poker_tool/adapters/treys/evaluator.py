@@ -6,6 +6,7 @@ Concrete implementation of the :class:`HandEvaluator` port backed by the
 use case and the deck depend solely on the port, so swapping to another
 evaluator (PokerKit, a custom one, ...) only requires adding a new adapter.
 """
+
 import treys
 
 from ...interfaces.hand_evaluator import HandEvaluator

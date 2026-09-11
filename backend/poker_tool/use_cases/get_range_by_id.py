@@ -4,6 +4,7 @@ Get a range by ID (use case).
 Encapsulates: fetching a single range by its ID from the persistence layer.
 Dependencies (Ranges port) are injected.
 """
+
 from ..interfaces.ranges import Ranges
 from ..objects.range import Range
 from .errors import RangeNotFound

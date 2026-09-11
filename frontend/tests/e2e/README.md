@@ -124,7 +124,7 @@ Le fichier `playwright.config.ts` contient la configuration principale :
 
 **Modes disponibles** :
 - `fill` - Remplir
-- `guess` - Deviner  
+- `guess` - Deviner
 - `complete` - Compléter
 
 **Sélecteurs utilisés** :
@@ -143,7 +143,7 @@ Le fichier `playwright.config.ts` contient la configuration principale :
   // ✅ Bon
   page.locator('button:has-text("Sauvegarder")')
   page.locator('input[name="rangeName"]')
-  
+
   // ❌ À éviter
   page.locator('.MuiButton-root:nth-child(3)')
   ```
@@ -152,7 +152,7 @@ Le fichier `playwright.config.ts` contient la configuration principale :
   ```tsx
   // Dans votre composant
   <button data-testid="save-range-button">Sauvegarder</button>
-  
+
   // Dans votre test
   page.locator('[data-testid="save-range-button"]')
   ```
@@ -222,12 +222,12 @@ import { chromium, FullConfig } from '@playwright/test';
 async function globalSetup(config: FullConfig) {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  
+
   await page.goto('/login');
   await page.fill('input[name="email"]', process.env.TEST_USER_EMAIL || '');
   await page.fill('input[name="password"]', process.env.TEST_USER_PASSWORD || '');
   await page.click('button[type="submit"]');
-  
+
   await page.context().storageState({ path: 'storageState.json' });
   await browser.close();
 }

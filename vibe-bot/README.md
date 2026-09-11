@@ -9,7 +9,7 @@ Ce bot écoute les événements de ton dépôt GitHub (commentaires sur les issu
 ## 🚀 Démarrage Rapide
 
 ### Prérequis
-- **Node.js** 18+ 
+- **Node.js** 18+
 - **npm** ou **yarn**
 - **Une GitHub App** configurée (voir [Configuration GitHub](#github-app-configuration))
 - **Une clé API Mistral** (à récupérer sur [Mistral Console](https://console.mistral.ai/))

@@ -1,6 +1,7 @@
 """
 Unit tests for UserStats value object.
 """
+
 import unittest
 
 from poker_tool.objects.stats.user_stats import UserStats
@@ -146,5 +147,5 @@ class TestUserStats(unittest.TestCase):
         self.assertEqual(len(stats_set), 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

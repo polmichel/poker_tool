@@ -4,6 +4,7 @@ Unit tests for the training use cases (in-memory fakes, no mocks).
 These exercise StartTrainingSession, AnswerQuestion and EndTrainingSession
 with real domain objects and in-memory ports.
 """
+
 import unittest
 from unittest.mock import patch
 
@@ -23,17 +24,21 @@ from .fakes import FakeAuth, FakeRanges, FakeSessions, FakeUsers
 
 
 class TestStartTrainingSession(unittest.TestCase):
-
     def setUp(self):
         self.users = FakeUsers()
         self.ranges = FakeRanges()
         self.sessions = FakeSessions()
         self.auth = FakeAuth()
         RegisterUser(self.users, self.auth).register("alice", "a@t.com", "p")
-        CreateRange(self.ranges, self.auth).create({
-            "name": "R1", "range_type": "preflop", "position": "BTN",
-            "hands": {"AA": "raise", "KK": "call"}, "user_id": 1,
-        })
+        CreateRange(self.ranges, self.auth).create(
+            {
+                "name": "R1",
+                "range_type": "preflop",
+                "position": "BTN",
+                "hands": {"AA": "raise", "KK": "call"},
+                "user_id": 1,
+            }
+        )
         self.resolve_user = ResolveUser(self.users, self.auth)
         self.use_case = StartTrainingSession(self.ranges, self.sessions, self.resolve_user)
 
@@ -49,10 +54,15 @@ class TestStartTrainingSession(unittest.TestCase):
             self.use_case.start("fill", range_id=999, user_id=1)
 
     def test_start_range_with_no_hands_raises(self):
-        CreateRange(self.ranges, ResolveUser(self.users, self.auth)).create({
-            "name": "Empty", "range_type": "preflop", "position": "BTN",
-            "hands": {}, "user_id": 1,
-        })
+        CreateRange(self.ranges, ResolveUser(self.users, self.auth)).create(
+            {
+                "name": "Empty",
+                "range_type": "preflop",
+                "position": "BTN",
+                "hands": {},
+                "user_id": 1,
+            }
+        )
         with self.assertRaises(RangeHasNoHands):
             self.use_case.start("fill", range_id=2, user_id=1)
 
@@ -69,12 +79,19 @@ class TestStartTrainingSession(unittest.TestCase):
 
     def test_start_guess_uses_whole_library(self):
         """The guess mode must draw questions from the entire range library."""
-        CreateRange(self.ranges, ResolveUser(self.users, self.auth)).create({
-            "name": "R2", "range_type": "preflop", "position": "CO",
-            "hands": {"QQ": "open", "JJ": "open"}, "user_id": 1,
-        })
-        with patch('poker_tool.objects.training.session.random.shuffle') as s, \
-                patch('poker_tool.objects.training.session.random.sample') as m:
+        CreateRange(self.ranges, ResolveUser(self.users, self.auth)).create(
+            {
+                "name": "R2",
+                "range_type": "preflop",
+                "position": "CO",
+                "hands": {"QQ": "open", "JJ": "open"},
+                "user_id": 1,
+            }
+        )
+        with (
+            patch("poker_tool.objects.training.session.random.shuffle") as s,
+            patch("poker_tool.objects.training.session.random.sample") as m,
+        ):
             # Force the target to be R1 so the correct answer is deterministic.
             r1 = self.ranges.range_by_id(1)
             m.return_value = [r1]
@@ -93,15 +110,19 @@ class TestStartTrainingSession(unittest.TestCase):
 
 
 class TestAnswerQuestion(unittest.TestCase):
-
     def _start_session(self, sessions, ranges, users, auth):
         RegisterUser(users, auth).register("alice", "a@t.com", "p")
-        CreateRange(ranges, ResolveUser(users, auth)).create({
-            "name": "R1", "range_type": "preflop", "position": "BTN",
-            "hands": {"AA": "raise", "KK": "call"}, "user_id": 1,
-        })
+        CreateRange(ranges, ResolveUser(users, auth)).create(
+            {
+                "name": "R1",
+                "range_type": "preflop",
+                "position": "BTN",
+                "hands": {"AA": "raise", "KK": "call"},
+                "user_id": 1,
+            }
+        )
         starter = StartTrainingSession(ranges, sessions, ResolveUser(users, auth))
-        with patch('poker_tool.objects.training.session.random.sample') as m:
+        with patch("poker_tool.objects.training.session.random.sample") as m:
             m.return_value = ["AA", "KK"]
             return starter.start("fill", range_id=1, user_id=1)
 
@@ -111,7 +132,10 @@ class TestAnswerQuestion(unittest.TestCase):
         self.sessions = FakeSessions()
         self.auth = FakeAuth()
         self.started = self._start_session(
-            self.sessions, self.ranges, self.users, self.auth,
+            self.sessions,
+            self.ranges,
+            self.users,
+            self.auth,
         )
         self.use_case = AnswerQuestion(self.sessions)
 
@@ -133,21 +157,27 @@ class TestAnswerQuestion(unittest.TestCase):
 
 
 class TestEndTrainingSession(unittest.TestCase):
-
     def setUp(self):
         self.users = FakeUsers()
         self.ranges = FakeRanges()
         self.sessions = FakeSessions()
         self.auth = FakeAuth()
         RegisterUser(self.users, self.auth).register("alice", "a@t.com", "p")
-        CreateRange(self.ranges, ResolveUser(self.users, self.auth)).create({
-            "name": "R1", "range_type": "preflop", "position": "BTN",
-            "hands": {"AA": "raise", "KK": "call"}, "user_id": 1,
-        })
-        starter = StartTrainingSession(
-            self.ranges, self.sessions, ResolveUser(self.users, self.auth),
+        CreateRange(self.ranges, ResolveUser(self.users, self.auth)).create(
+            {
+                "name": "R1",
+                "range_type": "preflop",
+                "position": "BTN",
+                "hands": {"AA": "raise", "KK": "call"},
+                "user_id": 1,
+            }
         )
-        with patch('poker_tool.objects.training.session.random.sample') as m:
+        starter = StartTrainingSession(
+            self.ranges,
+            self.sessions,
+            ResolveUser(self.users, self.auth),
+        )
+        with patch("poker_tool.objects.training.session.random.sample") as m:
             m.return_value = ["AA", "KK"]
             self.started = starter.start("fill", range_id=1, user_id=1)
         self.use_case = EndTrainingSession(self.sessions)
@@ -158,9 +188,10 @@ class TestEndTrainingSession(unittest.TestCase):
 
     def test_end_unknown_session_raises(self):
         from poker_tool.use_cases.end_training_session import SessionNotFound
+
         with self.assertRaises(SessionNotFound):
             self.use_case.end(999)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

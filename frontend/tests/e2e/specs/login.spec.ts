@@ -82,7 +82,7 @@ test.describe('Login flow', () => {
     await logoutBtn.click();
     // Wait for logout to complete - the user menu should close and Connexion button appear
     await page.waitForTimeout(3000);
-    
+
     // The "Connexion" button should reappear - use a more specific locator
     const connBtn = page.locator('button:has-text("Connexion")').first();
     await connBtn.waitFor({ state: 'visible', timeout: 15000 });

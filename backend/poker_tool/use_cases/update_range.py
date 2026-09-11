@@ -5,6 +5,7 @@ Encapsulates: fetching the existing range, merging the new data into an
 immutable updated instance and persisting it. Dependencies (Ranges port) are
 injected.
 """
+
 from ..interfaces.ranges import Ranges
 from ..objects.range import Range
 from .errors import RangeNotFound

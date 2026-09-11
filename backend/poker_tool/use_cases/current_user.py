@@ -4,6 +4,7 @@ Encapsulates: turning a JWT identity into a real User. This is now a thin
 wrapper around ResolveUser for backward compatibility.
 Dependencies (Users port, Auth port) are injected.
 """
+
 from ..interfaces.auth import Auth
 from ..interfaces.users import Users
 from ..objects.user import User

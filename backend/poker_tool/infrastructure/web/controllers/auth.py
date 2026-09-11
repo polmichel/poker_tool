@@ -1,4 +1,5 @@
 """HTTP controllers for the auth resources."""
+
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from werkzeug.exceptions import BadRequest, NotFound
@@ -11,8 +12,7 @@ from ....use_cases.register_user import RegisterUser, UserAlreadyExists
 class AuthController:
     """Thin HTTP controller for /api/auth and /api/users."""
 
-    def __init__(self, register_user: RegisterUser, login_user: LoginUser,
-                 current_user: CurrentUser) -> None:
+    def __init__(self, register_user: RegisterUser, login_user: LoginUser, current_user: CurrentUser) -> None:
         self._register_user = register_user
         self._login_user = login_user
         self._current_user = current_user
@@ -25,7 +25,9 @@ class AuthController:
                 raise BadRequest("Missing required fields: username, email, password")
             try:
                 result = self._register_user.register(
-                    data["username"], data["email"], data["password"],
+                    data["username"],
+                    data["email"],
+                    data["password"],
                 )
             except UserAlreadyExists as e:
                 raise BadRequest(str(e))
@@ -71,7 +73,9 @@ class AuthController:
                 raise BadRequest("Missing required fields: username, email, password")
             try:
                 result = self._register_user.register(
-                    data["username"], data["email"], data["password"],
+                    data["username"],
+                    data["email"],
+                    data["password"],
                 )
             except UserAlreadyExists as e:
                 raise BadRequest(str(e))

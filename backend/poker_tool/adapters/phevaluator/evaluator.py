@@ -10,6 +10,7 @@ Like the treys adapter, this is the ONLY place that knows about phevaluator —
 the equity use cases depend solely on the port, so swapping evaluators only
 requires injecting a different adapter.
 """
+
 import phevaluator
 
 from ...interfaces.hand_evaluator import HandEvaluator
@@ -28,6 +29,5 @@ class Phevaluator(HandEvaluator):
 
     def evaluate(self, hole_cards: list[str], board: list[str]) -> int:
         """Evaluate hole + board (7 cards) and return a rank (lower = better)."""
-        cards = [self._card_ids[c] for c in hole_cards] + \
-                [self._card_ids[c] for c in board]
+        cards = [self._card_ids[c] for c in hole_cards] + [self._card_ids[c] for c in board]
         return phevaluator.evaluate_cards(*cards)

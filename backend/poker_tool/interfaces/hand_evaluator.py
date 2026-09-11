@@ -9,6 +9,7 @@ evaluator) without touching the use case.
 Cards are passed as canonical 2-char strings (e.g. ``"Ah"``) so the port is
 free of any library-specific card representation.
 """
+
 from abc import ABC, abstractmethod
 
 

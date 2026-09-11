@@ -1,4 +1,5 @@
 """Unit tests for Hand value object."""
+
 import unittest
 
 from poker_tool.objects.hand import RANKS, Hand, generate_all_hands
@@ -122,19 +123,15 @@ class TestHand(unittest.TestCase):
         all_hands = generate_all_hands()
         notations = {str(h) for h in all_hands}
         # Representative suited/offsuit pairs across the grid.
-        for high, low in [("A", "K"), ("A", "2"), ("K", "Q"), ("T", "9"),
-                          ("7", "2"), ("3", "2")]:
-            self.assertIn(f"{high}{low}s", notations,
-                          f"Missing {high}{low}s suited variant")
-            self.assertIn(f"{high}{low}o", notations,
-                          f"Missing {high}{low}o offsuit variant")
+        for high, low in [("A", "K"), ("A", "2"), ("K", "Q"), ("T", "9"), ("7", "2"), ("3", "2")]:
+            self.assertIn(f"{high}{low}s", notations, f"Missing {high}{low}s suited variant")
+            self.assertIn(f"{high}{low}o", notations, f"Missing {high}{low}o offsuit variant")
 
     def test_generate_all_hands_contains_all_pairs(self):
         """All 13 pocket pairs are present without a suited/offsuit suffix."""
         notations = {str(h) for h in generate_all_hands()}
         for rank in RANKS:
-            self.assertIn(f"{rank}{rank}", notations,
-                          f"Missing pair {rank}{rank}")
+            self.assertIn(f"{rank}{rank}", notations, f"Missing pair {rank}{rank}")
         # Pairs must not appear with a suffix.
         self.assertNotIn("AAs", notations)
         self.assertNotIn("AAo", notations)
@@ -143,18 +140,16 @@ class TestHand(unittest.TestCase):
         """No duplicate canonical hand in the generated list."""
         all_hands = generate_all_hands()
         notations = [str(h) for h in all_hands]
-        self.assertEqual(len(notations), len(set(notations)),
-                         "generate_all_hands produced duplicates")
+        self.assertEqual(len(notations), len(set(notations)), "generate_all_hands produced duplicates")
 
     def test_generate_all_hands_roundtrip(self):
         """Every generated hand round-trips through from_string."""
         for hand in generate_all_hands():
-            self.assertEqual(Hand.from_string(str(hand)), hand,
-                             f"Round-trip failed for {hand}")
+            self.assertEqual(Hand.from_string(str(hand)), hand, f"Round-trip failed for {hand}")
 
     def test_ranks_order(self):
         """Test that RANKS are in correct order."""
-        expected_ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
+        expected_ranks = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]
         self.assertEqual(RANKS, expected_ranks)
 
     def test_hand_from_string_normalizes_rank_order(self):
@@ -181,5 +176,5 @@ class TestHand(unittest.TestCase):
         self.assertEqual(hand.rank2, "Q")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

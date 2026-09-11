@@ -1,6 +1,7 @@
 """
 Unit tests for GlobalStats value object.
 """
+
 import unittest
 
 from poker_tool.objects.stats.global_stats import GlobalStats
@@ -133,5 +134,5 @@ class TestGlobalStats(unittest.TestCase):
         self.assertEqual(len(stats_set), 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

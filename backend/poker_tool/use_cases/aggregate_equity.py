@@ -16,6 +16,7 @@ notation (``AKs``) does not fix suits, we pick a representative hero combo
 (first available) and count the opponent combos that do not share a card with
 it — this is the standard preflop combo-counting convention.
 """
+
 from ..objects.equity import EquityByHand, EquityResult, available_combos
 from ..objects.equity_table import EquityTable
 from ..objects.hand import Hand
@@ -28,19 +29,10 @@ def _hero_card_combos(hand: Hand) -> list[tuple[str, str]]:
     """All real-card combos for a canonical hero hand."""
     r1, r2 = hand.rank1, hand.rank2
     if hand.is_pair:
-        return [
-            (f"{r1}{_SUITS[i]}", f"{r1}{_SUITS[j]}")
-            for i in range(len(_SUITS))
-            for j in range(i + 1, len(_SUITS))
-        ]
+        return [(f"{r1}{_SUITS[i]}", f"{r1}{_SUITS[j]}") for i in range(len(_SUITS)) for j in range(i + 1, len(_SUITS))]
     if hand.suited:
         return [(f"{r1}{s}", f"{r2}{s}") for s in _SUITS]
-    return [
-        (f"{r1}{_SUITS[i]}", f"{r2}{_SUITS[j]}")
-        for i in range(len(_SUITS))
-        for j in range(len(_SUITS))
-        if i != j
-    ]
+    return [(f"{r1}{_SUITS[i]}", f"{r2}{_SUITS[j]}") for i in range(len(_SUITS)) for j in range(len(_SUITS)) if i != j]
 
 
 class AggregateEquity:
@@ -88,9 +80,7 @@ class AggregateEquity:
         for notation in range_hands:
             opp = Hand.from_string(notation)
             entry = self._table.lookup(hero, notation)
-            weight = available_combos(
-                opp.rank1, opp.rank2, opp.suited, hero_cards
-            )
+            weight = available_combos(opp.rank1, opp.rank2, opp.suited, hero_cards)
             if weight == 0:
                 # No combo available for this pairing (impossible overlap).
                 by_hand.append(EquityByHand(str(opp), weight, 0.0, 0.0, 0.0))
@@ -102,10 +92,15 @@ class AggregateEquity:
                     f"regenerate the table with "
                     f"`python -m poker_tool.scripts.generate_equity_table --resume`"
                 )
-            by_hand.append(EquityByHand(
-                str(opp), weight,
-                entry["win"], entry["tie"], entry["lose"],
-            ))
+            by_hand.append(
+                EquityByHand(
+                    str(opp),
+                    weight,
+                    entry["win"],
+                    entry["tie"],
+                    entry["lose"],
+                )
+            )
             win_sum += entry["win"] * weight
             tie_sum += entry["tie"] * weight
             lose_sum += entry["lose"] * weight

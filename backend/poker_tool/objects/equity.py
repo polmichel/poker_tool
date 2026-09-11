@@ -5,7 +5,6 @@ Holds the aggregated win/tie/lose of a hero hand against an opposing range,
 plus the per-hand breakdown used by the frontend heatmap and detail table.
 """
 
-
 SUITS = ["s", "h", "d", "c"]
 
 
@@ -17,9 +16,7 @@ def hand_combos(rank1: str, rank2: str, suited: bool) -> int:
     return 4 if suited else 12
 
 
-def available_combos(
-    rank1: str, rank2: str, suited: bool, hero_cards: set[str]
-) -> int:
+def available_combos(rank1: str, rank2: str, suited: bool, hero_cards: set[str]) -> int:
     """Number of real-card combos still possible given the hero's hole cards.
 
     Unlike :func:`hand_combos` (raw 6/4/12), this excludes combos that share a
@@ -60,8 +57,7 @@ def available_combos(
 class EquityByHand:
     """Equity of the hero hand against a single opposing hand."""
 
-    def __init__(self, hand: str, combos: int,
-                 win: float, tie: float, lose: float) -> None:
+    def __init__(self, hand: str, combos: int, win: float, tie: float, lose: float) -> None:
         self._hand = hand
         self._combos = combos
         self._win = win
@@ -107,8 +103,9 @@ class EquityByHand:
 class EquityResult:
     """Aggregated equity of a hero hand against an opposing range."""
 
-    def __init__(self, hero: str, win: float, tie: float, lose: float,
-                 iterations: int, by_hand: list[EquityByHand]) -> None:
+    def __init__(
+        self, hero: str, win: float, tie: float, lose: float, iterations: int, by_hand: list[EquityByHand]
+    ) -> None:
         self._hero = hero
         self._win = win
         self._tie = tie

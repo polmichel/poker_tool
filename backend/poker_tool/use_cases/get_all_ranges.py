@@ -4,6 +4,7 @@ Get all ranges (use case).
 Encapsulates: fetching all ranges from the persistence layer.
 Dependencies (Ranges port) are injected.
 """
+
 from ..interfaces.ranges import Ranges
 from ..objects.range import Range
 
