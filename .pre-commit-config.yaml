@@ -15,7 +15,7 @@ repos:
     hooks:
       - id: ruff-check-backend
         name: ruff-check-backend
-        entry: bash -c '/opt/homebrew/bin/ruff check backend/poker_tool/'
+        entry: ruff check backend/poker_tool/
         language: system
         pass_filenames: false
 
