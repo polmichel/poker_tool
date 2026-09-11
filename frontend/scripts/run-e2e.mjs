@@ -26,7 +26,7 @@ const playwrightArgs = process.argv.slice(2);
 console.log('Starting E2E test environment...\n');
 
 // Start backend server
-console.log('🚀 Starting backend server...');
+console.log('🚀 Starting backend server (port 5001)...');
 const backend = spawn('python3', ['backend/main.py'], {
   cwd: path.resolve(frontendDir, '..'),
   stdio: ['ignore', 'pipe', 'pipe'],
@@ -34,17 +34,15 @@ const backend = spawn('python3', ['backend/main.py'], {
 });
 
 backend.stdout.on('data', (data) => {
-  if (data.toString().includes('Running on')) {
-    console.log(`   Backend: ${data.toString().trim()}`);
-  }
+  process.stdout.write(data);
 });
 
 backend.stderr.on('data', (data) => {
-  console.error(`   Backend error: ${data}`);
+  process.stderr.write(data);
 });
 
 // Start frontend server
-console.log('🚀 Starting frontend server...');
+console.log('🚀 Starting frontend server (port 3001)...');
 const frontend = spawn('npm', ['run', 'start'], {
   cwd: frontendDir,
   stdio: ['ignore', 'pipe', 'pipe'],
@@ -52,14 +50,11 @@ const frontend = spawn('npm', ['run', 'start'], {
 });
 
 frontend.stdout.on('data', (data) => {
-  const output = data.toString();
-  if (output.includes('Local:') || output.includes('ready')) {
-    console.log(`   Frontend: ${output.trim()}`);
-  }
+  process.stdout.write(data);
 });
 
 frontend.stderr.on('data', (data) => {
-  console.error(`   Frontend error: ${data}`);
+  process.stderr.write(data);
 });
 
 // Wait for servers to be ready
@@ -80,14 +75,17 @@ const waitForServer = async (url, name, maxRetries = 30) => {
   return false;
 };
 
-// Wait for both servers
-const backendReady = await waitForServer('http://localhost:5001/api/health', 'Backend (port 5001)');
-const frontendReady = await waitForServer('http://localhost:3001', 'Frontend (port 3001)');
+// Wait for both servers (increased timeout for slower machines)
+const backendReady = await waitForServer('http://localhost:5001/api/health', 'Backend (port 5001)', 60);
+const frontendReady = await waitForServer('http://localhost:3001', 'Frontend (port 3001)', 60);
 
 if (!backendReady || !frontendReady) {
-  console.error('\nFailed to start test environment. Exiting...');
+  console.error('\n❌ Failed to start test environment. Check for errors above. Exiting...');
   backend.kill();
   frontend.kill();
+
+  // Give time for cleanup before exit
+  await new Promise(resolve => setTimeout(resolve, 2000));
   process.exit(1);
 }
 
