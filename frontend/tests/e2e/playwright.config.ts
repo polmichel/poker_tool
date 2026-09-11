@@ -12,11 +12,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables from .env file
+// override: true so .env.test takes precedence over shell env vars
+// (e.g. the shell may export CI=true, but .env.test sets CI=false for
+// local e2e runs).
 const envPath = path.resolve(__dirname, '../../.env.test');
-dotenv.config({ path: envPath });
+dotenv.config({ path: envPath, override: true });
 
 // Determine if we're running in CI
-const isCI = !!process.env.CI;
+const isCI = !!process.env.CI && process.env.CI !== 'false';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
