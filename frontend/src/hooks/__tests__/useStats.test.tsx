@@ -26,7 +26,7 @@ function makeFakeStatsApi() {
 describe('useStats Hook', () => {
   beforeEach(() => {});
 
-  it('initializes with correct default values', () => {
+  it('initializes with correct default values', async () => {
     const fakeApi = makeFakeStatsApi();
     fakeApi.global.mockResolvedValue(null as any);
     const { result } = renderHook(() => useStats(fakeApi));
@@ -34,6 +34,9 @@ describe('useStats Hook', () => {
     expect(result.current.userStats).toBeNull();
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBeNull();
+    // Flush the mount effect (fetchGlobalStats resolves async)
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {});
   });
 
   it('fetches global stats successfully', async () => {
@@ -49,6 +52,7 @@ describe('useStats Hook', () => {
     fakeApi.global.mockResolvedValue(mockStats as any);
     const { result } = renderHook(() => useStats(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.fetchGlobalStats();
     });
@@ -66,6 +70,7 @@ describe('useStats Hook', () => {
     fakeApi.user.mockRejectedValue(errorWithMessage);
     const { result } = renderHook(() => useStats(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.fetchGlobalStats();
     });
@@ -80,6 +85,7 @@ describe('useStats Hook', () => {
     fakeApi.global.mockRejectedValue('something went wrong');
     const { result } = renderHook(() => useStats(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.fetchGlobalStats();
     });
@@ -96,6 +102,7 @@ describe('useStats Hook', () => {
     fakeApi.user.mockRejectedValue(errorWithMessage);
     const { result } = renderHook(() => useStats(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.fetchUserStats(1);
     });
@@ -118,6 +125,7 @@ describe('useStats Hook', () => {
     fakeApi.global.mockResolvedValue(mockStats as any);
     const { result } = renderHook(() => useStats(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.fetchGlobalStats();
     });
@@ -125,6 +133,7 @@ describe('useStats Hook', () => {
 
     // Reset by calling fetch again with a new mock
     fakeApi.global.mockResolvedValue(null as any);
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.fetchGlobalStats();
     });

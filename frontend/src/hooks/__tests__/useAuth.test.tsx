@@ -20,7 +20,7 @@ describe('useAuth Hook', () => {
     localStorage.clear();
   });
 
-  it('initializes anonymous with loading state', () => {
+  it('initializes anonymous with loading state', async () => {
     const fakeApi = makeFakeAuthApi();
     fakeApi.me.mockResolvedValue(makeUser());
     const { result } = renderHook(() => useAuth(fakeApi));
@@ -28,9 +28,12 @@ describe('useAuth Hook', () => {
     expect(result.current.user).toBeNull();
     expect(result.current.isAuthenticated).toBe(false);
     expect(result.current.token).toBeNull();
+    // Flush the mount effect (fetchCurrentUser resolves async)
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {});
   });
 
-  it('returns the expected intent surface (no setters exposed)', () => {
+  it('returns the expected intent surface (no setters exposed)', async () => {
     const fakeApi = makeFakeAuthApi();
     fakeApi.me.mockResolvedValue(makeUser());
     const { result } = renderHook(() => useAuth(fakeApi));
@@ -42,6 +45,9 @@ describe('useAuth Hook', () => {
     expect(result.current).toHaveProperty('register');
     expect(result.current).toHaveProperty('fetchCurrentUser');
     expect(result.current).toHaveProperty('updateUser');
+    // Flush the mount effect
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {});
   });
 
   it('logs in, persists the token, and authenticates the user', async () => {
@@ -51,6 +57,7 @@ describe('useAuth Hook', () => {
     const { result } = renderHook(() => useAuth(fakeApi));
 
     let loggedInUser: ReturnType<typeof makeUser> | null = null;
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       loggedInUser = await result.current.login('testuser', 'password123');
     });
@@ -70,6 +77,7 @@ describe('useAuth Hook', () => {
     const { result } = renderHook(() => useAuth(fakeApi));
 
     let returned: unknown = 'not-null';
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       returned = await result.current.login('bad', 'creds');
     });
@@ -88,6 +96,7 @@ describe('useAuth Hook', () => {
     const { result } = renderHook(() => useAuth(fakeApi));
 
     let returned: unknown = null;
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       returned = await result.current.register('newuser', 'new@test.com', 'password123');
     });
@@ -109,6 +118,7 @@ describe('useAuth Hook', () => {
     fakeApi.login.mockResolvedValue(authResponse);
     const { result } = renderHook(() => useAuth(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.login('testuser', 'password123');
     });

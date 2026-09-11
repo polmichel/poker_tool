@@ -5,7 +5,7 @@
  * function (mocked).
  */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import Register from '../Register';
@@ -46,7 +46,10 @@ describe('Register page', () => {
   it('shows validation error when fields are empty', async () => {
     const user = userEvent.setup();
     renderRegister();
-    await user.click(screen.getByTestId('register-submit'));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      await user.click(screen.getByTestId('register-submit'));
+    });
 
     await waitFor(() => {
       const alert = screen.getByRole('alert');
@@ -58,10 +61,13 @@ describe('Register page', () => {
   it('shows error for short password', async () => {
     const user = userEvent.setup();
     renderRegister();
-    await user.type(screen.getByTestId('register-username'), 'testuser');
-    await user.type(screen.getByTestId('register-email'), 'test@test.com');
-    await user.type(screen.getByTestId('register-password'), 'short');
-    await user.click(screen.getByTestId('register-submit'));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      await user.type(screen.getByTestId('register-username'), 'testuser');
+      await user.type(screen.getByTestId('register-email'), 'test@test.com');
+      await user.type(screen.getByTestId('register-password'), 'short');
+      await user.click(screen.getByTestId('register-submit'));
+    });
 
     await waitFor(() => {
       const alert = screen.getByRole('alert');
@@ -75,10 +81,13 @@ describe('Register page', () => {
     mockRegister.mockResolvedValue({ id: 1, username: 'testuser' });
     renderRegister();
 
-    await user.type(screen.getByTestId('register-username'), 'testuser');
-    await user.type(screen.getByTestId('register-email'), 'test@test.com');
-    await user.type(screen.getByTestId('register-password'), 'password123');
-    await user.click(screen.getByTestId('register-submit'));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      await user.type(screen.getByTestId('register-username'), 'testuser');
+      await user.type(screen.getByTestId('register-email'), 'test@test.com');
+      await user.type(screen.getByTestId('register-password'), 'password123');
+      await user.click(screen.getByTestId('register-submit'));
+    });
 
     await waitFor(() => {
       expect(mockRegister).toHaveBeenCalledWith('testuser', 'test@test.com', 'password123');

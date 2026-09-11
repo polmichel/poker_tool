@@ -26,7 +26,7 @@ function makeFakeTrainingApi() {
 describe('useTraining Hook', () => {
   beforeEach(() => {});
 
-  it('initializes with correct default values', () => {
+  it('initializes with correct default values', async () => {
     const fakeApi = makeFakeTrainingApi();
     fakeApi.sessions.mockResolvedValue([]);
     const { result } = renderHook(() => useTraining(fakeApi));
@@ -35,6 +35,9 @@ describe('useTraining Hook', () => {
     expect(result.current.currentQuestion).toBeNull();
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBeNull();
+    // Flush the mount effect (fetchSessions resolves async)
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {});
   });
 
   it('fetches training sessions successfully', async () => {
@@ -65,6 +68,7 @@ describe('useTraining Hook', () => {
     fakeApi.list.mockResolvedValue(mockSessions);
     const { result } = renderHook(() => useTraining(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.fetchSessions();
     });
@@ -80,6 +84,7 @@ describe('useTraining Hook', () => {
     fakeApi.list.mockRejectedValue(errorWithMessage);
     const { result } = renderHook(() => useTraining(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.fetchSessions();
     });
@@ -107,6 +112,7 @@ describe('useTraining Hook', () => {
     fakeApi.session.mockResolvedValue(mockResponse as any);
     const { result } = renderHook(() => useTraining(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.fetchSession(1);
     });
@@ -122,6 +128,7 @@ describe('useTraining Hook', () => {
     fakeApi.session.mockRejectedValue(errorWithMessage);
     const { result } = renderHook(() => useTraining(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.fetchSession(1);
     });
@@ -139,6 +146,7 @@ describe('useTraining Hook', () => {
     fakeApi.createSession.mockResolvedValue(mockResponse as any);
     const { result } = renderHook(() => useTraining(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.createSession('fill', 1, 1, 10);
     });
@@ -151,6 +159,7 @@ describe('useTraining Hook', () => {
     fakeApi.createSession.mockRejectedValue(errorWithMessage);
     const { result } = renderHook(() => useTraining(fakeApi));
 
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       await result.current.createSession('fill', 1, 1, 10);
     });

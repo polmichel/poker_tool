@@ -6,7 +6,7 @@
  * stats cards and that tabs switch between overview/history/leaderboard.
  */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import Stats from '../Stats';
 import { makeGlobalStats } from '../../tests/factories';
@@ -62,24 +62,27 @@ describe('Stats page', () => {
     });
   });
 
-  it('renders the page title and the three tabs', () => {
+  it('renders the page title and the three tabs', async () => {
     renderStats();
-    expect(screen.getByRole('heading', { name: /Statistiques/ })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /Statistiques/ })).toBeInTheDocument();
+    });
     expect(screen.getByRole('tab', { name: /Aperçu/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Historique/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Classement/ })).toBeInTheDocument();
   });
 
-  it('renders the overview stats cards on the default tab', () => {
+  it('renders the overview stats cards on the default tab', async () => {
     renderStats();
-    const cards = screen.getAllByTestId('stats-card');
-    expect(cards.length).toBeGreaterThanOrEqual(4);
+    await waitFor(() => {
+      expect(screen.getAllByTestId('stats-card').length).toBeGreaterThanOrEqual(4);
+    });
     const titles = screen.getAllByTestId('stats-card-title').map((el) => el.textContent);
     expect(titles).toContain('Ranges');
     expect(titles).toContain('Sessions');
   });
 
-  it('shows a loading message while loading', () => {
+  it('shows a loading message while loading', async () => {
     mockUseStats.mockReturnValue({
       globalStats: null,
       userStats: null,
@@ -92,10 +95,12 @@ describe('Stats page', () => {
       exportStats: mockExportStats,
     });
     renderStats();
-    expect(screen.getByText(/Chargement des statistiques/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Chargement des statistiques/i)).toBeInTheDocument();
+    });
   });
 
-  it('shows an error message when the hook reports an error', () => {
+  it('shows an error message when the hook reports an error', async () => {
     mockUseStats.mockReturnValue({
       globalStats: null,
       userStats: null,
@@ -108,12 +113,17 @@ describe('Stats page', () => {
       exportStats: mockExportStats,
     });
     renderStats();
-    expect(screen.getByText(/Erreur réseau/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Erreur réseau/)).toBeInTheDocument();
+    });
   });
 
   it('switches to the history tab and shows the empty state', async () => {
     renderStats();
-    fireEvent.click(screen.getByRole('tab', { name: /Historique/ }));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.click(screen.getByRole('tab', { name: /Historique/ }));
+    });
     await waitFor(() => {
       expect(screen.getByText(/Aucune session/i)).toBeInTheDocument();
     });
@@ -121,7 +131,10 @@ describe('Stats page', () => {
 
   it('switches to the leaderboard tab and shows the empty state', async () => {
     renderStats();
-    fireEvent.click(screen.getByRole('tab', { name: /Classement/ }));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.click(screen.getByRole('tab', { name: /Classement/ }));
+    });
     await waitFor(() => {
       expect(screen.getByText(/Aucun utilisateur/i)).toBeInTheDocument();
     });
@@ -153,7 +166,10 @@ describe('Stats page', () => {
       exportStats: mockExportStats,
     });
     renderStats();
-    fireEvent.click(screen.getByRole('tab', { name: /Historique/ }));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.click(screen.getByRole('tab', { name: /Historique/ }));
+    });
     await waitFor(() => {
       expect(screen.getByText('UTG')).toBeInTheDocument();
     });
@@ -181,7 +197,10 @@ describe('Stats page', () => {
       exportStats: mockExportStats,
     });
     renderStats();
-    fireEvent.click(screen.getByRole('tab', { name: /Classement/ }));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.click(screen.getByRole('tab', { name: /Classement/ }));
+    });
     await waitFor(() => {
       expect(screen.getByText('topplayer')).toBeInTheDocument();
     });

@@ -29,12 +29,14 @@ describe('ProtectedRoute', () => {
     localStorage.clear();
   });
 
-  it('renders a loading state while auth is initializing', () => {
+  it('renders a loading state while auth is initializing', async () => {
     // No token stored + me() pending: the route shows the loading fallback.
     const authApi = makeMockAuthApi();
     authApi.me.mockReturnValue(new Promise(() => {})); // never resolves
     renderRoutes('/protected', authApi);
-    expect(screen.getByText(/Chargement/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Chargement/i)).toBeInTheDocument();
+    });
     expect(screen.queryByTestId('protected')).not.toBeInTheDocument();
   });
 

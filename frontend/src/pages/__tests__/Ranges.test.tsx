@@ -230,7 +230,10 @@ describe('Ranges page', () => {
     renderRanges();
 
     const searchInput = screen.getByPlaceholderText('Rechercher une range...');
-    await user.type(searchInput, 'UTG');
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      await user.type(searchInput, 'UTG');
+    });
 
     // Should only show UTG Range
     expect(screen.getByText('UTG Range')).toBeInTheDocument();
@@ -252,7 +255,10 @@ describe('Ranges page', () => {
     renderRanges();
 
     const refreshButtons = screen.getAllByRole('button', { name: /actualiser/i });
-    await user.click(refreshButtons[0]);
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      await user.click(refreshButtons[0]);
+    });
 
     expect(mockFetchRanges).toHaveBeenCalledTimes(2);
   });
@@ -300,6 +306,7 @@ describe('Ranges page', () => {
     // Simulate the native HTML5 DnD event sequence. dragOver + drop must fire
     // in the same act batch so the drop handler sees the updated dragging state.
     // eslint-disable-next-line testing-library/no-unnecessary-act
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       // eslint-disable-next-line testing-library/no-node-access
       // Mock dataTransfer for dragStart event
@@ -311,6 +318,7 @@ describe('Ranges page', () => {
       fireEvent.dragStart(rangeItem!, { dataTransfer: mockDataTransfer });
     });
     const folderTarget = screen.getByText('BTN');
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       fireEvent.dragOver(folderTarget, {
@@ -338,6 +346,7 @@ describe('Ranges page', () => {
     const folderItem = screen.getByText('BTN');
     // drop without a preceding dragStart: nothing should be moved.
     // eslint-disable-next-line testing-library/no-unnecessary-act, testing-library/no-node-access
+    // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
       fireEvent.drop(folderItem!, { dataTransfer: { dropEffect: 'move' } });
     });

@@ -5,7 +5,7 @@
  * (mocked), including navigation on success and validation errors.
  */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router';
 import Login from '../Login';
@@ -53,7 +53,10 @@ describe('Login page', () => {
   it('shows a validation error when fields are empty', async () => {
     const user = userEvent.setup();
     renderLogin();
-    await user.click(screen.getByTestId('login-submit'));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      await user.click(screen.getByTestId('login-submit'));
+    });
     await waitFor(() => {
       const alert = screen.getByRole('alert');
       expect(alert).toHaveTextContent('obligatoire');
@@ -65,9 +68,12 @@ describe('Login page', () => {
     const user = userEvent.setup();
     mockLogin.mockResolvedValue({ id: 1, username: 'testuser' });
     renderLogin();
-    await user.type(screen.getByTestId('login-username'), 'testuser');
-    await user.type(screen.getByTestId('login-password'), 'password123');
-    await user.click(screen.getByTestId('login-submit'));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      await user.type(screen.getByTestId('login-username'), 'testuser');
+      await user.type(screen.getByTestId('login-password'), 'password123');
+      await user.click(screen.getByTestId('login-submit'));
+    });
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith('testuser', 'password123');
     });
@@ -77,9 +83,12 @@ describe('Login page', () => {
     const user = userEvent.setup();
     mockLogin.mockResolvedValue({ id: 1, username: 'testuser' });
     renderLogin();
-    await user.type(screen.getByTestId('login-username'), 'testuser');
-    await user.type(screen.getByTestId('login-password'), 'password123');
-    await user.click(screen.getByTestId('login-submit'));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      await user.type(screen.getByTestId('login-username'), 'testuser');
+      await user.type(screen.getByTestId('login-password'), 'password123');
+      await user.click(screen.getByTestId('login-submit'));
+    });
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/');
     });
@@ -89,9 +98,12 @@ describe('Login page', () => {
     const user = userEvent.setup();
     mockLogin.mockResolvedValue(null);
     renderLogin();
-    await user.type(screen.getByTestId('login-username'), 'testuser');
-    await user.type(screen.getByTestId('login-password'), 'wrongpass');
-    await user.click(screen.getByTestId('login-submit'));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      await user.type(screen.getByTestId('login-username'), 'testuser');
+      await user.type(screen.getByTestId('login-password'), 'wrongpass');
+      await user.click(screen.getByTestId('login-submit'));
+    });
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith('testuser', 'wrongpass');
     });
@@ -120,7 +132,10 @@ describe('Login page', () => {
   it('navigates to register when creating an account', async () => {
     const user = userEvent.setup();
     renderLogin();
-    await user.click(screen.getByText(/Créer un compte/i));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      await user.click(screen.getByText(/Créer un compte/i));
+    });
     expect(mockNavigate).toHaveBeenCalledWith('/register');
   });
 
@@ -134,7 +149,10 @@ describe('Login page', () => {
     // button via the input adornment container.
     // eslint-disable-next-line testing-library/no-node-access
     const toggleButton = passwordInput.closest('div')?.querySelector('button');
-    await user.click(toggleButton as Element);
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      await user.click(toggleButton as Element);
+    });
     expect(passwordInput.type).toBe('text');
   });
 });
