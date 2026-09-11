@@ -19,8 +19,8 @@
     "node": true
   },
   "rules": {
-    "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "off",
+    "no-unused-vars": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-empty-object-type": "off",
@@ -36,13 +36,6 @@
     "react-hooks/immutability": "off",
     "react-hooks/preserve-manual-memoization": "off",
     "unused-imports/no-unused-imports": "error",
-    "unused-imports/no-unused-vars": [
-      "warn",
-      {
-        "vars": "all",
-        "varsIgnorePattern": "^_",
-        "argsIgnorePattern": "^_"
-      }
-    ]
+    "unused-imports/no-unused-vars": "off"
   }
 }

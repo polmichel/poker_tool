@@ -24,7 +24,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
     try {
       const data = await run(() => api.ranges());
       setRanges(data);
-    } catch (err) {
+    } catch (_err) {
       setError(extractErrorMessage(err, 'Erreur lors du chargement des ranges'));
       console.error('Error fetching ranges:', err);
     }
@@ -37,7 +37,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
         const data = await run(() => api.range(id));
         setSelectedRange(data);
         return data;
-      } catch (err) {
+      } catch (_err) {
         setError(extractErrorMessage(err, `Erreur lors du chargement de la range ${id}`));
         console.error(`Error fetching range ${id}:`, err);
         return null;
@@ -57,7 +57,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
         // Cela évite le bug « Range non trouvée » juste après la création.
         setSelectedRange(data);
         return data;
-      } catch (err) {
+      } catch (_err) {
         setError(extractErrorMessage(err, 'Erreur lors de la création de la range'));
         console.error('Error creating range:', err);
         return null;
@@ -76,7 +76,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
           setSelectedRange(data);
         }
         return data;
-      } catch (err) {
+      } catch (_err) {
         setError(extractErrorMessage(err, `Erreur lors de la mise à jour de la range ${id}`));
         console.error(`Error updating range ${id}:`, err);
         return null;
@@ -95,7 +95,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
           setSelectedRange(null);
         }
         return true;
-      } catch (err) {
+      } catch (_err) {
         setError(extractErrorMessage(err, `Erreur lors de la suppression de la range ${id}`));
         console.error(`Error deleting range ${id}:`, err);
         return false;
@@ -109,7 +109,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
     async (rangeId: number, format: 'json' | 'text' | 'csv' = 'json') => {
       try {
         return await run(() => api.exportRange(rangeId, format));
-      } catch (err) {
+      } catch (_err) {
         setError(extractErrorMessage(err, `Erreur lors de l'export de la range ${rangeId}`));
         console.error(`Error exporting range ${rangeId}:`, err);
         return null;
@@ -125,7 +125,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
         const data = await run(() => api.importRange(content, format));
         setRanges((prev) => [...prev, data]);
         return data;
-      } catch (err) {
+      } catch (_err) {
         setError(extractErrorMessage(err, "Erreur lors de l'import de la range"));
         console.error('Error importing range:', err);
         return null;
@@ -139,7 +139,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
     async (rangeId: number) => {
       try {
         return await run(() => api.stats(rangeId));
-      } catch (err) {
+      } catch (_err) {
         setError(
           extractErrorMessage(
             err,
@@ -158,7 +158,7 @@ export function useRanges(rangesApi?: RangesApi, autoFetch: boolean = true) {
     async (rangeId: number) => {
       try {
         return await run(() => api.grid(rangeId));
-      } catch (err) {
+      } catch (_err) {
         setError(
           extractErrorMessage(err, `Erreur lors du chargement de la grille de la range ${rangeId}`),
         );

@@ -24,7 +24,7 @@ export function useEquity(equityApi?: EquityApi) {
         const data = await run(() => api.simulate(hero, range, iterations));
         setResult(data);
         return data;
-      } catch (err) {
+      } catch (_err) {
         // EquityMissingError est propagee telle quelle pour que la page
         // puisse ouvrir la pop-up de Monte-Carlo ; les autres erreurs
         // deviennent un message utilisateur classique.

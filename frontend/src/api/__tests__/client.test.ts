@@ -77,7 +77,7 @@ describe('API Client Configuration', () => {
       let caught: unknown;
       try {
         await api.get('/test');
-      } catch (err) {
+      } catch (_err) {
         caught = err;
       }
       expect(isApiError(caught)).toBe(true);
@@ -91,7 +91,7 @@ describe('API Client Configuration', () => {
       let caught: unknown;
       try {
         await api.get('/test');
-      } catch (err) {
+      } catch (_err) {
         caught = err;
       }
       expect(isUnauthorizedError(caught)).toBe(true);

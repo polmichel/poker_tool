@@ -19,7 +19,7 @@ export function useStats(statsApi?: StatsApi) {
       const data = await run(() => api.global());
       setGlobalStats(data);
       return data;
-    } catch (err) {
+    } catch (_err) {
       setError(extractErrorMessage(err, 'Erreur lors du chargement des statistiques globales'));
       console.error('Error fetching global stats:', err);
       return null;
@@ -33,7 +33,7 @@ export function useStats(statsApi?: StatsApi) {
         const data = await run(() => api.byUser(userId));
         setUserStats(data);
         return data;
-      } catch (err) {
+      } catch (_err) {
         setError(
           extractErrorMessage(
             err,
@@ -51,7 +51,7 @@ export function useStats(statsApi?: StatsApi) {
   const fetchTrainingHistory = useCallback(async () => {
     try {
       return await run(() => api.history());
-    } catch (err) {
+    } catch (_err) {
       setError(extractErrorMessage(err, "Erreur lors du chargement de l'historique des sessions"));
       console.error('Error fetching training history:', err);
       return null;
@@ -62,7 +62,7 @@ export function useStats(statsApi?: StatsApi) {
   const fetchLeaderboard = useCallback(async () => {
     try {
       return await run(() => api.leaderboard());
-    } catch (err) {
+    } catch (_err) {
       setError(extractErrorMessage(err, 'Erreur lors du chargement du classement'));
       console.error('Error fetching leaderboard:', err);
       return null;
@@ -74,7 +74,7 @@ export function useStats(statsApi?: StatsApi) {
     async (format: 'json' | 'csv' = 'json') => {
       try {
         return await run(() => api.export(format));
-      } catch (err) {
+      } catch (_err) {
         setError(extractErrorMessage(err, "Erreur lors de l'export des statistiques"));
         console.error('Error exporting stats:', err);
         return null;

@@ -74,7 +74,7 @@ const ImportExport: React.FC = () => {
       setImportError(null);
       setContent('');
       fetchRanges();
-    } catch (err) {
+    } catch (_err) {
       setImportError("Erreur lors de l'import. Vérifiez le format du contenu.");
       setImportSuccess(null);
     }
@@ -122,7 +122,7 @@ const ImportExport: React.FC = () => {
         setImportSuccess('Range exportée avec succès !');
         setImportError(null);
       }
-    } catch (err) {
+    } catch (_err) {
       setImportError("Erreur lors de l'export.");
       setImportSuccess(null);
     }
@@ -152,7 +152,7 @@ const ImportExport: React.FC = () => {
         setImportSuccess('Range copiée dans le presse-papiers !');
         setImportError(null);
       }
-    } catch (err) {
+    } catch (_err) {
       setImportError('Erreur lors de la copie dans le presse-papiers.');
       setImportSuccess(null);
     }
@@ -273,7 +273,7 @@ JJ,raise`;
                               try {
                                 const clipboardContent = await navigator.clipboard.readText();
                                 setContent(clipboardContent);
-                              } catch (err) {
+                              } catch (_err) {
                                 setImportError('Impossible de lire le presse-papiers');
                               }
                             }}

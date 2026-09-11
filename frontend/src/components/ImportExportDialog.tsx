@@ -59,7 +59,7 @@ const ImportExportDialog: React.FC<ImportExportDialogProps> = ({
     try {
       onImport(content, format);
       onClose();
-    } catch (err) {
+    } catch (_err) {
       setError("Erreur lors de l'import. Vérifiez le format du contenu.");
     }
   }, [content, format, onImport, onClose]);
