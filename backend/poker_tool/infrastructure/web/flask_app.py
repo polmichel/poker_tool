@@ -6,6 +6,7 @@ and delegates every business operation to the injected use cases. No
 business logic lives here.
 """
 from flask import Blueprint, Flask, jsonify
+from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import BadRequest, NotFound
 
 from ...interfaces.auth import Auth
@@ -89,6 +90,16 @@ class FlaskApp:
         # Return JSON for all HTTP exceptions (BadRequest, NotFound, etc.)
         # so the frontend can read error.message from response.data.error
         # instead of getting an HTML error page.
+        @self.app.errorhandler(IntegrityError)
+        def handle_integrity_error(e):
+            # Check if this is a duplicate user constraint violation
+            error_msg = str(e.orig) if hasattr(e, 'orig') else str(e)
+            if 'UNIQUE constraint failed' in error_msg and 'user.username' in error_msg:
+                return jsonify({"error": "Username already exists"}), 400
+            elif 'UNIQUE constraint failed' in error_msg and 'user.email' in error_msg:
+                return jsonify({"error": "Email already exists"}), 400
+            return jsonify({"error": "Database constraint violation"}), 400
+
         @self.app.errorhandler(BadRequest)
         @self.app.errorhandler(NotFound)
         def handle_http_error(e):

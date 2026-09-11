@@ -79,10 +79,12 @@ test.describe('Login flow', () => {
     // Click "Déconnexion"
     const logoutBtn = page.locator('text=Déconnexion');
     await logoutBtn.click();
-    await page.waitForTimeout(2000);
+    // Wait for navigation to complete after logout (logout navigates to '/')
+    await page.waitForURL('http://localhost:3000/', { timeout: 5000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // The "Connexion" button should reappear
-    const connBtn = page.locator('text=Connexion');
+    const connBtn = page.locator('text=Connexion').first();
     await expect(connBtn).toBeVisible({ timeout: 5000 });
   });
 
