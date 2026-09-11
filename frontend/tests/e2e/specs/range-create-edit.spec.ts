@@ -65,7 +65,7 @@ test.describe('Bug "Range non trouvée" après création', () => {
 
     // Le nom de la range doit être affiché dans l'éditeur (pas "Range non trouvée")
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.getByText(rangeName)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(rangeName).first()).toBeVisible({ timeout: 15000 });
 
     // Vérifier explicitement qu'on n'a pas le message d'erreur
     await expect(page.getByText('Range non trouvée')).not.toBeVisible();
@@ -100,7 +100,7 @@ test.describe('Bug "Range non trouvée" après création', () => {
     await page.waitForURL(/\/ranges\/\d+\/edit$/, { timeout: 15000 });
 
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.getByText(rangeName)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(rangeName).first()).toBeVisible({ timeout: 15000 });
     await expect(page.getByText('Range non trouvée')).not.toBeVisible();
 
     const firstCell = page.locator('[data-testid^="range-cell-"]').first();
