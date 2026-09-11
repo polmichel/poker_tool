@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { execSync } from 'child_process';
 
 /**
  * Read environment variables from file.
@@ -34,6 +35,13 @@ if (!isCI) {
 // global-setup populates it via the API.
 const e2eDbPath = path.resolve(__dirname, '../../../backend/instance/poker_tool_e2e.db');
 if (!isCI) {
+  // Kill any process left on port 5001 from a previous e2e run so the
+  // fresh backend can bind cleanly and pick up the new (deleted) DB.
+  try {
+    execSync('lsof -ti:5001 | xargs kill -9 2>/dev/null', { stdio: 'ignore' });
+  } catch {
+    // ignore — no process on the port
+  }
   try {
     if (fs.existsSync(e2eDbPath)) {
       fs.unlinkSync(e2eDbPath);
@@ -125,7 +133,7 @@ export default defineConfig({
           command: './venv/bin/python3 main.py',
           cwd: path.resolve(__dirname, '../../../backend'),
           url: 'http://localhost:5001/api/health',
-          reuseExistingServer: false,
+          reuseExistingServer: true,
           timeout: 60000,
           env: {
             FLASK_ENV: 'development',
