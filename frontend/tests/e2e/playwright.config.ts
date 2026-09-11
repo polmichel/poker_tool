@@ -143,7 +143,7 @@ export default defineConfig({
           env: {
             FLASK_ENV: 'development',
             FLASK_DEBUG: '0',
-            DATABASE_URL: 'sqlite:///backend/instance/poker_tool_e2e.db',
+            DATABASE_URL: 'sqlite:///./backend/instance/poker_tool_e2e.db',
             PORT: '5001',
             PYTHONPATH: 'backend',
           },
