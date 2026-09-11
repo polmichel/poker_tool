@@ -4,12 +4,15 @@ import axios from 'axios';
 /**
  * Global setup for Playwright tests
  * This file is used to:
- * 1. Start the backend server (if not already running)
+ * 1. Wait for the backend server to be ready
  * 2. Create test data (user, ranges) in the database
  * 3. Perform authentication if needed
+ *
+ * The e2e database (poker_tool_e2e.db) is deleted before the backend
+ * starts in playwright.config.ts, so each run starts from a clean state.
  */
 
-const API_BASE_URL = process.env.API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.API_URL || 'http://localhost:5001/api';
 
 async function globalSetup(config: FullConfig) {
   console.log('Running global setup...');

@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 /**
  * Read environment variables from file.
@@ -20,6 +21,21 @@ dotenv.config({ path: envPath, override: true });
 
 // Determine if we're running in CI
 const isCI = !!process.env.CI && process.env.CI !== 'false';
+
+// E2E test database: kept separate from the dev database so local data
+// is never touched. Deleted before each run so tests start from a clean
+// state. The backend recreates it on startup (create_all), and
+// global-setup populates it via the API.
+const e2eDbPath = path.resolve(__dirname, '../../../backend/instance/poker_tool_e2e.db');
+if (!isCI) {
+  try {
+    if (fs.existsSync(e2eDbPath)) {
+      fs.unlinkSync(e2eDbPath);
+    }
+  } catch {
+    // ignore — may be locked by a running server
+  }
+}
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -95,24 +111,32 @@ export default defineConfig({
     ? undefined
     : [
         {
-          // Start backend (Flask server)
+          // Start backend (Flask server) with the e2e test database.
+          // Uses port 5001 to avoid conflicting with a dev backend on
+          // port 5000. reuseExistingServer: false ensures the backend
+          // always restarts fresh with the clean e2e database.
           command: './venv/bin/python3 main.py',
           cwd: path.resolve(__dirname, '../../../backend'),
-          url: 'http://localhost:5000/api/health',
-          reuseExistingServer: true,
+          url: 'http://localhost:5001/api/health',
+          reuseExistingServer: false,
           timeout: 60000,
           env: {
             FLASK_ENV: 'development',
-            DATABASE_URL: 'sqlite:///../../backend/instance/poker_tool.db',
+            DATABASE_URL: 'sqlite:///poker_tool_e2e.db',
+            PORT: '5001',
           },
         },
         {
-          // Start frontend (Vite dev server)
+          // Start frontend (Vite dev server) with the API proxied to the
+          // e2e backend on port 5001.
           command: 'npm run start',
           cwd: path.resolve(__dirname, '../..'),
           url: 'http://localhost:3000',
-          reuseExistingServer: true,
+          reuseExistingServer: false,
           timeout: 60000,
+          env: {
+            VITE_API_PROXY_TARGET: 'http://localhost:5001',
+          },
         },
       ],
 
