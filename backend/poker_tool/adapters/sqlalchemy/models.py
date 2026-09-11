@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from flask_sqlalchemy import SQLAlchemy
 
 # Create SQLAlchemy instance (will be initialized by the adapter)
-db = SQLAlchemy()
+db = SQLAlchemy()  # type: ignore[assignment]
 
 
 def _utcnow_naive():
@@ -16,7 +16,7 @@ def _utcnow_naive():
     return datetime.now(UTC).replace(tzinfo=None)
 
 
-class RangeModel(db.Model):
+class RangeModel(db.Model):  # type: ignore[name-defined]
     """SQLAlchemy model for Range."""
 
     __tablename__ = "poker_range"
@@ -52,7 +52,7 @@ class RangeModel(db.Model):
         )
 
 
-class UserModel(db.Model):
+class UserModel(db.Model):  # type: ignore[name-defined]
     """SQLAlchemy model for User."""
 
     __tablename__ = "user"
@@ -76,7 +76,7 @@ class UserModel(db.Model):
         )
 
 
-class TrainingSessionModel(db.Model):
+class TrainingSessionModel(db.Model):  # type: ignore[name-defined]
     """SQLAlchemy model for TrainingSession."""
 
     __tablename__ = "training_session"

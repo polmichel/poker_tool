@@ -96,7 +96,9 @@ class SimulateEquity:
                 if pick <= acc:
                     chosen = (opp, card_combos)
                     break
-            opp_hand, opp_card_combos = chosen  # type: ignore[assignment]
+            if chosen is None:
+                raise ValueError("No opponent hand was chosen")
+            opp_hand, opp_card_combos = chosen
 
             # Pick concrete card combos for hero and opponent.
             hero_cards = self._rng.choice(hero_card_combos)

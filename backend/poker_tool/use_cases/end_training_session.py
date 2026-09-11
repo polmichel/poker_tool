@@ -26,7 +26,7 @@ class EndTrainingSession:
     def end(self, session_id: int) -> EndedSession:
         session = self._sessions.session_by_id(session_id)
         if not session:
-            raise SessionNotFound(f"Session {session_id} not found")
+            raise SessionNotFound(session_id)
         ended = session.end()
         saved = self._sessions.add(ended)
         return EndedSession(saved)

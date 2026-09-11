@@ -27,7 +27,7 @@ class GlobalStats:
         total_sessions = len(sessions)
         avg_score = sum(s.score for s in sessions) / len(sessions) if sessions else 0.0
 
-        action_counts = {}
+        action_counts: dict[str, int] = {}
         for r in ranges:
             for action in r.hands.values():
                 action_name = action.type.name

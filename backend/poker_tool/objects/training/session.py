@@ -261,9 +261,13 @@ class TrainingSession:
         )
         session._current_index = data.get("current_question_index", 0)
         session._correct_answers = data.get("correct_answers", 0)
-        session._start_time = datetime.fromisoformat(data.get("start_time"))
-        if data.get("ended_at"):
-            session._ended_at = datetime.fromisoformat(data.get("ended_at"))
+        start_time_str = data.get("start_time")
+        session._start_time = (
+            datetime.fromisoformat(start_time_str) if start_time_str else datetime.now(UTC).replace(tzinfo=None)
+        )
+        ended_at_str = data.get("ended_at")
+        if ended_at_str:
+            session._ended_at = datetime.fromisoformat(ended_at_str)
         return session
 
     def _generate_questions(self) -> None:

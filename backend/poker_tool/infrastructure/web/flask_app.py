@@ -90,7 +90,7 @@ class FlaskApp:
             return jsonify({"status": "healthy", "version": "1.0.0"})
 
         for controller in self._controllers:
-            controller.register(api)
+            controller.register(api)  # type: ignore[attr-defined]
 
         self.app.register_blueprint(api)
 

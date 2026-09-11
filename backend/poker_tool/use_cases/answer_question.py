@@ -28,12 +28,12 @@ class AnswerQuestion:
     def answer(self, session_id: int, answer: str) -> AnsweredQuestion:
         session = self._sessions.session_by_id(session_id)
         if not session:
-            raise SessionNotFound(f"Session {session_id} not found")
+            raise SessionNotFound(session_id)
 
         new_session = session.answer(answer)
         saved_session = self._sessions.add(new_session)
 
-        response = {
+        response: dict[str, float | bool | str | None | dict] = {
             "is_correct": new_session.current_index > session.current_index
             and new_session.correct_answers > session.correct_answers,
             "correct_answer": session.current_question.correct_answer if session.current_question else None,

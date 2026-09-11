@@ -52,9 +52,11 @@ class _StubGlobalStats(GlobalStats):
         self._result = result
         self._error = error
 
-    def compute(self) -> dict | None:
+    def compute(self) -> dict:
         if self._error is not None:
             raise self._error
+        if self._result is None:
+            return {}
         return self._result
 
 
@@ -68,6 +70,8 @@ class _StubUserStats(UserStats):
     def compute(self, user_id: int) -> dict:
         if self._error is not None:
             raise self._error
+        if self._result is None:
+            return {}
         return self._result
 
 

@@ -45,7 +45,7 @@ from .use_cases.user_stats import UserStats
 class PokerTool:
     """Main application composer."""
 
-    def __init__(self, config: Config = None) -> None:
+    def __init__(self, config: Config | None = None) -> None:
         """Compose the application from its dependencies."""
         self.config = config if config is not None else Config()
 
