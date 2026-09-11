@@ -7,7 +7,7 @@ import {
   Redo as RedoIcon,
   ContentCopy as ContentCopyIcon,
 } from '@mui/icons-material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { RangeGrid, RangeStats } from '../components';
 import { useRanges, useHistory } from '../hooks';
 import { Range, ActionType, RangeGridCell } from '../types';

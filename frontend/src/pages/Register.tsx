@@ -17,7 +17,7 @@ import {
   Email as EmailIcon,
   Lock as LockIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuthContext } from '../auth/AuthContext';
 
 const Register: React.FC = () => {

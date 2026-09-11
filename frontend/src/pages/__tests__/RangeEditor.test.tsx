@@ -6,7 +6,7 @@
  */
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import RangeEditor from '../RangeEditor';
 import { Range } from '../../types';
 
@@ -73,10 +73,7 @@ vi.mock('../../components/RangeStats', () => {
 
 const renderEditor = (id: string = '1') =>
   render(
-    <MemoryRouter
-      initialEntries={[`/ranges/${id}/edit`]}
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-    >
+    <MemoryRouter initialEntries={[`/ranges/${id}/edit`]}>
       <Routes>
         <Route path="/ranges/:id/edit" element={<RangeEditor />} />
       </Routes>

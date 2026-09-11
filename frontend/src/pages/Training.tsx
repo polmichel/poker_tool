@@ -21,7 +21,7 @@ import {
   Settings as SettingsIcon,
   Fullscreen as FullscreenIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import {
   TrainingModeSelector,
   TrainingQuestion,

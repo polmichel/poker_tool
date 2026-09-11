@@ -24,7 +24,7 @@ import {
   Fullscreen as FullscreenIcon,
   DragHandle as DragHandleIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RangeForm, RangeGrid, ImportExportDialog } from '../components';
 import { useRanges, useRangeFolders } from '../hooks';
 import type { Folder as FolderType } from '../hooks';

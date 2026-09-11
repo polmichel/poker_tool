@@ -7,15 +7,15 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router';
 import Login from '../Login';
 
 const mockNavigate = jest.fn();
 const mockLogin = jest.fn();
 const mockUseAuth = jest.fn();
 
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+vi.mock('react-router', async () => {
+  const actual = await vi.importActual<typeof import('react-router')>('react-router');
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -28,10 +28,7 @@ vi.mock('../../auth/AuthContext', () => ({
 
 const renderLogin = () =>
   render(
-    <MemoryRouter
-      initialEntries={['/login']}
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-    >
+    <MemoryRouter initialEntries={['/login']}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<div>home</div>} />

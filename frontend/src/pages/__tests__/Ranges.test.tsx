@@ -5,7 +5,7 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import Ranges from '../Ranges';
 import type { Range } from '../../types';
 
@@ -112,7 +112,7 @@ vi.mock('../../utils/constants', () => ({
 
 const renderRanges = () =>
   render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter>
       <Ranges />
     </MemoryRouter>,
   );

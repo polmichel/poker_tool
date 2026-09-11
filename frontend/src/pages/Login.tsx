@@ -16,7 +16,7 @@ import {
   Person as PersonIcon,
   Lock as LockIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuthContext } from '../auth/AuthContext';
 
 const Login: React.FC = () => {

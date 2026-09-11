@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import Equity from '../Equity';
 import { EquityMissingError } from '../../api';
 import { EquityResult } from '../../types';
@@ -37,7 +37,7 @@ describe('Equity page', () => {
 
   const renderPage = () =>
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <Equity />
       </MemoryRouter>,
     );

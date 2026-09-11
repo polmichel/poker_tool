@@ -13,7 +13,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Box, CssBaseline, Fade } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 
 import { useFocusMode } from '../contexts/FocusModeContext';
 import { NavigationDrawer } from '../components/layout/NavigationDrawer';

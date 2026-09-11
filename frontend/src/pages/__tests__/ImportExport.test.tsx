@@ -7,7 +7,7 @@
  */
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import ImportExport from '../ImportExport';
 import type { Range } from '../../types';
 import { makeRange } from '../../tests/factories';
@@ -58,7 +58,7 @@ vi.mock('../../components', () => ({
 
 const renderImportExport = () =>
   render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter>
       <ImportExport />
     </MemoryRouter>,
   );

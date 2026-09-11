@@ -7,7 +7,7 @@ import {
   ArrowBack as ArrowBackIcon,
   ImportExport as ImportExportIcon,
 } from '@mui/icons-material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { RangeGrid, RangeStats } from '../components';
 import { useRanges } from '../hooks';
 import { Range, ActionType } from '../types';

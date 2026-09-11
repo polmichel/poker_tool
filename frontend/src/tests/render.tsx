@@ -9,7 +9,7 @@
 import React from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { darkTheme } from '../app/theme';
 import { AuthProvider } from '../auth/AuthContext';
 import { FocusModeProvider } from '../contexts/FocusModeContext';
@@ -28,10 +28,7 @@ export function renderWithProviders(
     <ThemeProvider theme={darkTheme}>
       <AuthProvider authApi={authApi}>
         <FocusModeProvider>
-          <MemoryRouter
-            initialEntries={[route]}
-            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-          >
+          <MemoryRouter initialEntries={[route]}>
             {children}
           </MemoryRouter>
         </FocusModeProvider>

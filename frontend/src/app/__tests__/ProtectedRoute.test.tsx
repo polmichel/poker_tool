@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router';
 import { ProtectedRoute } from '../ProtectedRoute';
 import { renderWithProviders } from '../../tests/render';
 import { makeMockAuthApi } from '../../tests/mocks';

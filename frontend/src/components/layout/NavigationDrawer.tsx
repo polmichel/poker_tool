@@ -22,7 +22,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Settings as SettingsIcon, GridView as GridViewIcon } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { THEME_COLORS } from '../../utils/constants';
 import { APP_ENTRIES, moduleRoute } from '../../app/theme';
 import { getIcon } from '../../app/icons';

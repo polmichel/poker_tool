@@ -35,7 +35,7 @@ import {
   FullscreenExit as FullscreenExitIcon,
   ChevronLeft as ChevronLeftIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuthContext } from '../../auth/AuthContext';
 import { THEME_COLORS } from '../../utils/constants';
 

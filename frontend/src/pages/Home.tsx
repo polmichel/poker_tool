@@ -3,7 +3,7 @@ import { Box, Typography, Grid, Container, Skeleton, Chip, Stack, Button } from 
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { AppCard, DonationDialog } from '../components';
 import { useStats } from '../hooks';
 import { useAuthContext } from '../auth/AuthContext';

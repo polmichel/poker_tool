@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { ThemeProvider } from '@mui/material';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router';
 import { darkTheme } from './app/theme';
 import { AuthProvider } from './auth/AuthContext';
 import { FocusModeProvider } from './contexts/FocusModeContext';

@@ -7,7 +7,7 @@
  */
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router';
 import Home from '../Home';
 
 const mockNavigate = jest.fn();
@@ -15,8 +15,8 @@ const mockNavigate = jest.fn();
 // Mock window.open for donation dialog
 const mockWindowOpen = jest.fn();
 
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+vi.mock('react-router', async () => {
+  const actual = await vi.importActual<typeof import('react-router')>('react-router');
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -81,10 +81,7 @@ vi.mock('../../components', () => ({
 describe('Home hub', () => {
   const renderHome = () =>
     render(
-      <MemoryRouter
-        initialEntries={['/']}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
+      <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/ranges" element={<div>ranges page</div>} />

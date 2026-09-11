@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router';
 import { useAuthContext } from '../auth/AuthContext';
 
 export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {

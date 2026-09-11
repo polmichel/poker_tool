@@ -14,7 +14,7 @@
  * API layer (TrainingApi / RangesApi) is mocked while the real hook runs.
  */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import Training from '../Training';
 
 // --- Mock API fakes (real hook runs against these) ----------------------------
@@ -58,8 +58,8 @@ vi.mock('../../api', () => {
   };
 });
 
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+vi.mock('react-router', async () => {
+  const actual = await vi.importActual<typeof import('react-router')>('react-router');
   return {
     ...actual,
     useNavigate: () => jest.fn(),
@@ -68,10 +68,7 @@ vi.mock('react-router-dom', async () => {
 
 const renderTraining = () =>
   render(
-    <MemoryRouter
-      initialEntries={['/training']}
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-    >
+    <MemoryRouter initialEntries={['/training']}>
       <Training />
     </MemoryRouter>,
   );
