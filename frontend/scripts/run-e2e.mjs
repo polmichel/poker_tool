@@ -27,15 +27,10 @@ console.log('Starting E2E test environment...\n');
 
 // Start backend server
 console.log('🚀 Starting backend server...');
-const backend = spawn('python3', ['-c', `
-import sys
-sys.path.insert(0, 'backend')
-from poker_tool.app import PokerTool
-PokerTool().run(debug=False, port=5001)
-`], {
+const backend = spawn('python3', ['backend/main.py'], {
   cwd: path.resolve(frontendDir, '..'),
   stdio: ['ignore', 'pipe', 'pipe'],
-  env: { ...process.env, FLASK_ENV: 'production', PYTHONPATH: path.resolve(frontendDir, '..', 'backend') }
+  env: { ...process.env, FLASK_ENV: 'production', PORT: '5001', FLASK_DEBUG: '0' }
 });
 
 backend.stdout.on('data', (data) => {
@@ -107,7 +102,7 @@ console.log(`Running: ${testCommand}\n`);
 const test = spawn('npx', ['playwright', 'test', '--config', 'tests/e2e/playwright.config.ts', ...playwrightArgs], {
   cwd: frontendDir,
   stdio: 'inherit',
-  env: { ...process.env, BASE_URL: 'http://localhost:3001', CI: 'false' }
+  env: { ...process.env, BASE_URL: 'http://localhost:3001', CI: 'false', PORT: '5001' }
 });
 
 // Handle test exit
