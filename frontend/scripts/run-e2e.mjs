@@ -15,15 +15,31 @@
  *   node scripts/run-e2e.mjs smoke.spec.ts      # Run specific test file
  */
 
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { unlinkSync, existsSync } from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const frontendDir = path.resolve(__dirname, '..');
 
 // Parse arguments - skip the first two (node and script path)
 const playwrightArgs = process.argv.slice(2);
+
+// Clean up any stale processes from previous runs
+console.log('🧹 Cleaning up stale processes...');
+try {
+  execSync('lsof -ti:5001 | xargs kill -9 2>/dev/null', { stdio: 'ignore' });
+  execSync('lsof -ti:3001 | xargs kill -9 2>/dev/null', { stdio: 'ignore' });
+  // Clean up test database from previous runs
+  const dbPath = path.resolve(__dirname, '../../backend/instance/poker_tool_e2e.db');
+  if (existsSync(dbPath)) {
+    unlinkSync(dbPath);
+  }
+  console.log('   ✅ Cleaned up stale processes and test database\n');
+} catch {
+  console.log('   ℹ️  No stale processes found\n');
+}
 
 console.log('🎯 Running E2E tests with Playwright...');
 console.log('   Playwright will automatically start backend and frontend servers.\n');
