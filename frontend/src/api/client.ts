@@ -45,9 +45,10 @@ api.interceptors.response.use(
   },
   (error: AxiosError) => {
     // Create a standardized error object
-    const responseData = error.response?.data as { message?: string } | undefined;
+    const responseData = error.response?.data as { message?: string; error?: string } | undefined;
     const errorMessage =
       responseData?.message ||
+      responseData?.error ||
       error.response?.statusText ||
       error.message ||
       'An unknown error occurred';
