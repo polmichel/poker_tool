@@ -22,12 +22,18 @@ export async function authenticatePage(page: Page): Promise<void> {
     });
     token = response.data.access_token;
   } catch {
-    // If login fails (e.g. user not yet created), register then login.
-    await axios.post(`${API_URL}/auth/register`, {
-      username: 'testuser',
-      email: 'test@test.com',
-      password: 'password123',
-    });
+    // If login fails (e.g. user not yet created), try register then login.
+    // If register also fails (user already exists from a parallel test),
+    // retry login one more time.
+    try {
+      await axios.post(`${API_URL}/auth/register`, {
+        username: 'testuser',
+        email: 'test@test.com',
+        password: 'password123',
+      });
+    } catch {
+      // User already exists — fall through to login retry
+    }
     const response = await axios.post(`${API_URL}/auth/login`, {
       username: 'testuser',
       password: 'password123',

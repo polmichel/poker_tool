@@ -125,7 +125,7 @@ export default defineConfig({
           command: './venv/bin/python3 main.py',
           cwd: path.resolve(__dirname, '../../../backend'),
           url: 'http://localhost:5001/api/health',
-          reuseExistingServer: true,
+          reuseExistingServer: false,
           timeout: 60000,
           env: {
             FLASK_ENV: 'development',

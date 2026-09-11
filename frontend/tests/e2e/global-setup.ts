@@ -40,15 +40,15 @@ async function globalSetup(config: FullConfig) {
       }
     }
 
-    // Create test user
+    // Create test user via /auth/register (same endpoint authenticatePage uses)
     console.log('Creating test user...');
     try {
-      await axios.post(`${API_BASE_URL}/users`, {
+      await axios.post(`${API_BASE_URL}/auth/register`, {
         username: 'testuser',
         email: 'test@test.com',
         password: 'password123',
       });
-      console.log('Test user created or already exists');
+      console.log('Test user created');
     } catch (err) {
       // User might already exist, that's fine
       console.log('Test user already exists');
