@@ -96,7 +96,8 @@ export default defineConfig({
     : [
         {
           // Start backend (Flask server)
-          command: 'cd ../../backend && python3 main.py',
+          command: './venv/bin/python3 main.py',
+          cwd: path.resolve(__dirname, '../../../backend'),
           url: 'http://localhost:5000/api/health',
           reuseExistingServer: true,
           timeout: 60000,
@@ -108,6 +109,7 @@ export default defineConfig({
         {
           // Start frontend (Vite dev server)
           command: 'npm run start',
+          cwd: path.resolve(__dirname, '../..'),
           url: 'http://localhost:3000',
           reuseExistingServer: true,
           timeout: 60000,
