@@ -64,8 +64,18 @@ test.on('error', (err) => {
   process.exit(1);
 });
 
-// Handle interrupt
+// Handle interrupt - kill child processes gracefully
 process.on('SIGINT', () => {
-  console.log('\n🛑 Interrupted.');
+  console.log('\n🛑 Shutting down...');
+  test.kill('SIGINT');
+
+  // Also kill the servers directly in case they don't stop
+  try {
+    execSync('lsof -ti:5001 | xargs kill -15 2>/dev/null', { stdio: 'ignore' });
+    execSync('lsof -ti:3001 | xargs kill -15 2>/dev/null', { stdio: 'ignore' });
+    console.log('   ✅ Servers stopped gracefully\n');
+  } catch {
+    // ignore
+  }
   process.exit(1);
 });
