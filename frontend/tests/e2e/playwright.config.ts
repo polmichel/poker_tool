@@ -34,9 +34,13 @@ if (!isCI) {
 // state. The backend recreates it on startup (create_all), and
 // global-setup populates it via the API.
 const e2eDbPath = path.resolve(__dirname, '../../../backend/instance/poker_tool_e2e.db');
-if (!isCI) {
+// Only run cleanup in the main process, not in worker processes.
+// Playwright sets TEST_WORKER_INDEX in worker processes.
+if (!isCI && process.env.TEST_WORKER_INDEX === undefined) {
   // Kill any process left on port 5001 from a previous e2e run so the
   // fresh backend can bind cleanly and pick up the new (deleted) DB.
+  // Guarded by PWWORKER to prevent worker processes from re-executing
+  // this and killing the backend the main process just started.
   try {
     execSync('lsof -ti:5001 | xargs kill -9 2>/dev/null', { stdio: 'ignore' });
   } catch {
