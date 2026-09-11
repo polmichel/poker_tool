@@ -147,6 +147,10 @@ const Ranges: React.FC = () => {
     setIsDragging(true);
     // Required for HTML5 DnD to work in most browsers
     e.dataTransfer.setData('text/plain', rangeId.toString());
+    // Hide the browser's native drag image to avoid duplicate visuals
+    const emptyImg = new Image();
+    emptyImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    e.dataTransfer.setDragImage(emptyImg, 0, 0);
     // Create ghost element for visual feedback - use ghost dimensions for consistent offset
     setGhostRange({ id: rangeId, x: e.clientX - GHOST_WIDTH / 2, y: e.clientY - GHOST_HEIGHT / 2 });
   }, []);
@@ -154,8 +158,8 @@ const Ranges: React.FC = () => {
   const handleRangeDrag = useCallback(
     (e: React.DragEvent) => {
       if (ghostRange && isDragging) {
-        // Ghost element is 280x60px, so offset by half width (140) and half height (30)
-        setGhostRange({ ...ghostRange, x: e.clientX - 140, y: e.clientY - 30 });
+        // Use consistent ghost dimensions constants for offset
+        setGhostRange({ ...ghostRange, x: e.clientX - GHOST_WIDTH / 2, y: e.clientY - GHOST_HEIGHT / 2 });
       }
     },
     [ghostRange, isDragging],
@@ -170,12 +174,14 @@ const Ranges: React.FC = () => {
 
   const handleFolderDragOver = useCallback(
     (e: React.DragEvent, folderId: string) => {
-      if (draggingRangeId === null) return;
+      // Check dataTransfer directly to avoid race condition with async state update
+      const rangeId = e.dataTransfer.getData('text/plain');
+      if (!rangeId) return;
       e.preventDefault(); // autorise le drop
       e.dataTransfer.dropEffect = 'move';
       if (dragOverFolderId !== folderId) setDragOverFolderId(folderId);
     },
-    [draggingRangeId, dragOverFolderId],
+    [dragOverFolderId],
   );
 
   const handleFolderDragLeave = useCallback((folderId: string) => {
@@ -327,6 +333,7 @@ const Ranges: React.FC = () => {
           }}
           draggable={false}
           onClick={() => handleSelectFolder(folder.id)}
+          onDragEnter={(e) => handleFolderDragOver(e, folder.id)}
           onDragOver={(e) => handleFolderDragOver(e, folder.id)}
           onDragLeave={() => handleFolderDragLeave(folder.id)}
           onDrop={(e) => handleFolderDrop(e, folder.id)}
