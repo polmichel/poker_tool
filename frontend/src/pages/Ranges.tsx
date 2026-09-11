@@ -86,6 +86,18 @@ const Ranges: React.FC = () => {
     fetchRanges();
   }, [fetchRanges]);
 
+  // Document-level drag listener for ghost element to follow mouse anywhere
+  useEffect(() => {
+    if (!isDragging || !ghostRange) return;
+    const handleDocumentDrag = (e: any) => {
+      setGhostRange({ ...ghostRange, x: e.clientX - 140, y: e.clientY - 30 });
+    };
+    document.addEventListener('mousemove', handleDocumentDrag);
+    return () => {
+      document.removeEventListener('mousemove', handleDocumentDrag);
+    };
+  }, [isDragging, ghostRange]);
+
   // Trouve un dossier par id en parcourant l'arbre.
   const findFolder = useCallback((nodes: Folder[], id: string | null): Folder | null => {
     if (!id) return null;
