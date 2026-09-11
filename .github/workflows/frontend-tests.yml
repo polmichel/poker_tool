@@ -40,4 +40,4 @@ jobs:
       - name: Check formatting (prettier)
         run: npx prettier --check "src/**/*.{ts,tsx,css,md}"
       - name: Run unit tests
-        run: CI=true npx react-scripts test --watchAll=false
+        run: CI=true npm test
