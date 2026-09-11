@@ -128,12 +128,13 @@ export default defineConfig({
           // Start backend (Flask server) with the e2e test database.
           // Uses port 5001 to avoid conflicting with a dev backend on
           // port 5000. FLASK_DEBUG=0 disables the reloader so Playwright
-          // can manage the process cleanly. reuseExistingServer: true
-          // avoids port conflicts if a previous run left the server up.
+          // can manage the process cleanly. reuseExistingServer: false
+          // ensures the backend always starts fresh. Stale processes on
+          // port 5001 are killed above before the run starts.
           command: './venv/bin/python3 main.py',
           cwd: path.resolve(__dirname, '../../../backend'),
           url: 'http://localhost:5001/api/health',
-          reuseExistingServer: true,
+          reuseExistingServer: false,
           timeout: 60000,
           env: {
             FLASK_ENV: 'development',
