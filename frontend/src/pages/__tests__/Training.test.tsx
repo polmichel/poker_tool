@@ -68,7 +68,10 @@ vi.mock('react-router-dom', async () => {
 
 const renderTraining = () =>
   render(
-    <MemoryRouter initialEntries={['/training']}>
+    <MemoryRouter
+      initialEntries={['/training']}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <Training />
     </MemoryRouter>,
   );

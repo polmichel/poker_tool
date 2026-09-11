@@ -47,7 +47,10 @@ const mockRange: Range = makeRange({
 
 const renderRangeView = (route = '/ranges/1') =>
   render(
-    <MemoryRouter initialEntries={[route]}>
+    <MemoryRouter
+      initialEntries={[route]}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <Routes>
         <Route path="/ranges/:id" element={<RangeView />} />
         <Route path="/ranges" element={<div>ranges list</div>} />

@@ -112,7 +112,7 @@ vi.mock('../../utils/constants', () => ({
 
 const renderRanges = () =>
   render(
-    <MemoryRouter>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Ranges />
     </MemoryRouter>,
   );

@@ -28,7 +28,12 @@ export function renderWithProviders(
     <ThemeProvider theme={darkTheme}>
       <AuthProvider authApi={authApi}>
         <FocusModeProvider>
-          <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+          <MemoryRouter
+            initialEntries={[route]}
+            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+          >
+            {children}
+          </MemoryRouter>
         </FocusModeProvider>
       </AuthProvider>
     </ThemeProvider>

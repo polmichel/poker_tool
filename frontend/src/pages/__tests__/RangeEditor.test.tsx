@@ -73,7 +73,10 @@ vi.mock('../../components/RangeStats', () => {
 
 const renderEditor = (id: string = '1') =>
   render(
-    <MemoryRouter initialEntries={[`/ranges/${id}/edit`]}>
+    <MemoryRouter
+      initialEntries={[`/ranges/${id}/edit`]}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <Routes>
         <Route path="/ranges/:id/edit" element={<RangeEditor />} />
       </Routes>

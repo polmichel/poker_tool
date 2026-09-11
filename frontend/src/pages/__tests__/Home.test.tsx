@@ -81,7 +81,10 @@ vi.mock('../../components', () => ({
 describe('Home hub', () => {
   const renderHome = () =>
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter
+        initialEntries={['/']}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/ranges" element={<div>ranges page</div>} />
