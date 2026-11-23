@@ -492,4 +492,62 @@ describe('Ranges page', () => {
     });
     expect(mockMoveRangeToFolder).toHaveBeenCalledWith(2, 'folder_btn');
   });
+
+  it('clears the drag ghost on drop even when no dragend fires (card may unmount after the move)', async () => {
+    mockFoldersState = [
+      {
+        id: 'root',
+        name: 'Toutes les Ranges',
+        parentId: null,
+        rangeIds: [1, 2],
+        children: [{ id: 'folder_btn', name: 'BTN', parentId: 'root', rangeIds: [], children: [] }],
+      },
+    ];
+    renderRanges();
+    // eslint-disable-next-line testing-library/no-node-access
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const dataTransfer = makeDataTransfer();
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragStart(rangeItem!, { dataTransfer });
+    });
+    // Le ghost est visible pendant le drag.
+    expect(screen.getByTestId('range-ghost-element')).toBeInTheDocument();
+    // Re-query the folder AFTER the dragStart re-render so the node is attached.
+    const folderTarget = screen.getByText('BTN');
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragOver(folderTarget, { dataTransfer });
+      fireEvent.drop(folderTarget, { dataTransfer });
+      // PAS de dragend ici : dans un vrai navigateur, si le drop demonte la
+      // carte source, le dragend est émis sur un nœud détaché et n'atteint
+      // jamais React. Le drop doit donc nettoyer le ghost lui-même.
+    });
+    expect(mockMoveRangeToFolder).toHaveBeenCalledWith(1, 'folder_btn');
+    expect(screen.queryByTestId('range-ghost-element')).not.toBeInTheDocument();
+  });
+
+  it('clears the drag ghost on dragend', async () => {
+    renderRanges();
+    // eslint-disable-next-line testing-library/no-node-access
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const dataTransfer = makeDataTransfer();
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragStart(rangeItem!, { dataTransfer });
+    });
+    expect(screen.getByTestId('range-ghost-element')).toBeInTheDocument();
+    // Re-query the card AFTER the dragStart re-render so the node is attached.
+    // (the ghost also shows the range name, so pick the one inside [draggable])
+    const rangeItemAfter = screen
+      .getAllByText('UTG Range')
+      // eslint-disable-next-line testing-library/no-node-access
+      .map((el) => el.closest('[draggable]'))
+      .find((el): el is Element => el !== null);
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragEnd(rangeItemAfter!, { dataTransfer });
+    });
+    expect(screen.queryByTestId('range-ghost-element')).not.toBeInTheDocument();
+  });
 });

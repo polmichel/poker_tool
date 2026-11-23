@@ -178,12 +178,20 @@ const Ranges: React.FC = () => {
     [ghostRange, isDragging],
   );
 
-  const handleRangeDragEnd = useCallback(() => {
+  // Remet à zéro tout l'état de drag (ghost compris). Utilisé par dragend ET
+  // par drop : après un drop, la carte source peut être démontée (la range
+  // quitte le dossier affiché), auquel cas le dragend émis sur le nœud détaché
+  // n'atteint jamais React et le ghost resterait affiché indéfiniment.
+  const resetDragState = useCallback(() => {
     setDraggingRangeId(null);
     setDragOverFolderId(null);
     setGhostRange(null);
     setIsDragging(false);
   }, []);
+
+  const handleRangeDragEnd = useCallback(() => {
+    resetDragState();
+  }, [resetDragState]);
 
   const handleFolderDragOver = useCallback(
     (e: React.DragEvent, folderId: string) => {
@@ -220,10 +228,11 @@ const Ranges: React.FC = () => {
         // Ne pas changer de dossier, garder la sélection actuelle
         // pour que l'image reste visible dans le panneau droit
       }
-      setDraggingRangeId(null);
-      setDragOverFolderId(null);
+      // Nettoie tout l'état de drag ici (pas seulement via dragend) : si la
+      // carte a été démontée par le déplacement, dragend n'atteindra pas React.
+      resetDragState();
     },
-    [draggingRangeId, moveRangeToFolder],
+    [draggingRangeId, moveRangeToFolder, resetDragState],
   );
 
   // Sélectionner un dossier
