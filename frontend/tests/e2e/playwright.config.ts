@@ -60,14 +60,12 @@ if (!isCI && process.env.TEST_WORKER_INDEX === undefined) {
  */
 export default defineConfig({
   testDir: './specs',
-  /* Run tests in files in parallel - disabled to avoid backend issues */
-  fullyParallel: false,
+  /* Run tests in files in parallel */
+  fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: isCI,
   /* Retry on CI only */
   retries: isCI ? 1 : 0,
-  /* Opt out of parallel tests on CI and locally to avoid backend connection issues. */
-  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { outputFolder: '../../playwright-report' }],
