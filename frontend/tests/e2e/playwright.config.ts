@@ -133,7 +133,7 @@ export default defineConfig({
           // can manage the process cleanly. reuseExistingServer: true
           // keeps the backend running across all tests for consistency.
           // Stale processes on port 5001 are killed above before the run starts.
-          command: 'python3 backend/main.py',
+          command: 'uv run --project backend python backend/main.py',
           cwd: path.resolve(__dirname, '../../..'),
           url: 'http://localhost:5001/api/health',
           reuseExistingServer: true,

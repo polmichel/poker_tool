@@ -36,7 +36,7 @@ run = "npm start"
 
 [tasks.dev]
 description = "Lance le backend et le frontend en parallèle"
-run = "mise run --parallel dev:backend dev:frontend"
+run = "mise run -j 2 dev:backend ::: dev:frontend"
 
 [tasks."lint:backend"]
 description = "Lint du backend (ruff)"
