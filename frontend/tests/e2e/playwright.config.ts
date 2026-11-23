@@ -20,6 +20,13 @@ const __dirname = path.dirname(__filename);
 const envPath = path.resolve(__dirname, '../../.env.test');
 dotenv.config({ path: envPath, override: true });
 
+// .env.test forces CI=false for local runs, but on GitHub Actions runners
+// the real CI flag must win so Playwright runs in CI mode (chromium only,
+// retries enabled, no webServer — servers are started by the workflow).
+if (process.env.GITHUB_ACTIONS === 'true') {
+  process.env.CI = 'true';
+}
+
 // Determine if we're running in CI
 const isCI = !!process.env.CI && process.env.CI !== 'false';
 
