@@ -5,6 +5,7 @@ from flask_jwt_extended import (
     JWTManager,
     create_access_token,
     get_jwt_identity,
+    verify_jwt_in_request,
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -46,8 +47,15 @@ class JwtAuth(Auth):
         )
 
     def current_user(self) -> User | None:
-        """Get the current authenticated user from JWT."""
+        """Get the current authenticated user from JWT.
+
+        Works on any route, not only ``@jwt_required()`` ones:
+        ``verify_jwt_in_request(optional=True)`` decodes the token when one is
+        present (``get_jwt_identity`` alone raises on unverified requests) and
+        is a no-op when the request carries no token.
+        """
         try:
+            verify_jwt_in_request(optional=True)
             user_id = get_jwt_identity()
             if user_id:
                 # flask-jwt-extended v4 requires string subjects

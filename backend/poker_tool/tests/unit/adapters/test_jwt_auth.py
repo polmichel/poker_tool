@@ -91,8 +91,9 @@ class TestJwtAuth(unittest.TestCase):
             auth.generate_token(user)
 
     @patch("poker_tool.adapters.jwt.auth.JWTManager")
+    @patch("poker_tool.adapters.jwt.auth.verify_jwt_in_request")
     @patch("poker_tool.adapters.jwt.auth.get_jwt_identity")
-    def test_current_user(self, mock_get_identity, mock_jwt):
+    def test_current_user(self, mock_get_identity, mock_verify, mock_jwt):
         """Test current_user method."""
         mock_get_identity.return_value = 1
 
@@ -101,11 +102,13 @@ class TestJwtAuth(unittest.TestCase):
         user = auth.current_user()
 
         self.assertEqual(user.id, 1)
+        mock_verify.assert_called_once_with(optional=True)
         mock_get_identity.assert_called_once()
 
     @patch("poker_tool.adapters.jwt.auth.JWTManager")
+    @patch("poker_tool.adapters.jwt.auth.verify_jwt_in_request")
     @patch("poker_tool.adapters.jwt.auth.get_jwt_identity")
-    def test_current_user_no_identity(self, mock_get_identity, mock_jwt):
+    def test_current_user_no_identity(self, mock_get_identity, mock_verify, mock_jwt):
         """Test current_user with no identity."""
         mock_get_identity.side_effect = Exception("No identity")
 
@@ -114,6 +117,33 @@ class TestJwtAuth(unittest.TestCase):
         user = auth.current_user()
 
         self.assertIsNone(user)
+
+    def test_current_user_resolves_token_on_unprotected_route(self):
+        """current_user must resolve the identity on routes without @jwt_required.
+
+        Regression test: get_jwt_identity() raises unless verify_jwt_in_request()
+        ran, so POST /training/sessions (no user_id in body) used to fail with
+        400 "User required" even with a valid Bearer token, which broke the
+        questionnaire E2E flow.
+        """
+        from flask import Flask
+        from flask_jwt_extended import create_access_token
+
+        app = Flask(__name__)
+        auth = JwtAuth(app, Config({"JWT_SECRET_KEY": "test-secret-key-0123456789abcdef"}))
+
+        @app.route("/open")
+        def open_route():
+            user = auth.current_user()
+            return {"id": user.id if user else None}
+
+        with app.app_context():
+            token = create_access_token(identity="42")
+
+        with app.test_client() as client:
+            self.assertIsNone(client.get("/open").get_json()["id"])
+            response = client.get("/open", headers={"Authorization": f"Bearer {token}"})
+            self.assertEqual(response.get_json()["id"], 42)
 
     @patch("poker_tool.adapters.jwt.auth.JWTManager")
     def test_check_password(self, mock_jwt):
