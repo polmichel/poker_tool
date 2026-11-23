@@ -1,0 +1,5 @@
+# CO open 6-max
+# Range d'ouverture CO en 6-max (RFI ~2.5bb)
+33+: open
+A4s+, K7s+, Q8s+, J7s+, T6s+, 96s, 85s, 75s, 64s, 54s, 43s, 32s: open
+A7o+, K9o+, Q9o+, J9o+, T8o+: open

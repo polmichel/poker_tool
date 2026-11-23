@@ -1,0 +1,3 @@
+# BB vs BTN 3-bet 6-max
+# Range de 3-bet de la BB contre une ouverture du BTN en 6-max
+77+, A5s+, ATo+, K9s+, KJo+, Q9s+, QJo+, J9s+, T9s: raise

@@ -1,0 +1,5 @@
+# LJ open 6-max
+# Range d'ouverture LJ en 6-max (RFI ~2.5bb)
+55+: open
+A7s+, K9s+, Q9s+, J8s+, T8s+, 98s, 97s, 87s, 76s, 65s, 54s: open
+A9o+, KTo+, QTo+, JTo: open

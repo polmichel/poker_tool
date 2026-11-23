@@ -1,0 +1,5 @@
+# BTN open 6-max
+# Range d'ouverture BTN en 6-max (RFI ~2.5bb)
+22+: open
+A2s+, K5s+, Q7s+, J6s+, T6s+, 96s+, 85s+, 75s+, 64s+, 54s, 43s, 32s: open
+K8o+, Q9o+, J8o+, T8o+: open

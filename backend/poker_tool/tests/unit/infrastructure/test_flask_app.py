@@ -308,6 +308,170 @@ class TestFlaskApp(unittest.TestCase):
             self.assertEqual(response.status_code, 500)
             self.assertIn("error", response.get_json())
 
+    def test_import_range_route_text(self):
+        """Test POST /api/ranges/import with text content stores a range (201)."""
+        self._make_app()
+
+        with self.app.test_client() as client:
+            response = client.post(
+                "/api/ranges/import",
+                json={"content": "66+, A8s+: open\n72o: call", "format": "text", "name": "Imported"},
+            )
+            self.assertEqual(response.status_code, 201)
+            data = response.get_json()
+            self.assertEqual(data["name"], "Imported")
+            self.assertIn("AA", data["hands"])
+            self.assertIn("66", data["hands"])
+            self.assertIn("AKs", data["hands"])
+            self.assertEqual(data["hands"]["AA"], "open")
+            self.assertEqual(data["hands"]["72o"], "call")
+        self.assertEqual(len(self.ranges.all()), 1)
+
+    def test_import_range_route_json(self):
+        """Test POST /api/ranges/import with JSON content round-trips through from_dict."""
+        import json
+
+        self._make_app()
+        content = json.dumps(
+            {
+                "name": "UTG open",
+                "description": "Ouverture UTG",
+                "range_type": "preflop",
+                "position": "UTG",
+                "hands": {"AA": "open", "AKs": "open"},
+            }
+        )
+
+        with self.app.test_client() as client:
+            response = client.post("/api/ranges/import", json={"content": content, "format": "json"})
+            self.assertEqual(response.status_code, 201)
+            data = response.get_json()
+            self.assertEqual(data["name"], "UTG open")
+            self.assertEqual(data["position"], "UTG")
+            self.assertEqual(data["hands"], {"AA": "open", "AKs": "open"})
+
+    def test_import_range_route_csv(self):
+        """Test POST /api/ranges/import with CSV content."""
+        self._make_app()
+
+        with self.app.test_client() as client:
+            response = client.post(
+                "/api/ranges/import",
+                json={"content": "hand,action\nAA,open\nKK,raise", "format": "csv"},
+            )
+            self.assertEqual(response.status_code, 201)
+            data = response.get_json()
+            self.assertEqual(data["hands"], {"AA": "open", "KK": "raise"})
+
+    def test_import_range_route_missing_content(self):
+        """Test POST /api/ranges/import without content returns 400."""
+        self._make_app()
+        with self.app.test_client() as client:
+            response = client.post("/api/ranges/import", json={"format": "text"})
+            self.assertEqual(response.status_code, 400)
+
+    def test_import_range_route_invalid_content(self):
+        """Test POST /api/ranges/import with an invalid hand returns a JSON 400."""
+        self._make_app()
+        with self.app.test_client() as client:
+            response = client.post(
+                "/api/ranges/import",
+                json={"content": "XX: open", "format": "text"},
+            )
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("error", response.get_json())
+
+    def test_import_range_route_unsupported_format(self):
+        """Test POST /api/ranges/import with an unknown format returns 400."""
+        self._make_app()
+        with self.app.test_client() as client:
+            response = client.post(
+                "/api/ranges/import",
+                json={"content": "AA: open", "format": "xml"},
+            )
+            self.assertEqual(response.status_code, 400)
+
+    def test_export_range_route_formats(self):
+        """Test GET /api/ranges/export/<id> serves json, text and csv formats."""
+        from poker_tool.objects.action import Action, ActionType
+        from poker_tool.objects.position import Position
+        from poker_tool.objects.range import Range
+        from poker_tool.objects.range_type import RangeType
+
+        stored = self.ranges.add(
+            Range(
+                name="Export me",
+                range_type=RangeType.PREFLOP,
+                position=Position.BTN,
+                hands={"AA": Action(ActionType.OPEN), "72o": Action(ActionType.CALL)},
+            )
+        )
+        self._make_app()
+
+        with self.app.test_client() as client:
+            response = client.get(f"/api/ranges/export/{stored.id}?format=json")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.get_json()["hands"], {"AA": "open", "72o": "call"})
+
+            response = client.get(f"/api/ranges/export/{stored.id}?format=text")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(set(response.get_json()["text"].splitlines()), {"AA: open", "72o: call"})
+
+            response = client.get(f"/api/ranges/export/{stored.id}?format=csv")
+            self.assertEqual(response.status_code, 200)
+            rows = response.get_json()["csv"].splitlines()
+            self.assertEqual(rows[0], "hand,action")
+            self.assertEqual(set(rows[1:]), {"AA,open", "72o,call"})
+
+    def test_export_range_route_not_found(self):
+        """Test GET /api/ranges/export/<id> with unknown id returns 404."""
+        self._make_app()
+        with self.app.test_client() as client:
+            response = client.get("/api/ranges/export/999?format=json")
+            self.assertEqual(response.status_code, 404)
+
+    def test_export_range_route_bad_format(self):
+        """Test GET /api/ranges/export/<id> with unknown format returns 400."""
+        from poker_tool.objects.position import Position
+        from poker_tool.objects.range import Range
+        from poker_tool.objects.range_type import RangeType
+
+        stored = self.ranges.add(Range(name="R", range_type=RangeType.PREFLOP, position=Position.BTN))
+        self._make_app()
+        with self.app.test_client() as client:
+            response = client.get(f"/api/ranges/export/{stored.id}?format=xml")
+            self.assertEqual(response.status_code, 400)
+
+    def test_import_export_round_trip_route(self):
+        """Test export -> import round-trip preserves the hands of a range."""
+        from poker_tool.objects.action import Action, ActionType
+        from poker_tool.objects.position import Position
+        from poker_tool.objects.range import Range
+        from poker_tool.objects.range_type import RangeType
+
+        stored = self.ranges.add(
+            Range(
+                name="Round trip",
+                range_type=RangeType.PREFLOP,
+                position=Position.CO,
+                hands={"AA": Action(ActionType.OPEN), "AKs": Action(ActionType.OPEN), "72o": Action(ActionType.FOLD)},
+            )
+        )
+        self._make_app()
+
+        with self.app.test_client() as client:
+            exported = client.get(f"/api/ranges/export/{stored.id}?format=text").get_json()["text"]
+            response = client.post(
+                "/api/ranges/import",
+                json={"content": exported, "format": "text", "name": "Round trip copy"},
+            )
+            self.assertEqual(response.status_code, 201)
+            imported = response.get_json()
+            self.assertEqual(imported["hands"], {"AA": "open", "AKs": "open", "72o": "fold"})
+            self.assertEqual(len(self.ranges.all()), 2)
+            re_exported = client.get(f"/api/ranges/export/{imported['id']}?format=json").get_json()
+            self.assertEqual(re_exported["hands"], imported["hands"])
+
 
 if __name__ == "__main__":
     unittest.main()

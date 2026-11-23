@@ -1,0 +1,5 @@
+# SB open 6-max
+# Range d'ouverture SB en 6-max (RFI ~2.5bb)
+22+: open
+A2s+, K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s, 32s: open
+K4o+, Q7o+, J6o+, T6o+: open
