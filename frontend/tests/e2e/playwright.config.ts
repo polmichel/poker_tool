@@ -30,10 +30,14 @@ if (process.env.GITHUB_ACTIONS === 'true') {
 // Determine if we're running in CI
 const isCI = !!process.env.CI && process.env.CI !== 'false';
 
-// E2e backend runs on port 5001 (separate from dev backend on 5000).
+// Locally, the e2e backend runs on port 5001 (separate from the dev backend
+// on 5000, started by webServer below). In CI, the workflow starts a single
+// backend on port 5000, so point API_URL there.
 // Set API_URL for test specs that hit the backend directly via axios.
 if (!isCI) {
   process.env.API_URL = process.env.API_URL || 'http://localhost:5001/api';
+} else {
+  process.env.API_URL = process.env.API_URL || 'http://localhost:5000/api';
 }
 
 // E2E test database: kept separate from the dev database so local data
