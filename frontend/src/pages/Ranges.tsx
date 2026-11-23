@@ -86,17 +86,62 @@ const Ranges: React.FC = () => {
     fetchRanges();
   }, [fetchRanges]);
 
+  // Debug logging DnD (console navigateur, préfixe [DnD]) pour diagnostiquer
+  // le comportement réel du drag dans les navigateurs (ex: Brave).
+  const dndLog = useCallback((msg: string, extra?: unknown) => {
+    // eslint-disable-next-line no-console
+    console.log(`[DnD] ${msg}`, extra !== undefined ? extra : '');
+  }, []);
+
+  // Log EVERY native DnD event at document level (capture), even the ones
+  // React does not handle (dragenter, dragleave on the card, etc.).
+  useEffect(() => {
+    const types = ['dragstart', 'drag', 'dragenter', 'dragover', 'dragleave', 'drop', 'dragend'];
+    const handler = (ev: Event) => {
+      const e = ev as DragEvent;
+      const t = e.target as HTMLElement | null;
+      dndLog(`doc:${ev.type}`, {
+        target: t
+          ? `${t.tagName.toLowerCase()}[draggable=${t.getAttribute?.('draggable') ?? '?'}] "${(t.textContent || '').slice(0, 30)}"`
+          : 'null',
+        x: e.clientX,
+        y: e.clientY,
+        defaultPrevented: e.defaultPrevented,
+        dtTypes: e.dataTransfer?.types ? Array.from(e.dataTransfer.types) : null,
+        dropEffect: e.dataTransfer?.dropEffect ?? null,
+      });
+    };
+    types.forEach((t) => document.addEventListener(t, handler, true));
+    return () => types.forEach((t) => document.removeEventListener(t, handler, true));
+  }, [dndLog]);
+
   // Document-level drag listener for ghost element to follow mouse anywhere
   useEffect(() => {
     if (!isDragging || !ghostRange) return;
+    dndLog('mousemove ghost listener ATTACHED (isDragging=true)');
     const handleDocumentDrag = (e: any) => {
       setGhostRange({ ...ghostRange, x: e.clientX - 140, y: e.clientY - 30 });
     };
     document.addEventListener('mousemove', handleDocumentDrag);
     return () => {
+      dndLog('mousemove ghost listener DETACHED');
       document.removeEventListener('mousemove', handleDocumentDrag);
     };
   }, [isDragging, ghostRange]);
+
+  // Ghost follow during a REAL HTML5 drag: `dragover` fires at document level
+  // on whatever is under the pointer (even outside the source card), whereas
+  // `drag` events on the source and `mousemove` can be unreliable in some
+  // browsers once the pointer leaves the source element.
+  useEffect(() => {
+    if (!isDragging) return;
+    const onDocDragOver = (e: DragEvent) => {
+      if (e.clientX === 0 && e.clientY === 0) return;
+      setGhostRange((prev) => (prev ? { ...prev, x: e.clientX - 140, y: e.clientY - 30 } : prev));
+    };
+    document.addEventListener('dragover', onDocDragOver, true);
+    return () => document.removeEventListener('dragover', onDocDragOver, true);
+  }, [isDragging]);
 
   // Trouve un dossier par id en parcourant l'arbre.
   const findFolder = useCallback((nodes: Folder[], id: string | null): Folder | null => {
@@ -154,28 +199,51 @@ const Ranges: React.FC = () => {
   const GHOST_WIDTH = 280;
   const GHOST_HEIGHT = 60;
 
-  const handleRangeDragStart = useCallback((rangeId: number, e: React.DragEvent) => {
-    // Ne PAS appeler e.preventDefault() ici : un dragstart annulé fait échouer
-    // toute l'opération de drag dans les navigateurs (aucun dragover/drop).
-    e.stopPropagation();
-    setDraggingRangeId(rangeId);
-    setIsDragging(true);
-    // Required for HTML5 DnD to work in most browsers
-    e.dataTransfer.setData('text/plain', rangeId.toString());
-    e.dataTransfer.effectAllowed = 'move';
-    // Create ghost element for visual feedback - use ghost dimensions for consistent offset
-    setGhostRange({ id: rangeId, x: e.clientX - GHOST_WIDTH / 2, y: e.clientY - GHOST_HEIGHT / 2 });
-  }, []);
+  const handleRangeDragStart = useCallback(
+    (rangeId: number, e: React.DragEvent) => {
+      // Ne PAS appeler e.preventDefault() ici : un dragstart annulé fait échouer
+      // toute l'opération de drag dans les navigateurs (aucun dragover/drop).
+      dndLog('handler dragstart', {
+        rangeId,
+        x: e.clientX,
+        y: e.clientY,
+        target: (e.target as HTMLElement)?.tagName,
+        defaultPreventedBefore: e.defaultPrevented,
+      });
+      e.stopPropagation();
+      setDraggingRangeId(rangeId);
+      setIsDragging(true);
+      // Required for HTML5 DnD to work in most browsers
+      e.dataTransfer.setData('text/plain', rangeId.toString());
+      e.dataTransfer.effectAllowed = 'move';
+      // Create ghost element for visual feedback - use ghost dimensions for consistent offset
+      setGhostRange({
+        id: rangeId,
+        x: e.clientX - GHOST_WIDTH / 2,
+        y: e.clientY - GHOST_HEIGHT / 2,
+      });
+      dndLog('handler dragstart done', {
+        effectAllowed: e.dataTransfer.effectAllowed,
+        types: e.dataTransfer.types ? Array.from(e.dataTransfer.types) : null,
+        payload:
+          typeof e.dataTransfer.getData === 'function'
+            ? e.dataTransfer.getData('text/plain')
+            : null,
+      });
+    },
+    [dndLog],
+  );
 
   const handleRangeDrag = useCallback(
     (e: React.DragEvent) => {
+      dndLog('handler drag', { x: e.clientX, y: e.clientY, ghost: !!ghostRange, isDragging });
       if (ghostRange && isDragging) {
         e.stopPropagation();
         // Ghost element is 280x60px, so offset by half width (140) and half height (30)
         setGhostRange({ ...ghostRange, x: e.clientX - 140, y: e.clientY - 30 });
       }
     },
-    [ghostRange, isDragging],
+    [ghostRange, isDragging, dndLog],
   );
 
   // Remet à zéro tout l'état de drag (ghost compris). Utilisé par dragend ET
@@ -189,9 +257,41 @@ const Ranges: React.FC = () => {
     setIsDragging(false);
   }, []);
 
-  const handleRangeDragEnd = useCallback(() => {
-    resetDragState();
-  }, [resetDragState]);
+  // Safety nets (bubble phase on document, so they run AFTER React handlers):
+  // whatever the browser does, drag state can never get stuck — a dragend seen
+  // anywhere, or any new mousedown, clears the ghost. This guarantees the ghost
+  // never stays visible if a drag is aborted without React seeing the dragend
+  // (e.g. source node detached mid-drag).
+  useEffect(() => {
+    const onDocDragEnd = () => {
+      dndLog('safety: document dragend -> resetDragState');
+      resetDragState();
+    };
+    const onDocMouseDown = () => {
+      dndLog('safety: document mousedown -> resetDragState');
+      resetDragState();
+    };
+    document.addEventListener('dragend', onDocDragEnd);
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => {
+      document.removeEventListener('dragend', onDocDragEnd);
+      document.removeEventListener('mousedown', onDocMouseDown);
+    };
+  }, [resetDragState, dndLog]);
+
+  const handleRangeDragEnd = useCallback(
+    (e: React.DragEvent) => {
+      dndLog('handler dragend', {
+        x: e.clientX,
+        y: e.clientY,
+        target: (e.target as HTMLElement)?.tagName,
+        targetConnected: (e.target as HTMLElement)?.isConnected,
+        draggingRangeId,
+      });
+      resetDragState();
+    },
+    [resetDragState, dndLog, draggingRangeId],
+  );
 
   const handleFolderDragOver = useCallback(
     (e: React.DragEvent, folderId: string) => {
@@ -199,20 +299,40 @@ const Ranges: React.FC = () => {
       // payload dataTransfer l'identifie (source fiable côté navigateur).
       const types = e.dataTransfer?.types ? Array.from(e.dataTransfer.types) : [];
       const isRangeDrag = draggingRangeId !== null || types.includes('text/plain');
+      dndLog('handler folder dragover', {
+        folderId,
+        isRangeDrag,
+        draggingRangeId,
+        types,
+        x: e.clientX,
+        y: e.clientY,
+        defaultPreventedBefore: e.defaultPrevented,
+      });
       if (!isRangeDrag) return;
       e.preventDefault(); // autorise le drop
       e.dataTransfer.dropEffect = 'move';
       if (dragOverFolderId !== folderId) setDragOverFolderId(folderId);
     },
-    [draggingRangeId, dragOverFolderId],
+    [draggingRangeId, dragOverFolderId, dndLog],
   );
 
-  const handleFolderDragLeave = useCallback((folderId: string) => {
-    setDragOverFolderId((prev) => (prev === folderId ? null : prev));
-  }, []);
+  const handleFolderDragLeave = useCallback(
+    (folderId: string) => {
+      dndLog('handler folder dragleave', { folderId });
+      setDragOverFolderId((prev) => (prev === folderId ? null : prev));
+    },
+    [dndLog],
+  );
 
   const handleFolderDrop = useCallback(
     (e: React.DragEvent, folderId: string) => {
+      dndLog('handler folder drop', {
+        folderId,
+        draggingRangeId,
+        types: e.dataTransfer?.types ? Array.from(e.dataTransfer.types) : null,
+        x: e.clientX,
+        y: e.clientY,
+      });
       e.preventDefault();
       e.stopPropagation();
       // Lit l'id de la range depuis le payload dataTransfer (disponible au
@@ -223,6 +343,7 @@ const Ranges: React.FC = () => {
         const parsed = Number(payload);
         if (payload && Number.isInteger(parsed)) rangeId = parsed;
       }
+      dndLog('handler folder drop: resolved rangeId', { rangeId, folderId });
       if (rangeId !== null) {
         moveRangeToFolder(rangeId, folderId);
         // Ne pas changer de dossier, garder la sélection actuelle
@@ -232,7 +353,7 @@ const Ranges: React.FC = () => {
       // carte a été démontée par le déplacement, dragend n'atteindra pas React.
       resetDragState();
     },
-    [draggingRangeId, moveRangeToFolder, resetDragState],
+    [draggingRangeId, moveRangeToFolder, resetDragState, dndLog],
   );
 
   // Sélectionner un dossier
@@ -702,6 +823,8 @@ const Ranges: React.FC = () => {
         {ghostRange && isDragging && (
           <Box
             data-testid="range-ghost-element"
+            data-x={ghostRange.x}
+            data-y={ghostRange.y}
             sx={{
               position: 'fixed',
               left: `${ghostRange.x}px`,
