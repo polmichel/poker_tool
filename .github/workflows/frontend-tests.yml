@@ -5,37 +5,33 @@ on:
     branches: [ main, develop ]
     paths:
       - 'frontend/**'
+      - 'mise.toml'
       - '.github/workflows/frontend-tests.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'frontend/**'
+      - 'mise.toml'
       - '.github/workflows/frontend-tests.yml'
   # Permet de déclencher manuellement le workflow
   workflow_dispatch:
 
 jobs:
   unit-tests:
-    name: Frontend Vitest
+    name: Frontend lint + Vitest
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: frontend
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
+      - name: Install tools (node) with mise
+        uses: jdx/mise-action@v2
 
       - name: Install dependencies
-        run: npm ci
+        run: mise run setup:frontend
 
       - name: Lint (eslint + prettier)
-        run: npm run lint
+        run: mise run lint:frontend
       - name: Run unit tests
-        run: CI=true npm test
+        run: mise run test:frontend

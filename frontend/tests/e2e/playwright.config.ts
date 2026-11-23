@@ -20,6 +20,13 @@ const __dirname = path.dirname(__filename);
 const envPath = path.resolve(__dirname, '../../.env.test');
 dotenv.config({ path: envPath, override: true });
 
+// .env.test forces CI=false for local runs, but on GitHub Actions runners
+// the real CI flag must win so Playwright runs in CI mode (chromium only,
+// retries enabled, no webServer — servers are started by the workflow).
+if (process.env.GITHUB_ACTIONS === 'true') {
+  process.env.CI = 'true';
+}
+
 // Determine if we're running in CI
 const isCI = !!process.env.CI && process.env.CI !== 'false';
 
@@ -133,7 +140,7 @@ export default defineConfig({
           // can manage the process cleanly. reuseExistingServer: true
           // keeps the backend running across all tests for consistency.
           // Stale processes on port 5001 are killed above before the run starts.
-          command: 'python3 backend/main.py',
+          command: 'uv run --project backend python backend/main.py',
           cwd: path.resolve(__dirname, '../../..'),
           url: 'http://localhost:5001/api/health',
           reuseExistingServer: true,

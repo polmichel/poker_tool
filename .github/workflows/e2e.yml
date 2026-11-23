@@ -14,24 +14,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5.1.0
-        with:
-          python-version: '3.12'
+      - name: Install tools (python, node, uv) with mise
+        uses: jdx/mise-action@v2
 
       - name: Install backend dependencies
-        working-directory: backend
-        run: |
-          pip install -q -r requirements.txt
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
+        run: mise run setup:backend
 
       - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
+        run: mise run setup:frontend
 
       - name: Install Playwright browsers
         working-directory: frontend
@@ -44,7 +34,7 @@ jobs:
           # Create instance directory
           mkdir -p instance
           # Start Flask server in background
-          FLASK_ENV=production python3 -c "from poker_tool.app import PokerTool; PokerTool().run(debug=False)" > /tmp/backend.log 2>&1 &
+          FLASK_ENV=production uv run python -c "from poker_tool.app import PokerTool; PokerTool().run(debug=False)" > /tmp/backend.log 2>&1 &
           BACKEND_PID=$!
           echo "Backend PID: $BACKEND_PID"
 
@@ -59,7 +49,7 @@ jobs:
           done
 
           # Create test data
-          python3 scripts/create_test_data.py > /tmp/create_test_data.log 2>&1
+          uv run python scripts/create_test_data.py > /tmp/create_test_data.log 2>&1
 
       - name: Start frontend server
         working-directory: frontend

@@ -14,9 +14,14 @@ Inspiré de **GTO+ Wizard**, ce projet offre une interface moderne et intuitive 
 ## 🚀 Démarrage Rapide
 
 ### Prérequis
-- **Backend** : Python 3.8+ avec pip
-- **Frontend** : Node.js 16+ avec npm
+- **[mise](https://mise.jdx.dev/)** — installe et active automatiquement **Python 3.13**, **Node.js 24** et **uv** (versions déclarées dans [`mise.toml`](mise.toml) à la racine du projet)
 - **Base de données** : SQLite (inclus avec Python)
+
+```bash
+# Après avoir installé mise :
+mise trust      # autorise la configuration mise.toml (une seule fois)
+mise install    # installe Python 3.13, Node.js 24 et uv
+```
 
 ---
 
@@ -28,39 +33,48 @@ git clone https://github.com/polmichel/poker_tool.git
 cd poker_tool
 ```
 
-#### 2️⃣ Configurer le Backend (Flask)
+#### 2️⃣ Installer les dépendances
 ```bash
-cd backend
-
-# Créer un environnement virtuel (recommandé)
-python -m venv venv
-source venv/bin/activate  # Sur Linux/Mac
-# ou
-venv\Scripts\activate     # Sur Windows
-
-# Installer les dépendances
-pip install -r requirements.txt
-
-# Démarrer le serveur
-python main.py
+mise run setup    # backend (uv sync) + frontend (npm ci)
 ```
 
-Le backend sera accessible à : **http://localhost:5000**
+#### 3️⃣ Lancer l'application
+```bash
+# Terminal 1 — backend Flask
+mise run dev:backend     # API sur http://localhost:5000
+
+# Terminal 2 — frontend React
+mise run dev:frontend    # UI sur http://localhost:3000
+```
+
+Ou les deux en parallèle : `mise run dev`
 
 La configuration (clés secrètes, base de données, CORS) est lue depuis l'environnement via `poker_tool.config.Config` ; voir `backend/.env.example`.
 
-#### 3️⃣ Configurer le Frontend (React)
+#### 4️⃣ Tests et lint
 ```bash
-cd frontend
-
-# Installer les dépendances
-npm install
-
-# Démarrer l'application React
-npm start
+mise run test        # backend (ruff + pytest) + frontend (eslint + vitest)
+mise run test:e2e    # tests E2E Playwright
 ```
 
-Le frontend sera accessible à : **http://localhost:3000**
+> 💡 Toutes les tâches disponibles : `mise tasks`
+
+<details>
+<summary>Installation manuelle (sans mise)</summary>
+
+```bash
+# Backend (uv installé manuellement, Python 3.13 requis)
+cd backend
+uv sync
+uv run python main.py        # API sur http://localhost:5000
+
+# Frontend
+cd frontend
+npm install
+npm start                    # UI sur http://localhost:3000
+```
+
+</details>
 
 ---
 
@@ -70,7 +84,7 @@ Le frontend sera accessible à : **http://localhost:3000**
 poker_tool/
 ├── backend/                          # API Flask (Python, architecture Elegant Objects)
 │   ├── main.py                       # Point d'entrée (python main.py)
-│   ├── requirements.txt              # Dépendances Python
+│   ├── uv.lock                       # Lockfile des dépendances Python (uv)
 │   ├── .env.example                  # Configuration par variable d'environnement
 │   ├── pyproject.toml                # Configuration du projet Python
 │   ├── data/                         # Données (table d'équité pré-calculée)
@@ -443,7 +457,7 @@ REACT_APP_API_URL=http://localhost:5000
 ## 🛠️ Technologies Utilisées
 
 ### Backend
-- **Python 3.8+**
+- **Python 3.13** (version gérée par [mise](https://mise.jdx.dev/))
 - **Flask** : Framework web léger
 - **Flask-SQLAlchemy** : ORM pour SQLite
 - **Flask-JWT-Extended** : Gestion des tokens JWT
@@ -470,10 +484,11 @@ REACT_APP_API_URL=http://localhost:5000
 Les contributions sont les bienvenues ! Voici comment contribuer :
 
 1. **Forker** le dépôt
-2. **Créer** une branche pour votre fonctionnalité (`git checkout -b feature/ma-fonctionnalité`)
-3. **Commiter** vos changements (`git commit -m 'Ajout de ma fonctionnalité'`)
-4. **Pousser** vers la branche (`git push origin feature/ma-fonctionnalité`)
-5. **Ouvrir** une Pull Request
+2. **Cloner** votre fork et installer l'environnement de dev : `mise trust && mise install && mise run setup`
+3. **Créer** une branche pour votre fonctionnalité (`git checkout -b feature/ma-fonctionnalité`)
+4. **Commiter** vos changements (`git commit -m 'Ajout de ma fonctionnalité'`)
+5. **Pousser** vers la branche (`git push origin feature/ma-fonctionnalité`)
+6. **Ouvrir** une Pull Request
 
 ---
 
