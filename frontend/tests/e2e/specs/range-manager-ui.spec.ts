@@ -265,13 +265,15 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
       folderLeaf.dispatchEvent(dragOver);
       const drop = new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt });
       folderLeaf.dispatchEvent(drop);
-      card.dispatchEvent(
-        new DragEvent('dragend', { bubbles: true, cancelable: true, dataTransfer: dt }),
-      );
+      // PAS de dragend ici : après un vrai drop, la carte source peut être
+      // démontée (la range quitte le dossier affiché), auquel cas le dragend
+      // émis sur le nœud détaché n'atteint jamais React. Le ghost doit donc
+      // être nettoyé par le drop lui-même.
       return {
         dragStartCanceled: dragStart.defaultPrevented,
         dragOverCanceled: dragOver.defaultPrevented,
         payload: dt.getData('text/plain'),
+        ghostAfterDrop: !!document.querySelector('[data-testid="range-ghost-element"]'),
       };
     }, folderName);
 
@@ -281,6 +283,10 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     expect(dndResult.dragOverCanceled).toBe(true);
     // Le payload dataTransfer contient l'id de la range déplacée.
     expect(dndResult.payload).toMatch(/^\d+$/);
+    // Le ghost ne doit PAS rester affiché après le drop (sans attendre dragend).
+    expect(dndResult.ghostAfterDrop).toBe(false);
+    // Attendre la fin du traitement React puis vérifier dans le DOM aussi.
+    await expect(page.locator('[data-testid="range-ghost-element"]')).toHaveCount(0);
 
     // Masquer l'overlay dev-server qui intercepte les clics, puis sélectionner
     // le dossier cible.
