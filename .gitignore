@@ -19,8 +19,9 @@ backend/instance/
 # Ignorer les fichiers de dépendances Python
 backend/*.egg-info/
 
-# Ignorer les fichiers générés par uv
-backend/uv.lock
+# Ignorer les fichiers locaux de mise
+mise.local.toml
+.mise/
 
 # Ignorer les fichiers générés par npm
 frontend/node_modules/

@@ -35,7 +35,7 @@ backend/
 │       └── integration/             # Composition / wiring tests
 ├── scripts/
 │   └── create_test_data.py          # Seed script (uses poker_tool.app)
-├── requirements.txt                 # Runtime + test dependencies
+├── uv.lock                          # Lockfile des dépendances (uv)
 ├── pyproject.toml                   # uv / project metadata
 └── .env.example                     # Example environment configuration
 ```
@@ -72,24 +72,36 @@ and injected in the composition root. No secrets are hard-coded. See
 
 ## 🚀 Quick Start
 
+Depuis la racine du projet, avec [mise](https://mise.jdx.dev/) (voir `mise.toml`) :
+
 ```bash
-cd backend
-pip install -r requirements.txt
-python -m poker_tool.main
+mise run dev:backend
+```
+
+Ou manuellement depuis `backend/` (uv installé, Python 3.13 requis) :
+
+```bash
+uv sync
+uv run python -m poker_tool.main
 ```
 
 The API is served at `http://localhost:5000/api`.
 
 ## 🧪 Testing
 
+Depuis la racine du projet, avec mise :
+
 ```bash
-cd backend
-pip install -r requirements.txt   # includes pytest
-python -m pytest poker_tool/tests/unit/ -v
-python -m pytest poker_tool/tests/integration/ -v
+mise run test:backend    # ruff + tests unitaires + tests d'intégration
 ```
 
-Tests use **fake implementations of the ports** rather than mocks: each port
+Ou manuellement depuis `backend/` :
+
+```bash
+uv sync
+uv run pytest poker_tool/tests/unit/ -v
+uv run pytest poker_tool/tests/integration/ -v
+```
 gets a small in-memory fake, so unit tests exercise real object behaviour. The
 integration tests verify that the composition root wires everything together.
 
@@ -101,8 +113,8 @@ integration tests verify that the composition root wires everything together.
 - **Flask-SQLAlchemy** — ORM
 - **pytest** — test runner
 
-All dependencies are declared in `requirements.txt` (runtime + test) and in
-`pyproject.toml` (uv metadata).
+All dependencies are declared in `pyproject.toml` and locked in `uv.lock`
+(install them with `uv sync`, or `mise run setup:backend` from the repo root).
 
 ## 📚 Resources
 

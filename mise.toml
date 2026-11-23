@@ -1,0 +1,93 @@
+[tools]
+python = "3.13"
+node = "24"
+uv = "latest"
+
+[tasks.setup]
+description = "Installe toutes les dépendances (backend via uv, frontend via npm)"
+run = ["mise run setup:backend", "mise run setup:frontend"]
+
+[tasks."setup:backend"]
+description = "Installe les dépendances Python du backend avec uv"
+dir = "backend"
+run = "uv sync"
+
+[tasks."setup:frontend"]
+description = "Installe les dépendances du frontend avec npm"
+dir = "frontend"
+run = "npm ci"
+
+[tasks."setup:vibe-bot"]
+description = "Installe les dépendances du bot (vibe-bot/)"
+dir = "vibe-bot"
+run = "npm install"
+
+[tasks."dev:backend"]
+description = "Lance le backend Flask sur http://localhost:5000"
+dir = "backend"
+depends = ["setup:backend"]
+run = "uv run python main.py"
+
+[tasks."dev:frontend"]
+description = "Lance le serveur de dev Vite sur http://localhost:3000"
+dir = "frontend"
+depends = ["setup:frontend"]
+run = "npm start"
+
+[tasks.dev]
+description = "Lance le backend et le frontend en parallèle"
+run = "mise run --parallel dev:backend dev:frontend"
+
+[tasks."lint:backend"]
+description = "Lint du backend (ruff)"
+dir = "backend"
+depends = ["setup:backend"]
+run = "uv run ruff check poker_tool/"
+
+[tasks."lint:frontend"]
+description = "Lint du frontend (eslint + prettier)"
+dir = "frontend"
+depends = ["setup:frontend"]
+run = "npm run lint"
+
+[tasks.lint]
+description = "Lint complet (backend + frontend)"
+run = ["mise run lint:backend", "mise run lint:frontend"]
+
+[tasks."test:backend:unit"]
+description = "Tests unitaires du backend (pytest)"
+dir = "backend"
+depends = ["setup:backend"]
+run = "uv run pytest poker_tool/tests/unit/ -v"
+
+[tasks."test:backend:integration"]
+description = "Tests d'intégration du backend (pytest)"
+dir = "backend"
+depends = ["setup:backend"]
+run = "uv run pytest poker_tool/tests/integration/ -v"
+
+[tasks."test:backend"]
+description = "Lint + tests unitaires + tests d'intégration du backend"
+run = ["mise run lint:backend", "mise run test:backend:unit", "mise run test:backend:integration"]
+
+[tasks."test:frontend"]
+description = "Lint + tests unitaires du frontend (vitest)"
+dir = "frontend"
+depends = ["setup:frontend"]
+run = ["npm run lint", "CI=true npm test"]
+
+[tasks.test]
+description = "Tous les tests (backend + frontend)"
+run = ["mise run test:backend", "mise run test:frontend"]
+
+[tasks."test:e2e"]
+description = "Tests E2E Playwright (démarre backend + frontend automatiquement)"
+dir = "frontend"
+depends = ["setup:frontend"]
+run = "npm run test:e2e"
+
+[tasks.pre-commit]
+description = "Lance les hooks pre-commit sur tout le dépôt"
+dir = "backend"
+depends = ["setup:backend"]
+run = "uv run pre-commit run --all-files"
