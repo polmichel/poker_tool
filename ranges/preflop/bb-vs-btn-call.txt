@@ -1,0 +1,9 @@
+# BB vs BTN call 6-max
+# Range de call de la BB contre une ouverture du BTN en 6-max
+22, 33, 44, 55, 66: call
+A2s-A4s, A2o-A9o: call
+K2s-K8s, K2o-K8o, K9o-KTo: call
+Q5s-Q9s, Q9o-QJo: call
+J7s-JTs, J9o-JTo: call
+T6s-T9s, T8o-T9o: call
+98s, 97s, 87s, 86s, 76s, 65s, 54s, 43s, 32s: call

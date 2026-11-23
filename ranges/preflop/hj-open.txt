@@ -1,0 +1,5 @@
+# HJ open 6-max
+# Range d'ouverture HJ en 6-max (RFI ~2.5bb)
+44+: open
+A5s+, K8s+, Q8s+, J8s+, T7s+, 97s, 86s, 76s, 65s, 54s, 43s: open
+A8o+, KTo+, QTo+, JTo, T9o: open

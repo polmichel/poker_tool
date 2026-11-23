@@ -1,0 +1,5 @@
+# UTG+1 open 6-max
+# Range d'ouverture UTG+1 en 6-max (RFI ~2.5bb)
+66+: open
+A8s+, K9s+, Q9s+, J9s+, T9s, 98s, 87s, 76s, 65s, 54s: open
+ATo+, KJo+, QTo+, QJo+: open

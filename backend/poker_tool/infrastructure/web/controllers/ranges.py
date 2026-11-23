@@ -3,6 +3,12 @@
 from flask import Blueprint, jsonify, request
 from werkzeug.exceptions import BadRequest, NotFound
 
+from ....objects.range_io import (
+    InvalidExportFormat,
+    InvalidImportContent,
+    parse_import,
+    serialize_range,
+)
 from ....use_cases.create_range import CreateRange
 from ....use_cases.delete_range import DeleteRange
 from ....use_cases.errors import RangeNotFound
@@ -95,3 +101,27 @@ class RangeController:
             except RangeNotFound:
                 raise NotFound(f"Range {range_id} not found")
             return jsonify(range_obj.statistics())
+
+        @api.route("/ranges/export/<int:range_id>", methods=["GET"])
+        def export_range(range_id: int):
+            try:
+                range_obj = self._get_range_by_id.get(range_id)
+            except RangeNotFound:
+                raise NotFound(f"Range {range_id} not found")
+            try:
+                payload = serialize_range(range_obj, request.args.get("format", "json"))
+            except InvalidExportFormat as exc:
+                raise BadRequest(str(exc))
+            return jsonify(payload)
+
+        @api.route("/ranges/import", methods=["POST"])
+        def import_range():
+            data = request.get_json()
+            if not data or "content" not in data:
+                raise BadRequest("Missing content")
+            try:
+                payload = parse_import(data["content"], data.get("format", "json"), name=data.get("name"))
+            except InvalidImportContent as exc:
+                raise BadRequest(str(exc))
+            saved_range = self._create_range.create(payload)
+            return jsonify(saved_range.to_dict()), 201
