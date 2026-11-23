@@ -69,7 +69,7 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     await expect(page.getByText('Aucune range trouvée')).not.toBeVisible({ timeout: 5000 });
   });
 
-  test('sélectionner une range affiche l\'aperçu avec la grille', async ({ page }) => {
+  test("sélectionner une range affiche l'aperçu avec la grille", async ({ page }) => {
     // Attendre que la liste contienne au moins un élément cliquable (une range).
     // On cible le premier conteneur de range du panneau central.
     const firstRangeCard = page
@@ -208,7 +208,9 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     // Drag over + drop sur le dossier
     await folderTarget.dispatchEvent('dragover');
     await folderTarget.dispatchEvent('drop');
-    await rangeCard.dispatchEvent('dragend');
+    // dragend : la carte peut avoir disparu si le déplacement a réussi (la range
+    // quitte le dossier courant), on ne fait donc pas échouer le test ici.
+    await rangeCard.dispatchEvent('dragend', undefined, { timeout: 1000 }).catch(() => {});
 
     // Sélectionner le dossier cible : masquer l'iframe webpack-dev-server qui intercepte les clics
     await page.evaluate(() => {
@@ -222,4 +224,75 @@ test.describe('Gestion des Ranges — interface 3 panneaux', () => {
     await expect(page.getByText(/Ranges \([1-9]\d*\)/)).toBeVisible({ timeout: 5000 });
   });
 
+  test('glisser-déposer (vrais DragEvent Chromium) déplace la range dans le dossier', async ({
+    page,
+  }) => {
+    // Ce test dispatch des vrais DragEvent avec un vrai DataTransfer Chromium.
+    // Règle navigateur : si le handler dragstart annulait l'événement
+    // (preventDefault), le drag serait avorté et aucun drop ne serait émis.
+    // On vérifie donc que dragstart N'est PAS annulé, que dragover l'est
+    // (pour autoriser le drop), et que le drop déplace bien la range.
+    const folderName = 'Dossier DnD Natif ' + Date.now();
+    await page.evaluate((name) => {
+      window.prompt = () => name;
+    }, folderName);
+    const newFolderButton = page.getByRole('button', { name: 'Nouveau Dossier' });
+    await newFolderButton.waitFor({ state: 'visible', timeout: 5000 });
+    await newFolderButton.click();
+    const folderTarget = page.getByText(folderName, { exact: true }).first();
+    await folderTarget.waitFor({ state: 'visible', timeout: 5000 });
+
+    const rangeCard = page.locator('[draggable="true"]').filter({ hasText: /mains/ }).first();
+    await rangeCard.waitFor({ state: 'visible', timeout: 10000 });
+
+    const dndResult = await page.evaluate((name) => {
+      const card = document.querySelector('[draggable="true"]') as HTMLElement;
+      const folderLeaf = Array.from(document.querySelectorAll('*')).find(
+        (el) => el.childElementCount === 0 && el.textContent === name,
+      ) as HTMLElement;
+      const dt = new DataTransfer();
+      const dragStart = new DragEvent('dragstart', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: dt,
+      });
+      card.dispatchEvent(dragStart);
+      const dragOver = new DragEvent('dragover', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: dt,
+      });
+      folderLeaf.dispatchEvent(dragOver);
+      const drop = new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt });
+      folderLeaf.dispatchEvent(drop);
+      card.dispatchEvent(
+        new DragEvent('dragend', { bubbles: true, cancelable: true, dataTransfer: dt }),
+      );
+      return {
+        dragStartCanceled: dragStart.defaultPrevented,
+        dragOverCanceled: dragOver.defaultPrevented,
+        payload: dt.getData('text/plain'),
+      };
+    }, folderName);
+
+    // dragstart ne doit PAS être annulé, sinon le navigateur avorte le drag.
+    expect(dndResult.dragStartCanceled).toBe(false);
+    // dragover doit être annulé pour autoriser le drop.
+    expect(dndResult.dragOverCanceled).toBe(true);
+    // Le payload dataTransfer contient l'id de la range déplacée.
+    expect(dndResult.payload).toMatch(/^\d+$/);
+
+    // Masquer l'overlay dev-server qui intercepte les clics, puis sélectionner
+    // le dossier cible.
+    await page.evaluate(() => {
+      const overlay =
+        document.getElementById('webpack-dev-server-client-overlay') ||
+        document.getElementById('vite-error-overlay');
+      if (overlay) overlay.style.display = 'none';
+    });
+    await page.getByText(folderName, { exact: true }).first().click({ timeout: 5000 });
+
+    // La range déplacée doit apparaître dans le dossier cible.
+    await expect(page.getByText(/Ranges \([1-9]\d*\)/)).toBeVisible({ timeout: 5000 });
+  });
 });
