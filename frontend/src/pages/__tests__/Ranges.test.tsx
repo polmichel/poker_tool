@@ -3,7 +3,7 @@
  * Tests the new folder-based range management functionality.
  */
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, createEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import Ranges from '../Ranges';
@@ -351,5 +351,145 @@ describe('Ranges page', () => {
       fireEvent.drop(folderItem!, { dataTransfer: { dropEffect: 'move' } });
     });
     expect(mockMoveRangeToFolder).not.toHaveBeenCalled();
+  });
+
+  // Realistic DataTransfer mock mimicking the browser: data written by
+  // setData is readable via getData, and `types` exposes the available formats.
+  const makeDataTransfer = () => {
+    const store: Record<string, string> = {};
+    return {
+      dropEffect: '',
+      effectAllowed: '',
+      types: [] as string[],
+      setData(format: string, value: string) {
+        store[format] = value;
+        if (!this.types.includes(format)) this.types.push(format);
+      },
+      getData(format: string) {
+        return store[format] ?? '';
+      },
+    };
+  };
+
+  it('does NOT cancel the dragstart event (a canceled dragstart aborts the whole drag in real browsers)', () => {
+    renderRanges();
+    // eslint-disable-next-line testing-library/no-node-access
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const dragStartEvent = createEvent.dragStart(rangeItem!, {
+      dataTransfer: makeDataTransfer(),
+    });
+    fireEvent(rangeItem!, dragStartEvent);
+    // If the dragstart handler calls preventDefault(), browsers never start
+    // the drag session: no dragover/drop is ever fired and the feature is
+    // broken in real usage (unit/e2e synthetic events hide this).
+    expect(dragStartEvent.defaultPrevented).toBe(false);
+  });
+
+  it('stores the range id as text/plain in dataTransfer on dragstart', () => {
+    renderRanges();
+    // eslint-disable-next-line testing-library/no-node-access
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const dataTransfer = makeDataTransfer();
+    fireEvent.dragStart(rangeItem!, { dataTransfer });
+    expect(dataTransfer.getData('text/plain')).toBe('1');
+    expect(dataTransfer.types).toContain('text/plain');
+    expect(dataTransfer.effectAllowed).toBe('move');
+  });
+
+  it('cancels dragover on a folder while a range is being dragged (required to allow the drop)', async () => {
+    mockFoldersState = [
+      {
+        id: 'root',
+        name: 'Toutes les Ranges',
+        parentId: null,
+        rangeIds: [1, 2],
+        children: [{ id: 'folder_btn', name: 'BTN', parentId: 'root', rangeIds: [], children: [] }],
+      },
+    ];
+    renderRanges();
+    // eslint-disable-next-line testing-library/no-node-access
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const dataTransfer = makeDataTransfer();
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragStart(rangeItem!, { dataTransfer });
+    });
+    const folderTarget = screen.getByText('BTN');
+    const dragOverEvent = createEvent.dragOver(folderTarget, { dataTransfer });
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent(folderTarget, dragOverEvent);
+    });
+    // preventDefault on dragover is what tells the browser a drop is allowed.
+    expect(dragOverEvent.defaultPrevented).toBe(true);
+  });
+
+  it('accepts dragover based on the dataTransfer payload even without component state', () => {
+    mockFoldersState = [
+      {
+        id: 'root',
+        name: 'Toutes les Ranges',
+        parentId: null,
+        rangeIds: [1, 2],
+        children: [{ id: 'folder_btn', name: 'BTN', parentId: 'root', rangeIds: [], children: [] }],
+      },
+    ];
+    renderRanges();
+    const folderTarget = screen.getByText('BTN');
+    // No dragStart fired: only the dataTransfer payload identifies the drag.
+    const dataTransfer = makeDataTransfer();
+    dataTransfer.setData('text/plain', '1');
+    const dragOverEvent = createEvent.dragOver(folderTarget, { dataTransfer });
+    fireEvent(folderTarget, dragOverEvent);
+    expect(dragOverEvent.defaultPrevented).toBe(true);
+  });
+
+  it('moves the range on drop using the dataTransfer payload (real browser flow)', async () => {
+    mockFoldersState = [
+      {
+        id: 'root',
+        name: 'Toutes les Ranges',
+        parentId: null,
+        rangeIds: [1, 2],
+        children: [{ id: 'folder_btn', name: 'BTN', parentId: 'root', rangeIds: [], children: [] }],
+      },
+    ];
+    renderRanges();
+    // eslint-disable-next-line testing-library/no-node-access
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const dataTransfer = makeDataTransfer();
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragStart(rangeItem!, { dataTransfer });
+    });
+    // Re-query the folder AFTER the dragStart re-render so the node is attached.
+    const folderTarget = screen.getByText('BTN');
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragOver(folderTarget, { dataTransfer });
+      fireEvent.drop(folderTarget, { dataTransfer });
+    });
+    expect(mockMoveRangeToFolder).toHaveBeenCalledWith(1, 'folder_btn');
+  });
+
+  it('moves the range on drop from the dataTransfer payload even without prior dragStart state', async () => {
+    mockFoldersState = [
+      {
+        id: 'root',
+        name: 'Toutes les Ranges',
+        parentId: null,
+        rangeIds: [1, 2],
+        children: [{ id: 'folder_btn', name: 'BTN', parentId: 'root', rangeIds: [], children: [] }],
+      },
+    ];
+    renderRanges();
+    const folderTarget = screen.getByText('BTN');
+    const dataTransfer = makeDataTransfer();
+    dataTransfer.setData('text/plain', '2');
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.drop(folderTarget, { dataTransfer });
+    });
+    expect(mockMoveRangeToFolder).toHaveBeenCalledWith(2, 'folder_btn');
   });
 });

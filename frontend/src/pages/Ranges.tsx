@@ -155,7 +155,8 @@ const Ranges: React.FC = () => {
   const GHOST_HEIGHT = 60;
 
   const handleRangeDragStart = useCallback((rangeId: number, e: React.DragEvent) => {
-    e.preventDefault();
+    // Ne PAS appeler e.preventDefault() ici : un dragstart annulé fait échouer
+    // toute l'opération de drag dans les navigateurs (aucun dragover/drop).
     e.stopPropagation();
     setDraggingRangeId(rangeId);
     setIsDragging(true);
@@ -169,7 +170,6 @@ const Ranges: React.FC = () => {
   const handleRangeDrag = useCallback(
     (e: React.DragEvent) => {
       if (ghostRange && isDragging) {
-        e.preventDefault();
         e.stopPropagation();
         // Ghost element is 280x60px, so offset by half width (140) and half height (30)
         setGhostRange({ ...ghostRange, x: e.clientX - 140, y: e.clientY - 30 });
@@ -187,7 +187,11 @@ const Ranges: React.FC = () => {
 
   const handleFolderDragOver = useCallback(
     (e: React.DragEvent, folderId: string) => {
-      if (draggingRangeId === null) return;
+      // Accepte le drag si une range est en cours de drag (state) ou si le
+      // payload dataTransfer l'identifie (source fiable côté navigateur).
+      const types = e.dataTransfer?.types ? Array.from(e.dataTransfer.types) : [];
+      const isRangeDrag = draggingRangeId !== null || types.includes('text/plain');
+      if (!isRangeDrag) return;
       e.preventDefault(); // autorise le drop
       e.dataTransfer.dropEffect = 'move';
       if (dragOverFolderId !== folderId) setDragOverFolderId(folderId);
@@ -203,8 +207,16 @@ const Ranges: React.FC = () => {
     (e: React.DragEvent, folderId: string) => {
       e.preventDefault();
       e.stopPropagation();
-      if (draggingRangeId !== null) {
-        moveRangeToFolder(draggingRangeId, folderId);
+      // Lit l'id de la range depuis le payload dataTransfer (disponible au
+      // drop), avec repli sur le state si le payload est illisible.
+      let rangeId = draggingRangeId;
+      if (e.dataTransfer && typeof e.dataTransfer.getData === 'function') {
+        const payload = e.dataTransfer.getData('text/plain');
+        const parsed = Number(payload);
+        if (payload && Number.isInteger(parsed)) rangeId = parsed;
+      }
+      if (rangeId !== null) {
+        moveRangeToFolder(rangeId, folderId);
         // Ne pas changer de dossier, garder la sélection actuelle
         // pour que l'image reste visible dans le panneau droit
       }
