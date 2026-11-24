@@ -550,4 +550,70 @@ describe('Ranges page', () => {
     });
     expect(screen.queryByTestId('range-ghost-element')).not.toBeInTheDocument();
   });
+
+  it('moves the ghost on document-level dragover while dragging (pointer outside the card)', async () => {
+    renderRanges();
+    // eslint-disable-next-line testing-library/no-node-access
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const dataTransfer = makeDataTransfer();
+    const withXY = (evt: Event, x: number, y: number) => {
+      Object.defineProperty(evt, 'clientX', { value: x });
+      Object.defineProperty(evt, 'clientY', { value: y });
+      return evt;
+    };
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent(rangeItem!, withXY(createEvent.dragStart(rangeItem!, { dataTransfer }), 600, 200));
+    });
+    const ghost = screen.getByTestId('range-ghost-element');
+    expect(ghost.getAttribute('data-x')).toBe(String(600 - 140));
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      // dragover anywhere in the document (pointer far outside the card)
+      fireEvent(
+        document.body,
+        withXY(createEvent.dragOver(document.body, { dataTransfer }), 200, 500),
+      );
+    });
+    expect(screen.getByTestId('range-ghost-element').getAttribute('data-x')).toBe(
+      String(200 - 140),
+    );
+    expect(screen.getByTestId('range-ghost-element').getAttribute('data-y')).toBe(String(500 - 30));
+  });
+
+  it('clears a stuck ghost on document-level dragend (card dragend may never reach React)', async () => {
+    renderRanges();
+    // eslint-disable-next-line testing-library/no-node-access
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const dataTransfer = makeDataTransfer();
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragStart(rangeItem!, { dataTransfer });
+    });
+    expect(screen.getByTestId('range-ghost-element')).toBeInTheDocument();
+    // Simulate a dragend that never reaches the card's React handler
+    // (e.g. source node detached): it bubbles to document instead.
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragEnd(document.body, { dataTransfer });
+    });
+    expect(screen.queryByTestId('range-ghost-element')).not.toBeInTheDocument();
+  });
+
+  it('clears a stuck ghost on any mousedown (safety net)', async () => {
+    renderRanges();
+    // eslint-disable-next-line testing-library/no-node-access
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const dataTransfer = makeDataTransfer();
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragStart(rangeItem!, { dataTransfer });
+    });
+    expect(screen.getByTestId('range-ghost-element')).toBeInTheDocument();
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.mouseDown(document.body);
+    });
+    expect(screen.queryByTestId('range-ghost-element')).not.toBeInTheDocument();
+  });
 });
