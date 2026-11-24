@@ -600,6 +600,21 @@ describe('Ranges page', () => {
     expect(screen.queryByTestId('range-ghost-element')).not.toBeInTheDocument();
   });
 
+  it('keeps the range card DOM node stable across the dragstart re-render (native drags are canceled if the source node is replaced)', async () => {
+    renderRanges();
+    // eslint-disable-next-line testing-library/no-node-access
+    const rangeItem = screen.getByText('UTG Range').closest('[draggable]');
+    const dataTransfer = makeDataTransfer();
+    // eslint-disable-next-line testing-library/no-unnecessary-act
+    await act(async () => {
+      fireEvent.dragStart(rangeItem!, { dataTransfer });
+    });
+    // The card node must NOT be replaced when the ghost appears: panels are
+    // inline function calls, not components, so their DOM stays stable.
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(rangeItem!.isConnected).toBe(true);
+  });
+
   it('clears a stuck ghost on any mousedown (safety net)', async () => {
     renderRanges();
     // eslint-disable-next-line testing-library/no-node-access
