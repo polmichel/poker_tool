@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Box,
   Typography,
@@ -819,36 +820,44 @@ const Ranges: React.FC = () => {
 
       {/* Contenu principal */}
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
-        {/* Ghost range element for drag visual feedback */}
-        {ghostRange && isDragging && (
-          <Box
-            data-testid="range-ghost-element"
-            data-x={ghostRange.x}
-            data-y={ghostRange.y}
-            sx={{
-              position: 'fixed',
-              left: `${ghostRange.x}px`,
-              top: `${ghostRange.y}px`,
-              width: 280,
-              height: 60,
-              backgroundColor: THEME_COLORS.paper,
-              border: `1px dashed ${THEME_COLORS.primary}`,
-              borderRadius: 1,
-              opacity: 0.7,
-              pointerEvents: 'none',
-              zIndex: 9999,
-              boxShadow: `0 4px 12px rgba(0, 0, 0, 0.3)`,
-              display: 'flex',
-              alignItems: 'center',
-              p: 1.5,
-            }}
-          >
-            <DragHandleIcon sx={{ mr: 1, opacity: 0.6, fontSize: 16 }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-              {backendRanges.find((r) => r.id === ghostRange.id)?.name || 'Range'}
-            </Typography>
-          </Box>
-        )}
+        {/* Ghost range element for drag visual feedback.
+            Rendered in a portal to document.body on purpose: as a keyless
+            conditional child of this panel it would shift the children indexes
+            on mount/update and React would REPLACE the panel DOM nodes —
+            including the drag source card and the folder drop targets — which
+            cancels native HTML5 drags in real browsers (Brave/Chromium). */}
+        {ghostRange &&
+          isDragging &&
+          createPortal(
+            <Box
+              data-testid="range-ghost-element"
+              data-x={ghostRange.x}
+              data-y={ghostRange.y}
+              sx={{
+                position: 'fixed',
+                left: `${ghostRange.x}px`,
+                top: `${ghostRange.y}px`,
+                width: 280,
+                height: 60,
+                backgroundColor: THEME_COLORS.paper,
+                border: `1px dashed ${THEME_COLORS.primary}`,
+                borderRadius: 1,
+                opacity: 0.7,
+                pointerEvents: 'none',
+                zIndex: 9999,
+                boxShadow: `0 4px 12px rgba(0, 0, 0, 0.3)`,
+                display: 'flex',
+                alignItems: 'center',
+                p: 1.5,
+              }}
+            >
+              <DragHandleIcon sx={{ mr: 1, opacity: 0.6, fontSize: 16 }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                {backendRanges.find((r) => r.id === ghostRange.id)?.name || 'Range'}
+              </Typography>
+            </Box>,
+            document.body,
+          )}
 
         <Box
           sx={{
@@ -858,7 +867,11 @@ const Ranges: React.FC = () => {
             overflow: 'hidden',
           }}
         >
-          <LeftPanel />
+          {/* Appelés comme des fonctions (et non <LeftPanel />) : définis inline,
+              ils auraient une identité différente à chaque render et React
+              remplacerait tout leur sous-DOM — y compris la carte source du drag,
+              ce qui annule le drag natif dans les vrais navigateurs. */}
+          {LeftPanel()}
         </Box>
 
         <Box
@@ -871,7 +884,7 @@ const Ranges: React.FC = () => {
             borderRight: `1px solid ${THEME_COLORS.border}`,
           }}
         >
-          <MiddlePanel />
+          {MiddlePanel()}
         </Box>
 
         <Box
@@ -882,7 +895,7 @@ const Ranges: React.FC = () => {
             overflow: 'hidden',
           }}
         >
-          <RightPanel />
+          {RightPanel()}
         </Box>
       </Box>
 
